@@ -1,0 +1,246 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * TrellisPiratJack implementation : © Jacques de Metz <demetz.jacques@gmail.com>.
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ */
+
+define([
+        "dojo", "dojo/_base/declare",
+        "ebg/core/gamegui",
+        "ebg/counter",
+        "ebg/scrollmap"
+    ],
+    function(dojo, declare) {
+        return declare("bgagame.trellis", ebg.core.gamegui, {
+            constructor: function() {
+                // Tile sizes
+                this.tile_width = 314;
+                this.sin_60 = 0.8660; // sin(60°) = 0.8660
+                this.tile_height = this.tile_width * this.sin_60;
+
+                // Margin between tiles
+                this.margin = 4;
+
+                //REAL_ART: sprite dimensions
+                this.sprite_size_x = 5;
+                this.sprite_size_y = 1;
+            },
+
+            setup: function(gamedatas) {
+                /***** Player boards *****/
+                for (var player_id in gamedatas.players) {
+                    var player = gamedatas.players[player_id];
+                }
+
+                /***** Scrollmap *****/
+                this.scrollmap = new ebg.scrollmap();
+                this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
+                this.scrollmap.setupOnScreenArrows(150);
+
+                /***** Tiles *****/
+                this.tiles = gamedatas.tiles;
+                for (var tile_id in gamedatas.tiles) {
+                    var tile = gamedatas.tiles[tile_id];
+                    this.renderTile(tile);
+                }
+
+                /***** Notifications *****/
+                this.setupNotifications();
+            },
+
+
+            ///////////////////////////////////////////////////
+            //// Game & client states
+
+            // onEnteringState: this method is called each time we are entering into a new game state.
+            //                  You can use this method to perform some user interface changes at this moment.
+            //
+            onEnteringState: function(stateName, args) {
+                switch (stateName) {
+                    case 'plant':
+                        // Can player select a card?
+                        if (this.isCurrentPlayerActive()) {
+                            this.possibleTileSpots = args.args._private.possibleTileSpots;
+                            for (i in this.possibleTileSpots) {
+                                this.connect($('tile_' + i), 'onclick', 'onClickHandTile');
+                            }
+                        } else {
+                            this.destroyPossibleTileSpots();
+                        }
+                        break;
+                }
+            },
+
+            // onLeavingState: this method is called each time we are leaving a game state.
+            //                 You can use this method to perform some user interface changes at this moment.
+            //
+            onLeavingState: function(stateName) {},
+
+            // Action buttons on the top bar
+            onUpdateActionButtons: function(stateName, args) {
+                if (this.isCurrentPlayerActive()) {
+                    switch (stateName) {}
+                    //TODO: 'plant' => Add buttons to confirm selection
+                }
+            },
+
+            ///////////////////////////////////////////////////
+            //// Player actions
+
+            // Stores clicked tile + displays relevant spots
+            onClickHandTile: function(evt) {
+                var clickedTile = evt.currentTarget;
+                var tileId = clickedTile.dataset.id;
+                var wasSelected = dojo.hasClass(clickedTile, 'selected');
+
+                // Clear up everything from previous steps
+                dojo.query('#trl_hand_tiles .trl_tile').removeClass('selected');
+                this.destroyPossibleTileSpots();
+                //TODO: destroy the arrows for rotation
+
+                if (!wasSelected) {
+                    dojo.addClass(clickedTile, 'selected');
+                    this.displayPossibleTileSpots(this.possibleTileSpots[tileId]);
+                }
+            },
+
+            // Display tile on spot + allow to rotate
+            onClickPossibleTileSpot: function(evt) {
+                var clickedSpot = evt.currentTarget;
+
+                var selectedTile = dojo.query('.trl_tile_actualTile.selected');
+                if (selectedTile === null) {
+                    this.showMessage(_('Please choose a tile first'));
+                    return;
+                }
+                dojo.query('#map_scrollable #' + selectedTile[0].id).forEach(dojo.destroy);
+
+                var tileId = selectedTile[0].dataset.id;
+                if (this.possibleTileSpots[tileId] === null) {
+                    this.showMessage(_('This spot is not possible'));
+                    return
+                }
+                var spot_x = clickedSpot.dataset.x;
+                if (this.possibleTileSpots[tileId][spot_x] === null) {
+                    this.showMessage(_('This spot is not possible'));
+                    return
+                }
+                var spot_y = clickedSpot.dataset.y;
+                if (this.possibleTileSpots[tileId][spot_x][spot_y] === null) {
+                    this.showMessage(_('This spot is not possible'));
+                    return
+                }
+
+                var angles = this.possibleTileSpots[tileId][spot_x][spot_y];
+
+                // Rotate the tile to one of the possible angles
+                var newTileInfos = {
+                    angle: angles[0],
+                    location: 'board',
+                    x: spot_x,
+                    y: spot_y,
+                }
+                var newTile = Object.assign(this.tiles[tileId], newTileInfos);
+                this.renderTile(newTile);
+
+
+                //TODO: Display rotating buttons
+                //TODO: Allow to confirm
+            },
+
+
+            ///////////////////////////////////////////////////
+            //// Utility methods
+
+            // Renders a tile in a given position (either board or hand)
+            renderTile: function(tile) {
+                if (this.sprite_size_x == 1)
+                    var bg_x = 0;
+                else
+                    var bg_x = 100 * parseInt(tile.sprite_position.x) / (this.sprite_size_x - 1);
+
+                if (this.sprite_size_y == 1)
+                    var bg_y = 0;
+                else
+                    var bg_y = 100 * parseInt(tile.sprite_position.y) / (this.sprite_size_y - 1);
+
+                if (tile.location == 'board') {
+                    var position_top = (this.tile_height + this.margin) * tile.y / 2 - this.tile_height / 2;
+                    var position_left = tile.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+
+                    dojo.place(this.format_block('jstpl_tile', {
+                        id: tile.tile_id,
+                        x: tile.x,
+                        y: tile.y,
+                        top: position_top,
+                        left: position_left,
+                        bg_x: bg_x,
+                        bg_y: bg_y,
+                        angle: tile.angle,
+                    }), document.getElementById('map_scrollable'));
+                } else {
+                    dojo.place(this.format_block('jstpl_tile', {
+                        id: tile.tile_id,
+                        x: 0,
+                        y: 0,
+                        top: 0,
+                        left: 0,
+                        bg_x: bg_x,
+                        bg_y: bg_y,
+                        angle: 0,
+                    }), document.getElementById('trl_hand_tiles'));
+                }
+            },
+
+            // Displays the possible spots (as white areas)
+            displayPossibleTileSpots: function(possibleTiles) {
+                for (x in possibleTiles) {
+                    for (y in possibleTiles[x]) {
+                        if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
+                            this.renderPossibleTileSpot(x, y, possibleTiles[x][y]);
+                        }
+                    }
+                }
+            },
+
+            // Displays a possible spot in a given location (+ adds JS handlers)
+            renderPossibleTileSpot: function(x, y, angles) {
+
+                var position_top = (this.tile_height + this.margin) * y / 2 - this.tile_height / 2;
+                var position_left = x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+
+                dojo.place(this.format_block('jstpl_possible_spot', {
+                    tile_type: 'possibleSpot',
+                    x: x,
+                    y: y,
+                    top: position_top,
+                    left: position_left,
+                    angles: angles,
+                }), document.getElementById('map_scrollable_oversurface'));
+
+                this.connect($('possible_spot_' + x + '_' + y), 'onclick', 'onClickPossibleTileSpot');
+                //TODO: add onClick handler
+            },
+
+            // Destroys possible spots
+            destroyPossibleTileSpots: function() {
+                dojo.query('.trl_tile_possibleSpot').forEach(dojo.destroy);
+            },
+
+            ///////////////////////////////////////////////////
+            //// Reaction to cometD notifications
+
+            // Setup notifications
+            setupNotifications: function() {
+                console.log('notifications subscriptions setup');
+
+                // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
+                // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
+                //
+            },
+        });
+    });

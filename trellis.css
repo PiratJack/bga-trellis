@@ -1,0 +1,191 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * TrellisPiratJack implementation : © Jacques de Metz <demetz.jacques@gmail.com>.
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ */
+
+
+/****************** Scrollmap ******************/
+
+/** Scrollable area **/
+
+#map_container {
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+    height: 400px;
+}
+
+#map_scrollable,
+#map_scrollable_oversurface {
+    position: absolute;
+}
+
+#map_surface {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    cursor: move;
+}
+
+/** This is some extra stuff to extend the container **/
+
+#map_footer {
+    text-align: center;
+}
+
+/** Move arrows **/
+
+.movetop,
+.moveleft,
+.moveright,
+.movedown {
+    display: block;
+    position: absolute;
+    background-image: url('../../../img/common/arrows.png');
+    width: 32px;
+    height: 32px;
+}
+
+.movetop {
+    top: 0px;
+    left: calc(50% - 16px);
+    background-position: 0px 32px;
+}
+
+.moveleft {
+    top: calc(50% - 16px);
+    left: 0px;
+    background-position: 32px 0px;
+}
+
+.moveright {
+    top: calc(50% - 16px);
+    right: 0px;
+    background-position: 0px 0px;
+}
+
+.movedown {
+    bottom: 0px;
+    left: calc(50% - 16px);
+    background-position: 32px 32px;
+}
+
+
+
+/****************** Tiles ******************/
+
+/*** Sizes & positons ***/
+#map_container {
+    --tile_width: 314px;
+    --tile_margin: 4px;
+}
+
+#map_container .trl_tile {
+    position: absolute;
+}
+
+.trl_tile {
+    width: var(--tile_width);
+    height: calc(var(--tile_width) * 0.866);
+}
+
+.trl_tile div {
+    display: inline-block;
+    width: calc(var(--tile_width) * 0.5);
+    height: calc(var(--tile_width) * 0.866);
+
+    /*border-top: 1px black solid;
+    border-bottom: 1px black solid;*/
+
+    margin-left: calc(var(--tile_width) * 0.25);
+}
+
+
+.trl_tile div:before,
+.trl_tile div:after {
+    content: "";
+    margin: 0;
+    display: block;
+    position: relative;
+    width: inherit;
+    height: inherit;
+
+    border: inherit;
+}
+
+.trl_tile div:before {
+    transform: rotate(60deg);
+    margin-top: -1px;
+}
+
+.trl_tile div:after {
+    transform: rotate(-60deg);
+    margin-top: calc(var(--tile_width) * -0.866 - 2px);
+}
+
+/*** Actual tiles ***/
+
+.trl_tile_actualTile {
+    background-image: url(img/tiles.png);
+    background-size: 500% 100%;
+}
+
+.trl_tile_actualTile.selected div,
+.trl_tile_actualTile.selected div:before,
+.trl_tile_actualTile.selected div:after {
+    border-top: red solid 2px;
+    border-bottom: red solid 2px;
+}
+
+/*** Vacant spots ***/
+.trl_tile_possibleSpot {
+    opacity: 50%;
+}
+
+.trl_tile_possibleSpot div,
+.trl_tile_possibleSpot div:before,
+.trl_tile_possibleSpot div:after {
+    background-image: none;
+    background-color: white;
+}
+
+
+/*** Specifics for hand tiles ***/
+#trl_hand {
+    --tile_width: 150px;
+    --tile_margin: 6px;
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#trl_hand .trl_tile {
+    display: inline-block;
+
+    margin-left: var(--tile_margin);
+}
+
+
+
+#trl_hand .trl_tile div {
+    /* Not needed because "left" is not defined */
+    margin-left: 0;
+}
+
+
+/****************** My hand ******************/
+
+#trl_hand {
+    /* The "*5" gives additional space for borders when tiles are selected */
+    width: calc((var(--tile_width) + var(--tile_margin)) * 5);
+    text-align: center;
+
+}
