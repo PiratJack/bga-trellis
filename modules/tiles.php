@@ -156,6 +156,7 @@ trait TilesTrait {
     }
 
     // Moves some tiles to a location
+    // Default for $target: 'location' => 'deck', 'x' => 0, 'y' => 0, 'location_order' => 0, 'angle' => 0
     private function moveTilesToLocation($tiles, $target) {
         // $tiles can be the ID of a single tile
         if (is_string($tiles))
@@ -164,7 +165,7 @@ trait TilesTrait {
         }
 
         // $tiles can be an array of tile 'objects'
-        if (array_key_exists('tile_id', reset($tiles)))
+        elseif (array_key_exists('tile_id', reset($tiles)))
         {
             $tiles = array_map(function ($v) {
                 return $v['tile_id'];
@@ -187,7 +188,7 @@ trait TilesTrait {
 
         foreach ($params as $source => $target)
         {
-            $sql = str_replace($sql, '${' . $source . '}', $target);
+            $sql = str_replace('${' . $source . '}', $target, $sql);
         }
 
         self::DbQuery($sql);

@@ -9,6 +9,25 @@
  */
 
 
+/****************** Dimensions ******************/
+#map_container {
+    width: 100%;
+    height: 600px;
+}
+
+/*** Sizes & positons ***/
+#map_container {
+    --tile_width: 314px;
+    --tile_margin: 4px;
+}
+
+#trl_hand {
+    --tile_width: 150px;
+    --tile_margin: 6px;
+}
+
+
+
 /****************** Scrollmap ******************/
 
 /** Scrollable area **/
@@ -16,9 +35,6 @@
 #map_container {
     position: relative;
     overflow: hidden;
-
-    width: 100%;
-    height: 400px;
 }
 
 #map_scrollable,
@@ -81,12 +97,6 @@
 
 
 /****************** Tiles ******************/
-
-/*** Sizes & positons ***/
-#map_container {
-    --tile_width: 314px;
-    --tile_margin: 4px;
-}
 
 #map_container .trl_tile {
     position: absolute;
@@ -182,9 +192,6 @@
 /****************** My hand ******************/
 
 #trl_hand {
-    --tile_width: 150px;
-    --tile_margin: 6px;
-
     margin-left: auto;
     margin-right: auto;
 

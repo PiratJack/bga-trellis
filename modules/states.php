@@ -27,9 +27,71 @@ trait StatesTrait {
     }
 
     // The player plants a tile
-    public function actPlant($x, $y, $angle) {
-        //TODO: states > actPlant
+    public function actPlant($tile_id, $x, $y, $angle) {
+        // User allowed to do this?
+        $this->checkAction('plant');
 
+        // Check tile exists & nothing was tampered with
+        $tile = $this->getTiles(['tile_id' => $tile_id]);
+        if (count($tile) != 1)
+        {
+            throw new BgaVisibleSystemException(_('This tile does not exist'));
+        }
+
+
+        // Check tile is the player's one
+        if ($tile[$tile_id]['location'] != $this->getCurrentPlayerId())
+        {
+            throw new \BgaUserException(_('This tile is not in your hand'));
+        }
+        $possible_spots = $this->getPossibleTileSpots($tile);
+
+        $tile = $tile[$tile_id];
+
+        // Check tile can be placed there, with that angle
+        if (!array_key_exists($tile['tile_id'], $possible_spots))
+        {
+            throw new \BgaUserException(_('This tile can\'t be placed here'));
+        }
+        if (!array_key_exists($x, $possible_spots[$tile['tile_id']]))
+        {
+            throw new \BgaUserException(_('This tile can\'t be placed here'));
+        }
+        if (!array_key_exists($y, $possible_spots[$tile['tile_id']][$x]))
+        {
+            throw new \BgaUserException(_('This tile can\'t be placed here'));
+        }
+        if (!in_array($angle, $possible_spots[$tile['tile_id']][$x][$y]))
+        {
+            throw new \BgaUserException(_('This tile can\'t be placed with that angle'));
+        }
+
+        // No need to check if target is empty - this is done through getPossibleTileSpots
+
+        // Place the tile there
+        $target = [
+            'location' => 'board',
+            'x' => $x,
+            'y' => $y,
+            'location_order' => 0,
+            'angle' => $angle,
+        ];
+
+        $this->moveTilesToLocation($tile['tile_id'], $target);
+        $tile = $target + $tile;
+
+        self::notifyAllPlayers(
+            'playTileToBoard',
+            clienttranslate('${player_name} plays a tile to the table'),
+            [
+                'player_id' => $this->getCurrentPlayerId(),
+                'player_name' => self::getActivePlayerName(),
+                'target' => $target,
+                'tile' => $tile,
+            ]
+        );
+
+        $this->gamestate->nextState('');
         // Transition: blank
     }
 

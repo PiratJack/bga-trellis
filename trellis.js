@@ -66,8 +66,8 @@ define([
                         if (this.isCurrentPlayerActive()) {
                             this.possibleTileSpots = args.args._private.possibleTileSpots;
                             for (i in this.possibleTileSpots) {
-                                dojo.query('#tile_' + i + ' .hexagon').connect('onclick', this, 'onClickHandTile');
-                                dojo.query('#tile_' + i).addClass('clickable');
+                                dojo.query('#hand_tile_' + i + ' .hexagon').connect('onclick', this, 'onClickHandTile');
+                                dojo.query('#hand_tile_' + i).addClass('clickable');
                             }
                         }
                         break;
@@ -78,15 +78,26 @@ define([
             //                 You can use this method to perform some user interface changes at this moment.
             //
             onLeavingState: function(stateName) {
-                this.destroyPossibleTileSpots();
-                dojo.query('.selected').removeClass('selected');
-                dojo.query('.clickable').removeClass('clickable');
+                switch (stateName) {
+                    case 'plant':
+                        this.destroyPossibleTileSpots();
+                        this.destroyTentativeTiles();
+                        dojo.query('.selected').removeClass('selected');
+                        dojo.query('.clickable').removeClass('clickable');
+                        break;
+                }
             },
 
             // Action buttons on the top bar
             onUpdateActionButtons: function(stateName, args) {
                 if (this.isCurrentPlayerActive()) {
-                    switch (stateName) {}
+                    switch (stateName) {
+                        case 'plant':
+                            this.addActionButton('confirm_tile_placement', _('Confirm'), 'onConfirmPlacement');
+                            dojo.addClass('confirm_tile_placement', 'disabled');
+                            break;
+
+                    }
                     //TODO: 'plant' => Add buttons to confirm selection
                 }
             },
@@ -104,6 +115,7 @@ define([
                 dojo.query('#trl_hand_tiles .selected').removeClass('selected');
                 this.destroyPossibleTileSpots();
                 this.destroyTentativeTiles();
+                dojo.addClass('confirm_tile_placement', 'disabled');
 
                 if (!wasSelected) {
                     dojo.addClass(clickedTile, 'selected');
@@ -150,6 +162,8 @@ define([
                 position.angle = this.possibleTileSpots[tile_id][position.x][position.y][0];
 
                 this.renderTentativeTile(position);
+
+                dojo.removeClass('confirm_tile_placement', 'disabled');
             },
 
             // Rotate a tile after placing it
@@ -157,20 +171,20 @@ define([
                 var clickedArrow = evt.currentTarget;
                 var selectedSpot = evt.currentTarget.parentNode.parentNode;
                 var selectedTile = dojo.query('.trl_tile_actualTile.selected')[0];
-                var selectedTentativeTile = dojo.query('#map_scrollable #' + selectedTile.id)[0];
+                var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
-                var currentAngle = selectedTentativeTile.dataset.angle;
+                var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
 
                 var possibleAngles = selectedSpot.dataset.angles.split(',');
 
                 if (clickedArrow.dataset.direction > 0) {
-                    var temp = possibleAngles.filter(angle => angle > currentAngle);
+                    var temp = possibleAngles.filter(angle => parseInt(angle) > currentAngle);
                     if (temp.length == 0)
                         temp = possibleAngles;
 
                     var newAngle = Math.min(...temp);
                 } else {
-                    var temp = possibleAngles.filter(angle => angle < currentAngle);
+                    var temp = possibleAngles.filter(angle => parseInt(angle) < currentAngle);
                     if (temp.length == 0)
                         temp = possibleAngles;
 
@@ -179,6 +193,25 @@ define([
 
                 selectedTentativeTile.dataset.angle = newAngle;
                 selectedTentativeTile.style.transform = 'rotate(' + newAngle + 'deg)';
+            },
+
+            // Confirm button for planting tiles
+            onConfirmPlacement: function(evt) {
+                if (!this.checkAction('plant'))
+                    return
+
+                var selectedTile = dojo.query('.trl_tile_actualTile.selected')[0];
+                var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
+
+
+                this.ajaxcall('/trellis/trellis/plant.html', {
+                    tile_id: selectedTile.dataset.id,
+                    x: selectedPosition.dataset.x,
+                    y: selectedPosition.dataset.y,
+                    angle: selectedPosition.dataset.angle,
+                    lock: true
+                }, this, function(result) {});
+
             },
 
 
@@ -202,6 +235,7 @@ define([
                     var position_left = tile.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
 
                     return dojo.place(this.format_block('jstpl_tile', {
+                        div_id: 'board_tile_' + tile.tile_id,
                         id: tile.tile_id,
                         x: tile.x,
                         y: tile.y,
@@ -213,6 +247,7 @@ define([
                     }), document.getElementById('map_scrollable'));
                 } else {
                     return dojo.place(this.format_block('jstpl_tile', {
+                        div_id: 'hand_tile_' + tile.tile_id,
                         id: tile.tile_id,
                         x: 0,
                         y: 0,
@@ -304,9 +339,17 @@ define([
             setupNotifications: function() {
                 console.log('notifications subscriptions setup');
 
-                // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-                // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-                //
+                dojo.subscribe('playTileToBoard', this, "notif_playTileToBoard");
             },
+
+            notif_playTileToBoard: function(args) {
+                if (this.isCurrentPlayerActive()) {
+                    var hand_tile_div_id = 'hand_tile_' + args.args.tile.tile_id;
+                    this.fadeOutAndDestroy(hand_tile_div_id);
+                } else
+                    this.tiles[args.args.tile.tile_id] = args.args.tile;
+
+                this.renderTile(args.args.tile);
+            }
         });
     });

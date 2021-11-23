@@ -28,11 +28,24 @@
       public function plant() {
           self::setAjaxMode();
 
+          $tile_id = self::getArg("tile_id", AT_posint, true);
           $x = self::getArg("x", AT_int, true);
           $y = self::getArg("y", AT_int, true);
           $angle = self::getArg("angle", AT_posint, true);
 
-          $this->game->actPlant($x, $y, $angle);
+          $this->game->actPlant($tile_id, $x, $y, $angle);
+
+          self::ajaxResponse();
+      }
+
+      public function plantChooseBloom() {
+          self::setAjaxMode();
+
+          $x = self::getArg("x", AT_int, true);
+          $y = self::getArg("y", AT_int, true);
+          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottom', 'bottomleft', 'bottomright']);
+
+          $this->game->actPlantChooseBloom($x, $y, $position);
 
           self::ajaxResponse();
       }
@@ -49,19 +62,7 @@
           self::ajaxResponse();
       }
 
-      public function choosePlantBloom() {
-          self::setAjaxMode();
-
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottom', 'bottomleft', 'bottomright']);
-
-          $this->game->actPlantChooseBloom($x, $y, $position);
-
-          self::ajaxResponse();
-      }
-
-      public function chooseClaimBloom() {
+      public function claimChooseBloom() {
           self::setAjaxMode();
 
           $x = self::getArg("x", AT_int, true);
@@ -73,7 +74,7 @@
           self::ajaxResponse();
       }
 
-      public function chooseGiftBloom() {
+      public function claimGiftChooseBloom() {
           self::setAjaxMode();
 
           $x = self::getArg("x", AT_int, true);
