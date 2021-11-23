@@ -97,7 +97,7 @@
     height: calc(var(--tile_width) * 0.866);
 }
 
-.trl_tile div {
+.trl_tile .hexagon {
     display: inline-block;
     width: calc(var(--tile_width) * 0.5);
     height: calc(var(--tile_width) * 0.866);
@@ -109,8 +109,8 @@
 }
 
 
-.trl_tile div:before,
-.trl_tile div:after {
+.trl_tile .hexagon:before,
+.trl_tile .hexagon:after {
     content: "";
     margin: 0;
     display: block;
@@ -121,12 +121,12 @@
     border: inherit;
 }
 
-.trl_tile div:before {
+.trl_tile .hexagon:before {
     transform: rotate(60deg);
     margin-top: -1px;
 }
 
-.trl_tile div:after {
+.trl_tile .hexagon:after {
     transform: rotate(-60deg);
     margin-top: calc(var(--tile_width) * -0.866 - 2px);
 }
@@ -138,9 +138,9 @@
     background-size: 500% 100%;
 }
 
-.trl_tile_actualTile.selected div,
-.trl_tile_actualTile.selected div:before,
-.trl_tile_actualTile.selected div:after {
+.trl_tile_actualTile.selected .hexagon,
+.trl_tile_actualTile.selected .hexagon:before,
+.trl_tile_actualTile.selected .hexagon:after {
     border-top: red solid 2px;
     border-bottom: red solid 2px;
 }
@@ -150,21 +150,47 @@
     opacity: 50%;
 }
 
-.trl_tile_possibleSpot div,
-.trl_tile_possibleSpot div:before,
-.trl_tile_possibleSpot div:after {
+.trl_tile_possibleSpot .hexagon,
+.trl_tile_possibleSpot .hexagon:before,
+.trl_tile_possibleSpot .hexagon:after {
     background-image: none;
     background-color: white;
 }
 
 
-/*** Specifics for hand tiles ***/
+
+
+/*** Rotating arrows ***/
+
+#trl_tile_rotate {
+    position: absolute;
+    font-size: calc(var(--tile_width) / 6);
+    width: calc(var(--tile_width) / 2);
+    top: 0;
+    left: calc(var(--tile_width) / 4);
+    text-align: center;
+}
+
+#trl_tile_rotate div {
+    display: inline-block;
+}
+
+#trl_tile_rotate_clockwise {
+    margin-left: calc(var(--tile_width) / 6);
+}
+
+/****************** My hand ******************/
+
 #trl_hand {
     --tile_width: 150px;
     --tile_margin: 6px;
 
     margin-left: auto;
     margin-right: auto;
+
+    /* The "*5" gives additional space for borders when tiles are selected */
+    width: calc((var(--tile_width) + var(--tile_margin)) * 5);
+    text-align: center;
 }
 
 #trl_hand .trl_tile {
@@ -173,19 +199,20 @@
     margin-left: var(--tile_margin);
 }
 
-
-
 #trl_hand .trl_tile div {
     /* Not needed because "left" is not defined */
     margin-left: 0;
 }
 
 
-/****************** My hand ******************/
+.clickable {
+    pointer-events: none;
+}
 
-#trl_hand {
-    /* The "*5" gives additional space for borders when tiles are selected */
-    width: calc((var(--tile_width) + var(--tile_margin)) * 5);
-    text-align: center;
+.clickable>* {
+    pointer-events: initial;
+}
 
+.clickable div {
+    cursor: pointer;
 }

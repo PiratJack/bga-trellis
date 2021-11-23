@@ -66,10 +66,9 @@ define([
                         if (this.isCurrentPlayerActive()) {
                             this.possibleTileSpots = args.args._private.possibleTileSpots;
                             for (i in this.possibleTileSpots) {
-                                this.connect($('tile_' + i), 'onclick', 'onClickHandTile');
+                                dojo.query('#tile_' + i + ' .hexagon').connect('onclick', this, 'onClickHandTile');
+                                dojo.query('#tile_' + i).addClass('clickable');
                             }
-                        } else {
-                            this.destroyPossibleTileSpots();
                         }
                         break;
                 }
@@ -78,7 +77,11 @@ define([
             // onLeavingState: this method is called each time we are leaving a game state.
             //                 You can use this method to perform some user interface changes at this moment.
             //
-            onLeavingState: function(stateName) {},
+            onLeavingState: function(stateName) {
+                this.destroyPossibleTileSpots();
+                dojo.query('.selected').removeClass('selected');
+                dojo.query('.clickable').removeClass('clickable');
+            },
 
             // Action buttons on the top bar
             onUpdateActionButtons: function(stateName, args) {
@@ -93,14 +96,14 @@ define([
 
             // Stores clicked tile + displays relevant spots
             onClickHandTile: function(evt) {
-                var clickedTile = evt.currentTarget;
+                var clickedTile = evt.currentTarget.parentNode;
                 var tileId = clickedTile.dataset.id;
                 var wasSelected = dojo.hasClass(clickedTile, 'selected');
 
                 // Clear up everything from previous steps
-                dojo.query('#trl_hand_tiles .trl_tile').removeClass('selected');
+                dojo.query('#trl_hand_tiles .selected').removeClass('selected');
                 this.destroyPossibleTileSpots();
-                //TODO: destroy the arrows for rotation
+                this.destroyTentativeTiles();
 
                 if (!wasSelected) {
                     dojo.addClass(clickedTile, 'selected');
@@ -110,46 +113,72 @@ define([
 
             // Display tile on spot + allow to rotate
             onClickPossibleTileSpot: function(evt) {
-                var clickedSpot = evt.currentTarget;
+                var clickedSpot = evt.currentTarget.parentNode;
 
+                // Get the selected tile (will need its ID later)
                 var selectedTile = dojo.query('.trl_tile_actualTile.selected');
-                if (selectedTile === null) {
-                    this.showMessage(_('Please choose a tile first'));
+                if (selectedTile.length == 0) {
+                    this.showMessage(_('Please choose a tile first'), 'error');
                     return;
                 }
-                dojo.query('#map_scrollable #' + selectedTile[0].id).forEach(dojo.destroy);
+                // Destroy other elements
+                this.destroyTentativeTiles();
 
-                var tileId = selectedTile[0].dataset.id;
-                if (this.possibleTileSpots[tileId] === null) {
-                    this.showMessage(_('This spot is not possible'));
-                    return
-                }
-                var spot_x = clickedSpot.dataset.x;
-                if (this.possibleTileSpots[tileId][spot_x] === null) {
-                    this.showMessage(_('This spot is not possible'));
-                    return
-                }
-                var spot_y = clickedSpot.dataset.y;
-                if (this.possibleTileSpots[tileId][spot_x][spot_y] === null) {
-                    this.showMessage(_('This spot is not possible'));
-                    return
-                }
+                var tile_id = selectedTile[0].dataset.id;
 
-                var angles = this.possibleTileSpots[tileId][spot_x][spot_y];
-
-                // Rotate the tile to one of the possible angles
-                var newTileInfos = {
-                    angle: angles[0],
+                var position = {
+                    tile_id: tile_id,
+                    x: clickedSpot.dataset.x,
+                    y: clickedSpot.dataset.y,
                     location: 'board',
-                    x: spot_x,
-                    y: spot_y,
                 }
-                var newTile = Object.assign(this.tiles[tileId], newTileInfos);
-                this.renderTile(newTile);
 
 
-                //TODO: Display rotating buttons
-                //TODO: Allow to confirm
+                if (typeof this.possibleTileSpots[tile_id] == 'undefined') {
+                    this.showMessage(_('This spot is not possible'), 'error');
+                    return
+                }
+                if (typeof this.possibleTileSpots[tile_id][position.x] == 'undefined') {
+                    this.showMessage(_('This spot is not possible'), 'error');
+                    return
+                }
+                if (typeof this.possibleTileSpots[tile_id][position.x][position.y] == 'undefined') {
+                    this.showMessage(_('This spot is not possible'), 'error');
+                    return
+                }
+
+                position.angle = this.possibleTileSpots[tile_id][position.x][position.y][0];
+
+                this.renderTentativeTile(position);
+            },
+
+            // Rotate a tile after placing it
+            onClickRotateTile: function(evt) {
+                var clickedArrow = evt.currentTarget;
+                var selectedSpot = evt.currentTarget.parentNode.parentNode;
+                var selectedTile = dojo.query('.trl_tile_actualTile.selected')[0];
+                var selectedTentativeTile = dojo.query('#map_scrollable #' + selectedTile.id)[0];
+
+                var currentAngle = selectedTentativeTile.dataset.angle;
+
+                var possibleAngles = selectedSpot.dataset.angles.split(',');
+
+                if (clickedArrow.dataset.direction > 0) {
+                    var temp = possibleAngles.filter(angle => angle > currentAngle);
+                    if (temp.length == 0)
+                        temp = possibleAngles;
+
+                    var newAngle = Math.min(...temp);
+                } else {
+                    var temp = possibleAngles.filter(angle => angle < currentAngle);
+                    if (temp.length == 0)
+                        temp = possibleAngles;
+
+                    var newAngle = Math.max(...temp);
+                }
+
+                selectedTentativeTile.dataset.angle = newAngle;
+                selectedTentativeTile.style.transform = 'rotate(' + newAngle + 'deg)';
             },
 
 
@@ -172,7 +201,7 @@ define([
                     var position_top = (this.tile_height + this.margin) * tile.y / 2 - this.tile_height / 2;
                     var position_left = tile.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
 
-                    dojo.place(this.format_block('jstpl_tile', {
+                    return dojo.place(this.format_block('jstpl_tile', {
                         id: tile.tile_id,
                         x: tile.x,
                         y: tile.y,
@@ -183,7 +212,7 @@ define([
                         angle: tile.angle,
                     }), document.getElementById('map_scrollable'));
                 } else {
-                    dojo.place(this.format_block('jstpl_tile', {
+                    return dojo.place(this.format_block('jstpl_tile', {
                         id: tile.tile_id,
                         x: 0,
                         y: 0,
@@ -194,6 +223,34 @@ define([
                         angle: 0,
                     }), document.getElementById('trl_hand_tiles'));
                 }
+            },
+
+            // Renders a tile in a tentative position
+            renderTentativeTile: function(position) {
+                // Rotate the tile to the first possible angles
+                var newTileData = Object.assign(this.tiles[position.tile_id], position);
+                var newTile = this.renderTile(newTileData);
+                dojo.addClass(newTile, 'tentative');
+
+                // Display arrows to rotate
+                this.destroyRotatingArrows();
+                this.renderRotatingArrows(position);
+            },
+
+            // Renders the arrows to rotate tiles
+            renderRotatingArrows: function(spot) {
+                var position_top = (this.tile_height + this.margin) * spot.y / 2 - this.tile_height / 2;
+                var position_left = spot.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+
+                var element = dojo.place(this.format_block('jstpl_rotation_arrows', {
+                    x: spot.x,
+                    y: spot.y,
+                    top: 0,
+                    left: 0,
+                }), document.getElementById('possible_spot_' + spot.x + '_' + spot.y));
+
+                dojo.connect($('trl_tile_rotate_counterclockwise'), 'onclick', this, 'onClickRotateTile');
+                dojo.connect($('trl_tile_rotate_clockwise'), 'onclick', this, 'onClickRotateTile');
             },
 
             // Displays the possible spots (as white areas)
@@ -209,7 +266,6 @@ define([
 
             // Displays a possible spot in a given location (+ adds JS handlers)
             renderPossibleTileSpot: function(x, y, angles) {
-
                 var position_top = (this.tile_height + this.margin) * y / 2 - this.tile_height / 2;
                 var position_left = x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
 
@@ -222,13 +278,23 @@ define([
                     angles: angles,
                 }), document.getElementById('map_scrollable_oversurface'));
 
-                this.connect($('possible_spot_' + x + '_' + y), 'onclick', 'onClickPossibleTileSpot');
-                //TODO: add onClick handler
+                dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
             },
 
             // Destroys possible spots
             destroyPossibleTileSpots: function() {
                 dojo.query('.trl_tile_possibleSpot').forEach(dojo.destroy);
+                this.destroyRotatingArrows();
+            },
+
+            // Destroys possible spots
+            destroyRotatingArrows: function() {
+                dojo.query('#trl_tile_rotate').forEach(dojo.destroy);
+            },
+
+            // Destroys possible spots
+            destroyTentativeTiles: function() {
+                dojo.query('.tentative').forEach(dojo.destroy);
             },
 
             ///////////////////////////////////////////////////
