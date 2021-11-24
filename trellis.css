@@ -211,15 +211,6 @@
     margin-left: 0;
 }
 
-
 .clickable {
-    pointer-events: none;
-}
-
-.clickable>* {
-    pointer-events: initial;
-}
-
-.clickable div {
     cursor: pointer;
 }

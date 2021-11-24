@@ -65,10 +65,8 @@ define([
                         // Can player select a card?
                         if (this.isCurrentPlayerActive()) {
                             this.possibleTileSpots = args.args._private.possibleTileSpots;
-                            for (i in this.possibleTileSpots) {
-                                dojo.query('#hand_tile_' + i + ' .hexagon').connect('onclick', this, 'onClickHandTile');
-                                dojo.query('#hand_tile_' + i).addClass('clickable');
-                            }
+                            dojo.query('#trl_hand_tiles .hexagon').connect('onclick', this, 'onClickHandTile');
+                            dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
                         }
                         break;
                 }
@@ -119,7 +117,7 @@ define([
 
                 if (!wasSelected) {
                     dojo.addClass(clickedTile, 'selected');
-                    this.displayPossibleTileSpots(this.possibleTileSpots[tileId]);
+                    this.displayPossibleTileSpots(this.possibleTileSpots);
                 }
             },
 
@@ -143,23 +141,16 @@ define([
                     x: clickedSpot.dataset.x,
                     y: clickedSpot.dataset.y,
                     location: 'board',
+                    angle: 0,
                 }
 
-
-                if (typeof this.possibleTileSpots[tile_id] == 'undefined') {
+                if (!{
+                        x: position.x,
+                        y: position.y
+                    } in this.possibleTileSpots) {
                     this.showMessage(_('This spot is not possible'), 'error');
                     return
                 }
-                if (typeof this.possibleTileSpots[tile_id][position.x] == 'undefined') {
-                    this.showMessage(_('This spot is not possible'), 'error');
-                    return
-                }
-                if (typeof this.possibleTileSpots[tile_id][position.x][position.y] == 'undefined') {
-                    this.showMessage(_('This spot is not possible'), 'error');
-                    return
-                }
-
-                position.angle = this.possibleTileSpots[tile_id][position.x][position.y][0];
 
                 this.renderTentativeTile(position);
 
@@ -174,22 +165,7 @@ define([
                 var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
                 var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
-
-                var possibleAngles = selectedSpot.dataset.angles.split(',');
-
-                if (clickedArrow.dataset.direction > 0) {
-                    var temp = possibleAngles.filter(angle => parseInt(angle) > currentAngle);
-                    if (temp.length == 0)
-                        temp = possibleAngles;
-
-                    var newAngle = Math.min(...temp);
-                } else {
-                    var temp = possibleAngles.filter(angle => parseInt(angle) < currentAngle);
-                    if (temp.length == 0)
-                        temp = possibleAngles;
-
-                    var newAngle = Math.max(...temp);
-                }
+                var newAngle = (currentAngle + 60 * clickedArrow.dataset.direction) % 360;
 
                 selectedTentativeTile.dataset.angle = newAngle;
                 selectedTentativeTile.style.transform = 'rotate(' + newAngle + 'deg)';
@@ -262,7 +238,6 @@ define([
 
             // Renders a tile in a tentative position
             renderTentativeTile: function(position) {
-                // Rotate the tile to the first possible angles
                 var newTileData = Object.assign(this.tiles[position.tile_id], position);
                 var newTile = this.renderTile(newTileData);
                 dojo.addClass(newTile, 'tentative');
@@ -290,17 +265,17 @@ define([
 
             // Displays the possible spots (as white areas)
             displayPossibleTileSpots: function(possibleTiles) {
-                for (x in possibleTiles) {
-                    for (y in possibleTiles[x]) {
-                        if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
-                            this.renderPossibleTileSpot(x, y, possibleTiles[x][y]);
-                        }
+                for (i in possibleTiles) {
+                    var x = possibleTiles[i].x;
+                    var y = possibleTiles[i].y;
+                    if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
+                        this.renderPossibleTileSpot(x, y);
                     }
                 }
             },
 
             // Displays a possible spot in a given location (+ adds JS handlers)
-            renderPossibleTileSpot: function(x, y, angles) {
+            renderPossibleTileSpot: function(x, y) {
                 var position_top = (this.tile_height + this.margin) * y / 2 - this.tile_height / 2;
                 var position_left = x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
 
@@ -310,7 +285,6 @@ define([
                     y: y,
                     top: position_top,
                     left: position_left,
-                    angles: angles,
                 }), document.getElementById('map_scrollable_oversurface'));
 
                 dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
@@ -344,12 +318,20 @@ define([
 
             notif_playTileToBoard: function(args) {
                 if (this.isCurrentPlayerActive()) {
+                    // Remove from hand, display on board
                     var hand_tile_div_id = 'hand_tile_' + args.args.tile.tile_id;
                     this.fadeOutAndDestroy(hand_tile_div_id);
-                } else
+                    this.renderTile(args.args.tile);
+                } else {
+                    // Display on board, with fading so the player sees what happens
                     this.tiles[args.args.tile.tile_id] = args.args.tile;
 
-                this.renderTile(args.args.tile);
+                    var newTile = this.renderTile(args.args.tile);
+                    dojo.style(newTile, 'opacity', 0);
+                    dojo.fadeIn({
+                        node: newTile
+                    }).play();
+                }
             }
         });
     });

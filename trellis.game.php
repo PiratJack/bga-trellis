@@ -27,6 +27,7 @@ class TrellisPiratJack extends Table {
         parent::__construct();
 
         self::initGameStateLabels([
+            'last_tile_planted' => 10,
         ]);
     }
 
@@ -41,6 +42,8 @@ class TrellisPiratJack extends Table {
         $this->flowers_setupNewGame($players, $options);
 
         self::reloadPlayersBasicInfos();
+
+        self::setGameStateInitialValue('last_tile_planted', 0);
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();

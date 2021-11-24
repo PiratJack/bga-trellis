@@ -34,13 +34,7 @@ trait TilesTrait {
     }
 
     // Determines where a tile can be placed, and in which orientation (if empty, will use the player's tiles)
-    private function getPossibleTileSpots($player_tiles = []) {
-        // Get tiles if not provided
-        if ($player_tiles == [])
-        {
-            $player_tiles = $this->getTilesFromLocation(self::getActivePlayerId());
-        }
-
+    private function getPossibleTileSpots() {
         // Find all spots near existing tiles
         $spots = [];
         $board_tiles = $this->getTilesFromLocation('board');
@@ -57,7 +51,10 @@ trait TilesTrait {
                 }))[0];
                 $neighbor_direction = (180 + $angle) % 360;
 
-                $spots[] = ['x' => $neighbor_x, 'y' => $neighbor_y, 'color' => $color, 'direction' => $neighbor_direction];
+                if (!in_array(['x' => $neighbor_x, 'y' => $neighbor_y], $spots))
+                {
+                    $spots[] = ['x' => $neighbor_x, 'y' => $neighbor_y];
+                }
             }
         }
 
@@ -69,60 +66,7 @@ trait TilesTrait {
             });
         }
 
-        // Map player tiles to the available spots
-        $spots_oriented = [];
-        foreach ($player_tiles as $tile_id => $player_tile)
-        {
-            $tile_type = $this->tile_types[$player_tile['tile_type']];
-
-            // Filter spots by color
-            $spots_color = array_filter($spots, function ($spot) use ($tile_type) {
-                if (!array_key_exists($spot['color'], $tile_type['vines']))
-                {
-                    return false;
-                }
-                return true;
-            });
-
-            if ($spots_color == [])
-            {
-                continue 1;
-            }
-
-            $spots_oriented[$tile_id] = [];
-
-            // Filter with angles
-            foreach ($spots_color as $spot)
-            {
-                $vine_directions = $tile_type['vines'][$spot['color']];
-
-                for ($angle = 0; $angle < 360; $angle += 60)
-                {
-                    // Rotate the tile
-                    $vine_directions_rotated = array_map(function ($dir) use ($angle) {
-                        return ($dir + $angle) % 360;
-                    }, $vine_directions);
-                    // This angle is possible
-                    if (in_array($spot['direction'], $vine_directions_rotated))
-                    {
-                        if (!array_key_exists($spot['x'], $spots_oriented[$tile_id]))
-                        {
-                            $spots_oriented[$tile_id][$spot['x']] = [];
-                        }
-                        if (!array_key_exists($spot['y'], $spots_oriented[$tile_id][$spot['x']]))
-                        {
-                            $spots_oriented[$tile_id][$spot['x']][$spot['y']] = [];
-                        }
-
-                        $spots_oriented[$tile_id][$spot['x']][$spot['y']][] = $angle;
-                    }
-                }
-                $spots_oriented[$tile_id][$spot['x']][$spot['y']] = array_unique($spots_oriented[$tile_id][$spot['x']][$spot['y']]);
-            }
-        }
-
-        // Structure: tile_id => x => y => possible angles
-        return $spots_oriented;
+        return $spots;
     }
 
     // Rotates a tile
@@ -158,19 +102,15 @@ trait TilesTrait {
     // Moves some tiles to a location
     // Default for $target: 'location' => 'deck', 'x' => 0, 'y' => 0, 'location_order' => 0, 'angle' => 0
     private function moveTilesToLocation($tiles, $target) {
-        // $tiles can be the ID of a single tile
-        if (is_string($tiles))
+        // $tiles can be the ID of a single tile, or an array of tile IDs
+        if (!is_array($tiles) || !array_key_exists('tile_id', reset($tiles)))
         {
-            $tiles = [$tiles];
+            $tiles = $this->getTiles(['tile_id' => $tiles]);
         }
 
-        // $tiles can be an array of tile 'objects'
-        elseif (array_key_exists('tile_id', reset($tiles)))
-        {
-            $tiles = array_map(function ($v) {
-                return $v['tile_id'];
-            }, $tiles);
-        }
+        $tile_ids = array_map(function ($v) {
+            return $v['tile_id'];
+        }, $tiles);
 
         // Setup the target & parameters
         $default_target = [
@@ -181,7 +121,7 @@ trait TilesTrait {
             'angle' => 0,
         ];
         $params = array_merge($default_target, $target);
-        $params['tiles_id'] = implode(', ', $tiles);
+        $params['tiles_id'] = implode(', ', $tile_ids);
 
         // Generate SQL
         $sql = 'UPDATE tiles SET location = "${location}", x = ${x}, y = ${y}, location_order = ${location_order}, angle = ${angle} WHERE tile_id IN (${tiles_id})';

@@ -31,7 +31,7 @@
           $tile_id = self::getArg("tile_id", AT_posint, true);
           $x = self::getArg("x", AT_int, true);
           $y = self::getArg("y", AT_int, true);
-          $angle = self::getArg("angle", AT_posint, true);
+          $angle = self::getArg("angle", AT_enum, true, null, [0, 60, 120, 180, 240, 300]);
 
           $this->game->actPlant($tile_id, $x, $y, $angle);
 

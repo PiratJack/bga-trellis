@@ -31,9 +31,9 @@
 <script type="text/javascript">
     const jstpl_tile = '<div id="${div_id}" class="trl_tile trl_tile_actualTile" data-id="${id}" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px; background-position: ${bg_x}% ${bg_y}%; transform: rotate(${angle}deg);" data-angle="${angle}"><div class="hexagon"></div></div>';
 
-    const jstpl_possible_spot = '<div id="possible_spot_${x}_${y}" class="trl_tile trl_tile_possibleSpot clickable" data-x="${x}" data-y="${y}" data-angles="${angles}" style="top: ${top}px; left: ${left}px;"><div class="hexagon"></div></div>';
+    const jstpl_possible_spot = '<div id="possible_spot_${x}_${y}" class="trl_tile trl_tile_possibleSpot" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px;"><div class="hexagon clickable"></div></div>';
 
-    const jstpl_rotation_arrows = '<div id="trl_tile_rotate" data-x="${x}" data-y="${y}" class="clickable"><div id="trl_tile_rotate_counterclockwise" data-direction="-1">↶</div><div id="trl_tile_rotate_clockwise" data-direction="1">↷</div></div>';
+    const jstpl_rotation_arrows = '<div id="trl_tile_rotate" data-x="${x}" data-y="${y}"><div id="trl_tile_rotate_counterclockwise" data-direction="-1" class="clickable">↶</div><div id="trl_tile_rotate_clockwise" data-direction="1" class="clickable">↷</div></div>';
 </script>
 
 {OVERALL_GAME_FOOTER}

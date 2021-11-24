@@ -44,29 +44,15 @@ trait StatesTrait {
         {
             throw new \BgaUserException(_('This tile is not in your hand'));
         }
-        $possible_spots = $this->getPossibleTileSpots($tile);
+        $possible_spots = $this->getPossibleTileSpots();
 
         $tile = $tile[$tile_id];
 
-        // Check tile can be placed there, with that angle
-        if (!array_key_exists($tile['tile_id'], $possible_spots))
+        // Check this spot is available
+        if (!in_array(['x' => $x, 'y' => $y], $possible_spots))
         {
             throw new \BgaUserException(_('This tile can\'t be placed here'));
         }
-        if (!array_key_exists($x, $possible_spots[$tile['tile_id']]))
-        {
-            throw new \BgaUserException(_('This tile can\'t be placed here'));
-        }
-        if (!array_key_exists($y, $possible_spots[$tile['tile_id']][$x]))
-        {
-            throw new \BgaUserException(_('This tile can\'t be placed here'));
-        }
-        if (!in_array($angle, $possible_spots[$tile['tile_id']][$x][$y]))
-        {
-            throw new \BgaUserException(_('This tile can\'t be placed with that angle'));
-        }
-
-        // No need to check if target is empty - this is done through getPossibleTileSpots
 
         // Place the tile there
         $target = [
@@ -86,13 +72,12 @@ trait StatesTrait {
             [
                 'player_id' => $this->getCurrentPlayerId(),
                 'player_name' => self::getActivePlayerName(),
-                'target' => $target,
                 'tile' => $tile,
             ]
         );
+        $this->setGameStateValue('last_tile_planted', $tile['tile_id']);
 
         $this->gamestate->nextState('');
-        // Transition: blank
     }
 
     // Blooms flowers after player puts a vine
