@@ -60,7 +60,8 @@ $gameinfos = [
     'diplomacy' => 0,
 
     // Colors attributed to players
-    'player_colors' => [ "ffffff", "ffff50", "ff5020", "35c0a0" ],
+    'player_colors' => [ "ffffff", "f07f16", "ffa500", "008000" ],
+    // Corresponds to "white", "orange", "yellow", "green" ,
     'favorite_colors_support' => true,
 
     'disable_player_order_swap_on_rematch' => false,
