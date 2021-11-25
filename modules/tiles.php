@@ -84,8 +84,33 @@ trait TilesTrait {
     }
 
     // Get neighbors of a given tile or position
-    private function getNeighbors($tile) {
-        //TODO: Tiles > getNeighbors
+    private function getTileNeighbors($tile) {
+        $neighbors = [];
+        foreach ($this->directions as $angle => $delta)
+        {
+            $params = ['x' => $tile['x'] + $delta['x'], 'y' => $tile['y'] + $delta['y'], 'location' => 'board'];
+            $neighbor = $this->getTile($params);
+            if ($neighbor)
+            {
+                $neighbors[$neighbor['tile_id']] = $neighbor;
+            }
+        }
+        return $neighbors;
+    }
+
+    // Get the neighbor of a given tile or position in a given direction
+    // The $angle should have already been rotated
+    private function getTileNeighborByAngle($tile, $angle) {
+        $neighbors = [];
+        $delta = $this->directions[$angle];
+        $params = ['x' => $tile['x'] + $delta['x'], 'y' => $tile['y'] + $delta['y'], 'location' => 'board'];
+        $neighbor = $this->getTile($params);
+        if ($neighbor)
+        {
+            return $neighbor;
+        }
+
+        return null;
     }
 
     // Returns whether 2 tiles are a match based on their vines & orientation
@@ -199,6 +224,18 @@ trait TilesTrait {
         });
 
         return $tiles;
+    }
+
+    // Gets a single tile based on some parameters - if there are more than 1 result, returns null
+    private function getTile($params = []) {
+        $tiles = $this->getTiles($params);
+
+        if (count($tiles) != 1)
+        {
+            return null;
+        }
+
+        return current($tiles);
     }
 
     // Gets tiles from a given location

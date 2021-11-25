@@ -21,9 +21,8 @@ CREATE TABLE IF NOT EXISTS `tiles` (
 CREATE TABLE IF NOT EXISTS `flowers` (
   `flower_id` INT    UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique flower ID',
   `player_id` INT    UNSIGNED NOT NULL COMMENT 'Flower player ID',
-  `x`         INT(3)                   COMMENT 'X position on board (0 is starting tile)',
-  `y`         INT(3)                   COMMENT 'Y position on board (0 is starting tile)',
-  `position_on_tile` VARCHAR(16)       COMMENT 'Must be top/bottom + left/right/nothing',
+  `tile_id`   INT    UNSIGNED NOT NULL COMMENT 'ID of the tile where the flower is',
+  `vine`      VARCHAR(16)              COMMENT 'The vine on which the flower is',
   PRIMARY KEY (`flower_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

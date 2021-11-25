@@ -81,9 +81,38 @@ trait StatesTrait {
 
     // Blooms flowers after player puts a vine
     public function stPlantBloom() {
-        //TODO: states > stPlantBloom
+        $possible_bloom = $this->getBloomForTile($this->getGameStateValue('last_tile_planted'));
 
-        // Transition: [ 'bloomingDone' , 'choiceNeeded' , 'endGame' ]
+        self::dump('$possible_bloom', $possible_bloom);
+
+        $need_choice = false;
+        foreach ($possible_bloom as $color => $flowers)
+        {
+            if (count($flowers) == 1)
+            {
+                $this->bloomFlower(current($flowers));
+            }
+            else
+            {
+                $need_choice = true;
+            }
+        }
+
+        self::dump('$need_choice', $need_choice);
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        elseif ($need_choice)
+        {
+            //TODO: Test transition plant => bloom choice needed
+            $this->gamestate->nextState('choiceNeeded');
+        }
+        else
+        {
+            $this->gamestate->nextState('bloomingDone');
+        }
     }
 
     // If multiple bloom positions are possible, returns the possible ones

@@ -46,6 +46,13 @@ define([
                     this.renderTile(tile);
                 }
 
+                /***** Flowers *****/
+                this.flowers = gamedatas.flowers;
+                for (var flower_id in this.flowers) {
+                    var flower = this.flowers[flower_id];
+                    this.renderFlower(flower);
+                }
+
                 /***** Notifications *****/
                 this.setupNotifications();
             },
@@ -304,6 +311,16 @@ define([
                 dojo.query('.tentative').forEach(dojo.destroy);
             },
 
+            // Renders a flower in a given position
+            renderFlower: function(flower) {
+                return dojo.place(this.format_block('jstpl_flower', {
+                    flower_id: flower.flower_id,
+                    player_color: this.players[flower.player_id].player_color,
+                    angle: flower.angle,
+                }), document.getElementById('board_tile_' + flower.tile_id));
+            },
+
+
             ///////////////////////////////////////////////////
             //// Reaction to cometD notifications
 
@@ -312,6 +329,10 @@ define([
                 console.log('notifications subscriptions setup');
 
                 dojo.subscribe('playTileToBoard', this, "notif_playTileToBoard");
+                this.notifqueue.setSynchronous('playTileToBoard', 500);
+
+                dojo.subscribe('flowerBlooms', this, "notif_flowerBlooms");
+                this.notifqueue.setSynchronous('flowerBlooms', 500);
             },
 
             notif_playTileToBoard: function(args) {
@@ -330,6 +351,36 @@ define([
                         node: newTile
                     }).play();
                 }
-            }
+            },
+
+            notif_flowerBlooms: function(args) {
+                // Display on board, with fading so the player sees what happens
+                this.flowers[args.args.flower.flower_id] = args.args.flower;
+
+                var newFlower = this.renderFlower(args.args.flower);
+                dojo.style(newFlower, 'opacity', 0);
+                dojo.fadeIn({
+                    node: newFlower
+                }).play();
+            },
+
+            /* This is actually unreadable (as the vines are white or yellow, on white background...) */
+            // Display vine_color with the actual color
+
+            format_string_recursive: function(log, args) {
+                try {
+                    if (log && args && !args.processed) {
+                        args.processed = true;
+
+                        // list of special keys we want to replace with images
+                        if ('vine_color' in args)
+                            args['vine_color'] = '<span style="color: ' + args['vine_color'] + ';" class="trl_vine_color">&nbsp;' + args['vine_color_translated'] + '&nbsp;</span>';
+                    }
+                } catch (e) {
+                    console.error(log, args, "Exception thrown", e.stack);
+                }
+                return this.inherited(arguments);
+            },
+
         });
     });

@@ -94,6 +94,15 @@ for ($j = 0; $j < 14; $j++)
 }
 //REAL_ART end
 
+$this->color_translated = [
+    'purple' => clienttranslate('purple'),
+    'orange' => clienttranslate('orange'),
+    'green'  => clienttranslate('green'),
+    'blue'   => clienttranslate('blue'),
+    'pink'   => clienttranslate('pink'),
+    'yellow' => clienttranslate('yellow'),
+];
+
 // x goes up from left to right
 // y goes up from top to bottom
 $this->directions = [

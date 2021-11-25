@@ -189,6 +189,67 @@
     margin-left: calc(var(--tile_width) / 6);
 }
 
+
+/****************** Flowers ******************/
+/* REAL_ART: check color order in sprite file */
+.trl_flower {
+    width: calc(var(--tile_width) / 6);
+    height: calc(var(--tile_width) * 0.866 / 6);
+
+    position: absolute;
+    background-image: url(img/flowers.png);
+    background-size: 400% 100%;
+}
+
+.trl_flower_ffffff {
+    background-position: 66%;
+}
+
+.trl_flower_f07f16 {
+    background-position: 33%;
+}
+
+.trl_flower_ffa500 {
+    background-position: 0;
+}
+
+.trl_flower_008000 {
+    background-position: 100%;
+}
+
+.trl_flower_angle_30 {
+    top: 60%;
+    left: 70%;
+}
+
+.trl_flower_angle_90 {
+    top: 80%;
+    left: 40%;
+}
+
+.trl_flower_angle_150 {
+    top: 60%;
+    left: 15%;
+}
+
+.trl_flower_angle_210 {
+    top: 20%;
+    left: 15%;
+}
+
+.trl_flower_angle_270 {
+    top: 5%;
+    left: 40%;
+}
+
+.trl_flower_angle_330 {
+    top: 20%;
+    left: 70%;
+}
+
+
+
+
 /****************** My hand ******************/
 
 #trl_hand {
@@ -209,6 +270,14 @@
 #trl_hand .trl_tile div {
     /* Not needed because "left" is not defined */
     margin-left: 0;
+}
+
+
+/****************** Misc ******************/
+
+#logs .trl_vine_color {
+    background: black;
+    font-weight: bold;
 }
 
 .clickable {

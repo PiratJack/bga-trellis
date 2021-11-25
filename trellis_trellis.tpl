@@ -34,6 +34,9 @@
     const jstpl_possible_spot = '<div id="possible_spot_${x}_${y}" class="trl_tile trl_tile_possibleSpot" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px;"><div class="hexagon clickable"></div></div>';
 
     const jstpl_rotation_arrows = '<div id="trl_tile_rotate" data-x="${x}" data-y="${y}"><div id="trl_tile_rotate_counterclockwise" data-direction="-1" class="clickable">↶</div><div id="trl_tile_rotate_clockwise" data-direction="1" class="clickable">↷</div></div>';
+
+
+    const jstpl_flower = '<div id="trl_flower_${flower_id}" class="trl_flower trl_flower_${player_color} trl_flower_angle_${angle}"></div>';
 </script>
 
 {OVERALL_GAME_FOOTER}
