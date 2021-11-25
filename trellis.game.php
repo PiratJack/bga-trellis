@@ -82,17 +82,21 @@ class TrellisPiratJack extends Table {
 
     // Returns whether any of the player won
     public function checkPlayerWon() {
+        $this->loadFlowers();
         $this->loadPlayersInfos();
-        $winner = array_filter($this->players, function ($player) {
-            return $player['flowers_left'] == 0;
-        });
-
-        if (count($winner) != 0)
+        $winner = 0;
+        foreach ($this->players as $player_id => $player)
         {
-            return true;
+            $flowers = array_filter($this->flowers, function ($v) use ($player_id) {
+                return $v['player_id'] == $player_id;
+            });
+            if (count($flowers) >= 15)
+            {
+                $winner = $player_id;
+            }
         }
 
-        return false;
+        return ($winner != 0);
     }
 
 
