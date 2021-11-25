@@ -34,6 +34,8 @@ trait PlayersTrait {
     private function addPoints($player_id, $nb_points) {
         self::DbQuery('UPDATE player SET player_score = player_score + '.$nb_points.' WHERE player_id = '.$player_id);
         self::reloadPlayersInfos();
+
+        $this->notifScores();
     }
 
     // Gives gift points to a player

@@ -94,6 +94,8 @@ trait FlowersTrait {
         self::DbQuery($sql);
         $flower_id = $this->DbGetLastId();
 
+        $this->addPoints($flower['player_id'], 1);
+
         $this->reloadFlowers();
         return $this->getFlowerById($flower_id);
     }

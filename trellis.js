@@ -328,6 +328,8 @@ define([
             setupNotifications: function() {
                 console.log('notifications subscriptions setup');
 
+                dojo.subscribe('playerScores', this, 'notif_playerScores');
+
                 dojo.subscribe('playTileToBoard', this, "notif_playTileToBoard");
                 this.notifqueue.setSynchronous('playTileToBoard', 500);
 
@@ -364,7 +366,14 @@ define([
                 }).play();
             },
 
-            /* This is actually unreadable (as the vines are white or yellow, on white background...) */
+            // Notify about scores
+            notif_playerScores: function(args) {
+                for (var playerId in args.args.score) {
+                    var score = args.args.score[playerId];
+                    this.scoreCtrl[playerId].toValue(score);
+                }
+            },
+
             // Display vine_color with the actual color
 
             format_string_recursive: function(log, args) {
