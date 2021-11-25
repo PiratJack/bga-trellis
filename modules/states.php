@@ -16,7 +16,6 @@ trait StatesTrait {
 
     // Returns possible moves for the active player
     public function argPlant() {
-        //TODO: states > argPlant
         return [
             '_private' => [
                 'active' => [

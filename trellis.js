@@ -32,9 +32,7 @@ define([
 
             setup: function(gamedatas) {
                 /***** Player boards *****/
-                for (var player_id in gamedatas.players) {
-                    var player = gamedatas.players[player_id];
-                }
+                this.players = gamedatas.players;
 
                 /***** Scrollmap *****/
                 this.scrollmap = new ebg.scrollmap();
@@ -43,8 +41,8 @@ define([
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
-                for (var tile_id in gamedatas.tiles) {
-                    var tile = gamedatas.tiles[tile_id];
+                for (var tile_id in this.tiles) {
+                    var tile = this.tiles[tile_id];
                     this.renderTile(tile);
                 }
 

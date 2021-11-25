@@ -31,6 +31,7 @@ trait TilesTrait {
         {
             $this->pickTiles(3, 'deck', $player_id);
         }
+        $this->reloadTiles();
     }
 
     // Determines where a tile can be placed, and in which orientation (if empty, will use the player's tiles)
@@ -103,7 +104,7 @@ trait TilesTrait {
     // Default for $target: 'location' => 'deck', 'x' => 0, 'y' => 0, 'location_order' => 0, 'angle' => 0
     private function moveTilesToLocation($tiles, $target) {
         // $tiles can be the ID of a single tile, or an array of tile IDs
-        if (!is_array($tiles) || !array_key_exists('tile_id', reset($tiles)))
+        if (!is_array($tiles) || !array_key_exists('tile_id', current($tiles)))
         {
             $tiles = $this->getTiles(['tile_id' => $tiles]);
         }
@@ -132,6 +133,8 @@ trait TilesTrait {
         }
 
         self::DbQuery($sql);
+
+        $this->reloadTiles();
     }
 
     // Moves all tiles from one place to another

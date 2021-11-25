@@ -50,7 +50,7 @@ trait PlayersTrait {
     // Loads player data, with caching
     private function loadPlayersInfos() {
         $this->players = self::loadPlayersBasicInfos();
-        if (!array_key_exists('player_score', reset($this->players)))
+        if (!array_key_exists('gift_points', current($this->players)))
         {
             $this->reloadPlayersInfos();
         }
