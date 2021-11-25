@@ -30,22 +30,20 @@ trait StatesTrait {
         // User allowed to do this?
         $this->checkAction('plant');
 
-        // Check tile exists & nothing was tampered with
-        $tile = $this->getTiles(['tile_id' => $tile_id]);
-        if (count($tile) != 1)
+        // Check tile exists
+        $tile = $this->getTile(['tile_id' => $tile_id]);
+        if ($tile === null)
         {
             throw new BgaVisibleSystemException(_('This tile does not exist'));
         }
 
 
         // Check tile is the player's one
-        if ($tile[$tile_id]['location'] != $this->getCurrentPlayerId())
+        if ($tile['location'] != $this->getCurrentPlayerId())
         {
             throw new \BgaUserException(_('This tile is not in your hand'));
         }
         $possible_spots = $this->getPossibleTileSpots();
-
-        $tile = $tile[$tile_id];
 
         // Check this spot is available
         if (!in_array(['x' => $x, 'y' => $y], $possible_spots))
@@ -53,28 +51,7 @@ trait StatesTrait {
             throw new \BgaUserException(_('This tile can\'t be placed here'));
         }
 
-        // Place the tile there
-        $target = [
-            'location' => 'board',
-            'x' => $x,
-            'y' => $y,
-            'location_order' => 0,
-            'angle' => $angle,
-        ];
-
-        $this->moveTilesToLocation($tile['tile_id'], $target);
-        $tile = $target + $tile;
-
-        self::notifyAllPlayers(
-            'playTileToBoard',
-            clienttranslate('${player_name} plays a tile to the table'),
-            [
-                'player_id' => $this->getCurrentPlayerId(),
-                'player_name' => self::getActivePlayerName(),
-                'tile' => $tile,
-            ]
-        );
-        $this->setGameStateValue('last_tile_planted', $tile['tile_id']);
+        $this->plantTile($tile, $x, $y, $angle);
 
         $this->gamestate->nextState('');
     }

@@ -181,6 +181,32 @@ trait TilesTrait {
         $this->reloadTiles();
     }
 
+    // Plants a tile and notifies players
+    private function plantTile($tile, $x, $y, $angle) {
+        // Place the tile there
+        $target = [
+            'location' => 'board',
+            'x' => $x,
+            'y' => $y,
+            'location_order' => 0,
+            'angle' => $angle,
+        ];
+
+        $this->moveTilesToLocation($tile['tile_id'], $target);
+        $tile = $target + $tile;
+
+        self::notifyAllPlayers(
+            'playTileToBoard',
+            clienttranslate('${player_name} plays a tile to the table'),
+            [
+                'player_id' => $this->getCurrentPlayerId(),
+                'player_name' => self::getActivePlayerName(),
+                'tile' => $tile,
+            ]
+        );
+        $this->setGameStateValue('last_tile_planted', $tile['tile_id']);
+    }
+
     // Shuffles tiles in a given location
     private function shuffleTilesInLocation($location) {
         $tiles = $this->getTilesFromLocation($location);
