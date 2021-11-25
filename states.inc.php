@@ -70,17 +70,10 @@ $machinestates = [
         'description' => clienttranslate('Blooming vines'),
         'type' => 'game',
         'action' => 'stClaimBloom',
-        'transitions' => [ 'bloomingDone' => TRL_STATE_CLAIM_GIFT, 'choiceNeeded' => TRL_STATE_CLAIM_VINE_CHOOSE, 'endGame' => 99 ]
-    ],
-
-    TRL_STATE_CLAIM_VINE_CHOOSE => [
-        'name' => 'claimChooseBloom',
-        'description' => clienttranslate('${actplayer} must choose which vine blooms'),
-        'descriptionmyturn' => clienttranslate('${you} must choose which vine blooms'),
-        'type' => 'activeplayer',
-        'args' => 'argClaimChooseBloom',
-        'possibleactions' => [ 'claimChooseBloom'],
-        'transitions' => [ 'bloomingDone' => TRL_STATE_CLAIM_GIFT, 'noGiftReceived' => TRL_STATE_END_TURN, 'endGame' => 99 ]
+        'transitions' => [ 'giftReceived' => TRL_STATE_CLAIM_GIFT, 'noGiftReceived' => TRL_STATE_END_TURN, 'endGame' => 99 ]
+        // The blooming is automatic because it's not possible to have a choice
+        // The player could have a choice if an empty vine could get 2 colors
+        // However it's not possible when placing a flower: that vine would have been bloomed already
     ],
 
 
@@ -100,17 +93,8 @@ $machinestates = [
         'description' => clienttranslate('Blooming vines'),
         'type' => 'game',
         'action' => 'stClaimGiftBloom',
-        'transitions' => [ 'bloomingDone' => TRL_STATE_END_TURN, 'choiceNeeded' => TRL_STATE_CLAIM_GIFT_CHOOSE, 'endGame' => 99 ]
-    ],
-
-    TRL_STATE_CLAIM_GIFT_CHOOSE => [
-        'name' => 'plantVineBloom',
-        'description' => clienttranslate('${actplayer} must choose which vine blooms'),
-        'descriptionmyturn' => clienttranslate('${you} must choose which vine blooms'),
-        'type' => 'activeplayer',
-        'args' => 'argClaimGiftChooseBloom',
-        'possibleactions' => [ 'claimGiftChooseBloom' ],
-        'transitions' => [ 'continueGame' => TRL_STATE_END_TURN, 'endGame' => 99 ]
+        'transitions' => [ 'bloomingDone' => TRL_STATE_END_TURN, 'endGame' => 99 ]
+        // See above: choiceNeeded is not possible
     ],
 
 

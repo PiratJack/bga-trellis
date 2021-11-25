@@ -17,11 +17,9 @@ if (!defined('TRL_STATE_SETUP'))
 
     define('TRL_STATE_CLAIM_VINE', 30);
     define('TRL_STATE_CLAIM_VINE_BLOOM', 34);
-    define('TRL_STATE_CLAIM_VINE_CHOOSE', 38);
 
     define('TRL_STATE_CLAIM_GIFT', 40);
     define('TRL_STATE_CLAIM_GIFT_BLOOM', 44);
-    define('TRL_STATE_CLAIM_GIFT_CHOOSE', 48);
 
     define('TRL_STATE_END_TURN', 80);
 }

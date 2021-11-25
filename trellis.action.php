@@ -61,28 +61,4 @@
 
           self::ajaxResponse();
       }
-
-      public function claimChooseBloom() {
-          self::setAjaxMode();
-
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottom', 'bottomleft', 'bottomright']);
-
-          $this->game->actClaimChooseBloom($x, $y, $position);
-
-          self::ajaxResponse();
-      }
-
-      public function claimGiftChooseBloom() {
-          self::setAjaxMode();
-
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottom', 'bottomleft', 'bottomright']);
-
-          $this->game->actClaimGiftChooseBloom($x, $y, $position);
-
-          self::ajaxResponse();
-      }
   }

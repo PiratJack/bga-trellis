@@ -116,19 +116,7 @@ trait StatesTrait {
     public function stClaimBloom() {
         //TODO: states > stClaimBloom
 
-        // Transition: 'bloomingDone', 'choiceNeeded', 'endGame'
-    }
-
-    // If multiple bloom positions are possible, returns the possible ones
-    public function argClaimChooseBloom() {
-        //TODO: states > argClaimChooseBloom
-    }
-
-    // Player chose which flower blooms
-    public function actClaimChooseBloom() {
-        //TODO: states > actClaimChooseBloom
-
-        // Transition: 'bloomingDone', 'noGiftReceived', 'endGame'
+        // Transition: 'giftReceived', 'noGiftReceived', 'endGame'
     }
 
 
@@ -151,19 +139,6 @@ trait StatesTrait {
 
         // Transition: 'bloomingDone', 'choiceNeeded', 'endGame'
     }
-
-    // If multiple bloom positions are possible, returns the possible ones
-    public function argClaimGiftChooseBloom() {
-        //TODO: states > argClaimGiftChooseBloom
-    }
-
-    // Player chose which flower blooms
-    public function actClaimGiftChooseBloom() {
-        //TODO: states > actClaimGiftChooseBloom
-
-        // Transition: 'continueGame', 'endGame'
-    }
-
 
     // Draw to 3 tiles and end a player's turn
     public function stEndTurn() {
