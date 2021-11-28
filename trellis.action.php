@@ -9,56 +9,73 @@
  * -----
  */
 
+class action_trellis extends APP_GameAction {
+    // Constructor: please do not modify
+    public function __default() {
+        if (self::isArg('notifwindow'))
+        {
+            $this->view = "common_notifwindow";
+            $this->viewArgs['table'] = self::getArg("table", AT_posint, true);
+        }
+        else
+        {
+            $this->view = "trellis_trellis";
+            self::trace("Complete reinitialization of board game");
+        }
+    }
 
-  class action_trellis extends APP_GameAction {
-      // Constructor: please do not modify
-      public function __default() {
-          if (self::isArg('notifwindow'))
-          {
-              $this->view = "common_notifwindow";
-              $this->viewArgs['table'] = self::getArg("table", AT_posint, true);
-          }
-          else
-          {
-              $this->view = "trellis_trellis";
-              self::trace("Complete reinitialization of board game");
-          }
-      }
+    public function plant() {
+        self::setAjaxMode();
 
-      public function plant() {
-          self::setAjaxMode();
+        $tile_id = self::getArg("tile_id", AT_posint, true);
+        $x = self::getArg("x", AT_int, true);
+        $y = self::getArg("y", AT_int, true);
+        $angle = self::getArg("angle", AT_enum, true, null, [0, 60, 120, 180, 240, 300]);
 
-          $tile_id = self::getArg("tile_id", AT_posint, true);
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $angle = self::getArg("angle", AT_enum, true, null, [0, 60, 120, 180, 240, 300]);
+        $this->game->actPlant($tile_id, $x, $y, $angle);
 
-          $this->game->actPlant($tile_id, $x, $y, $angle);
+        self::ajaxResponse();
+    }
 
-          self::ajaxResponse();
-      }
+    public function plantChooseBloom() {
+        self::setAjaxMode();
 
-      public function plantChooseBloom() {
-          self::setAjaxMode();
+        $selectionAJAX = self::getArg('selection', AT_json, true);
+        $selection = [];
+        foreach ($selectionAJAX as $vine_color => $player_id)
+        {
+            if (!is_string($vine_color))
+            {
+                throw new \feException("Invalid value for bloom selection - vine color", true, true, FEX_bad_input_argument);
+            }
 
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottom', 'bottomleft', 'bottomright']);
+            if (!is_numeric($player_id))
+            {
+                throw new \feException("Non-numeric value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+            }
 
-          $this->game->actPlantChooseBloom($x, $y, $position);
+            if ((int)$player_id <= 0)
+            {
+                throw new \feException("Negative value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+            }
 
-          self::ajaxResponse();
-      }
+            $selection[$vine_color] = (int)$player_id;
+        }
 
-      public function claim() {
-          self::setAjaxMode();
+        $this->game->actPlantChooseBloom($selection);
 
-          $x = self::getArg("x", AT_int, true);
-          $y = self::getArg("y", AT_int, true);
-          $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottomleft', 'bottomright', 'bottom']);
+        self::ajaxResponse();
+    }
 
-          $this->game->actClaim($x, $y, $position);
+    public function claim() {
+        self::setAjaxMode();
 
-          self::ajaxResponse();
-      }
-  }
+        $x = self::getArg("x", AT_int, true);
+        $y = self::getArg("y", AT_int, true);
+        $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottomleft', 'bottomright', 'bottom']);
+
+        $this->game->actClaim($x, $y, $position);
+
+        self::ajaxResponse();
+    }
+}

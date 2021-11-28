@@ -45,8 +45,8 @@ $machinestates = [
 
     TRL_STATE_PLANT_CHOOSE => [
         'name' => 'plantChooseBloom',
-        'description' => clienttranslate('${actplayer} must choose which vine blooms'),
-        'descriptionmyturn' => clienttranslate('${you} must choose which vine blooms'),
+        'description' => clienttranslate('${actplayer} must choose which flower blooms'),
+        'descriptionmyturn' => clienttranslate('${you} must choose which flower blooms'),
         'type' => 'activeplayer',
         'args' => 'argPlantChooseBloom',
         'possibleactions' => [ 'plantChooseBloom' ],

@@ -18,6 +18,7 @@ trait FlowersTrait {
     }
 
     // Determines which flowers should bloom
+    // Returns structure: vine_color => ['players' => $player_ids, 'angle' => $angle]
     private function getBloomForTile($tile_id) {
         $tile = $this->getTile(['tile_id' => $tile_id]);
 
@@ -73,7 +74,9 @@ trait FlowersTrait {
                 ];
                 $blooming_flower = $target + current($neighbor_flower);
 
-                $blooming_flowers[$vine_color][] = $blooming_flower;
+                // We need the "original" angle (before rotating) because it rotates after
+                $blooming_flowers[$vine_color]['angle'] = $angle - $tile['angle'];
+                $blooming_flowers[$vine_color]['players'][] = $blooming_flower['player_id'];
             }
         }
         return $blooming_flowers;
@@ -110,15 +113,26 @@ trait FlowersTrait {
         foreach ($flowers as $flower)
         {
             $flower = $this->placeFlower($flower);
+            if ($flower['player_id'] == $this->getActivePlayerId())
+            {
+                $message = clienttranslate('The ${vine_color_translated} vine blooms a flower for ${player_name}');
+            }
+            else
+            {
+                $message = clienttranslate('The ${vine_color_translated} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
+                $this->addGiftPoints($this->getActivePlayerId(), 1);
+            }
+
             self::notifyAllPlayers(
                 'flowerBlooms',
-                clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}'),
+                $message,
                 [
                     'vine_color' => $flower['vine'],
                     'vine_color_translated' => $this->color_translated[$flower['vine']],
                     'player_name' => self::getPlayerNameById($flower['player_id']),
+                    'player_name2' => self::getActivePlayerName(),
                     'flower' => $flower,
-                    'preserve' => [ 'vine_color_translated' ],
+                    'preserve' => [ 'vine_color' ],
                 ]
             );
         }

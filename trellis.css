@@ -143,26 +143,26 @@
 
 /*** Actual tiles ***/
 
-.trl_tile_actualTile {
+.trl_tile_actual_tile {
     background-image: url(img/tiles.png);
     background-size: 500% 100%;
 }
 
-.trl_tile_actualTile.selected .hexagon,
-.trl_tile_actualTile.selected .hexagon:before,
-.trl_tile_actualTile.selected .hexagon:after {
+.trl_tile_actual_tile.selected .hexagon,
+.trl_tile_actual_tile.selected .hexagon:before,
+.trl_tile_actual_tile.selected .hexagon:after {
     border-top: red solid 2px;
     border-bottom: red solid 2px;
 }
 
 /*** Vacant spots ***/
-.trl_tile_possibleSpot {
+.trl_tile_possible_spot {
     opacity: 50%;
 }
 
-.trl_tile_possibleSpot .hexagon,
-.trl_tile_possibleSpot .hexagon:before,
-.trl_tile_possibleSpot .hexagon:after {
+.trl_tile_possible_spot .hexagon,
+.trl_tile_possible_spot .hexagon:before,
+.trl_tile_possible_spot .hexagon:after {
     background-image: none;
     background-color: white;
 }
@@ -191,6 +191,7 @@
 
 
 /****************** Flowers ******************/
+
 /* REAL_ART: check color order in sprite file */
 .trl_flower {
     width: calc(var(--tile_width) / 6);
@@ -247,7 +248,41 @@
     left: 70%;
 }
 
+/****************** Blooming spots ******************/
 
+.trl_bloom_spot_container {
+    pointer-events: none;
+}
+
+.trl_bloom_spot_container .trl_flower {
+    background-image: none;
+    background-color: white;
+    opacity: 0.8;
+
+    pointer-events: initial;
+}
+
+.trl_bloom_spot_container .trl_flower.selected {
+    background-image: url(img/flowers.png);
+}
+
+.trl_bloom_spot_container .hexagon,
+.trl_bloom_spot_container .hexagon:before,
+.trl_bloom_spot_container .hexagon:after {
+    background: none;
+}
+
+.trl_bloom_spot {
+    border: 3px solid;
+}
+
+.trl_bloom_spot.selected {
+    border-color: lightgreen;
+}
+
+.trl_bloom_spot:not(.selected) {
+    border-color: red;
+}
 
 
 /****************** My hand ******************/

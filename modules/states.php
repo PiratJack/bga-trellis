@@ -60,8 +60,6 @@ trait StatesTrait {
     public function stPlantBloom() {
         $possible_bloom = $this->getBloomForTile($this->getGameStateValue('last_tile_planted'));
 
-        self::dump('$possible_bloom', $possible_bloom);
-
         $need_choice = false;
         foreach ($possible_bloom as $color => $flowers)
         {
@@ -74,8 +72,6 @@ trait StatesTrait {
                 $need_choice = true;
             }
         }
-
-        self::dump('$need_choice', $need_choice);
 
         if ($this->checkPlayerWon())
         {
@@ -94,14 +90,63 @@ trait StatesTrait {
 
     // If multiple bloom positions are possible, returns the possible ones
     public function argPlantChooseBloom() {
-        //TODO: states > argPlantChooseBloom
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        return [
+            '_private' => [
+                'active' => [
+                    'possibleBlooms' => [$tile_id => $this->getBloomForTile($tile_id)]
+                ]
+            ]
+        ];
     }
 
     // Player chose which flower blooms
-    public function actPlantChooseBloom($x, $y, $position_on_tile) {
-        //TODO: states > actPlantChooseBloom
+    public function actPlantChooseBloom($selection) {
+        // User allowed to do this?
+        $this->checkAction('plantChooseBloom');
 
-        // Transition: 'continueGame', 'endGame'
+        $this->loadPlayersInfos();
+
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $possible_blooms = $this->getBloomForTile($tile_id);
+
+        // Check values provided are correct
+        foreach ($selection as $vine_color => $player_id)
+        {
+            if (!in_array($vine_color, array_keys($this->color_translated)))
+            {
+                throw new \feException("Unknown vine color", true, true, FEX_bad_input_argument);
+            }
+
+            if (!in_array($player_id, $possible_blooms[$vine_color]['players']))
+            {
+                throw new \feException("Placing this flower here is impossible", true, true, FEX_bad_input_argument);
+            }
+
+            if (!array_key_exists($player_id, $this->players))
+            {
+                throw new \feException("This player does not exist", true, true, FEX_bad_input_argument);
+            }
+
+            $this->bloomFlower(['player_id' => $player_id, 'tile_id' => $tile_id, 'vine' => $vine_color]);
+        }
+        // Check all vines have a flower now
+        foreach ($possible_blooms as $vine_color => $blooming)
+        {
+            if (!array_key_exists($vine_color, $selection))
+            {
+                throw new \feException("Missing choice for vine ".$vine_color, true, true, FEX_bad_input_argument);
+            }
+        }
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        else
+        {
+            $this->gamestate->nextState('continueGame');
+        }
     }
 
 

@@ -9,7 +9,7 @@
  */
 
 define([
-        "dojo", "dojo/_base/declare",
+        "dojo", "dojo/_base/declare", "dojo/json",
         "ebg/core/gamegui",
         "ebg/counter",
         "ebg/scrollmap"
@@ -67,11 +67,17 @@ define([
             onEnteringState: function(stateName, args) {
                 switch (stateName) {
                     case 'plant':
-                        // Can player select a card?
                         if (this.isCurrentPlayerActive()) {
                             this.possibleTileSpots = args.args._private.possibleTileSpots;
                             dojo.query('#trl_hand_tiles .hexagon').connect('onclick', this, 'onClickHandTile');
                             dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
+                        }
+                        break;
+
+                    case 'plantChooseBloom':
+                        if (this.isCurrentPlayerActive()) {
+                            this.possibleBlooms = args.args._private.possibleBlooms;
+                            this.displayBloomSpots(this.possibleBlooms);
                         }
                         break;
                 }
@@ -88,6 +94,10 @@ define([
                         dojo.query('.selected').removeClass('selected');
                         dojo.query('.clickable').removeClass('clickable');
                         break;
+
+                    case 'plantChooseBloom':
+                        dojo.query('.trl_bloom_spot_container').forEach(dojo.destroy);
+                        break;
                 }
             },
 
@@ -100,8 +110,11 @@ define([
                             dojo.addClass('confirm_tile_placement', 'disabled');
                             break;
 
+                        case 'plantChooseBloom':
+                            this.addActionButton('confirm_bloom', _('Confirm'), 'onConfirmBloom');
+                            break;
+
                     }
-                    //TODO: 'plant' => Add buttons to confirm selection
                 }
             },
 
@@ -131,7 +144,7 @@ define([
                 var clickedSpot = evt.currentTarget.parentNode;
 
                 // Get the selected tile (will need its ID later)
-                var selectedTile = dojo.query('.trl_tile_actualTile.selected');
+                var selectedTile = dojo.query('.trl_tile_actual_tile.selected');
                 if (selectedTile.length == 0) {
                     this.showMessage(_('Please choose a tile first'), 'error');
                     return;
@@ -166,7 +179,7 @@ define([
             onClickRotateTile: function(evt) {
                 var clickedArrow = evt.currentTarget;
                 var selectedSpot = evt.currentTarget.parentNode.parentNode;
-                var selectedTile = dojo.query('.trl_tile_actualTile.selected')[0];
+                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
                 var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
                 var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
@@ -181,7 +194,7 @@ define([
                 if (!this.checkAction('plant'))
                     return
 
-                var selectedTile = dojo.query('.trl_tile_actualTile.selected')[0];
+                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
                 var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
 
@@ -192,12 +205,75 @@ define([
                     angle: selectedPosition.dataset.angle,
                     lock: true
                 }, this, function(result) {});
+            },
 
+            // Confirm button for blooming flowers
+            onConfirmBloom: function(evt) {
+                // Check all spots have flowers selected
+                if (dojo.query('.trl_bloom_spot:not(.selected)').length) {
+                    this.showMessage(_('Some spots are missing a flower'), 'error');
+                    var missingFlower = dojo.query('.trl_bloom_spot:not(.selected)')[0].parentNode;
+                    var x = -parseInt(missingFlower.style.left.substring(0, missingFlower.style.left.length - 2)) - this.tile_width / 2;
+                    var y = -parseInt(missingFlower.style.top.substring(0, missingFlower.style.left.length - 2)) - this.tile_height / 2;
+                    this.scrollmap.scrollto(x, y);
+                    return;
+                }
+
+                // Get choices made
+                var selectedFlowers = {};
+                var allSpots = dojo.query('.trl_bloom_spot').forEach(function(bloomingSpot) {
+                    var playerId = bloomingSpot.dataset.selected_player;
+                    var vineColor = bloomingSpot.dataset.vine;
+                    selectedFlowers[vineColor] = playerId;
+                });
+
+                var selection_text = JSON.stringify(selectedFlowers);
+                console.log('sending data');
+                this.ajaxcall('/trellis/trellis/plantChooseBloom.html', {
+                    selection: selection_text,
+                    lock: true
+                }, this, function(result) {});
+            },
+
+            // Confirm button for planting tiles
+            onClickBloomSpot: function(evt) {
+                var clickedSpot = evt.currentTarget;
+                var playerNames = {};
+                for (i in clickedSpot.dataset.players.split(',')) {
+                    var player_id = clickedSpot.dataset.players.split(',')[i]
+                    playerNames[player_id] = '<span style="color: #' + this.players[player_id].player_color + '">' + this.players[player_id].player_name + '</span>';
+                }
+
+                this.multipleChoiceDialog(
+                    _('Who should get that vine?'), playerNames,
+                    dojo.hitch(this, function(player_id) {
+                        this.onChooseWhatBlooms(clickedSpot, player_id);
+                    }));
+            },
+
+            // Choosing who blooms
+            onChooseWhatBlooms: function(clickedSpot, player_id) {
+                if (clickedSpot.dataset.selected_player != null) {
+                    var previousPlayer = this.players[clickedSpot.dataset.selected_player];
+                    dojo.removeClass(clickedSpot, 'trl_flower_' + previousPlayer.player_color);
+                }
+                clickedSpot.dataset.selected_player = player_id;
+                dojo.addClass(clickedSpot, 'selected trl_flower_' + this.players[player_id].player_color);
             },
 
 
             ///////////////////////////////////////////////////
             //// Utility methods
+
+            // Returns the top position, given an y coordinate
+            getTileTopPosition: function(y) {
+                return (this.tile_height + this.margin) * y / 2 - this.tile_height / 2;
+            },
+
+            // Returns the left position, given an x coordinate
+            getTileLeftPosition: function(x) {
+                return x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+            },
 
             // Renders a tile in a given position (either board or hand)
             renderTile: function(tile) {
@@ -212,8 +288,8 @@ define([
                     var bg_y = 100 * parseInt(tile.sprite_position.y) / (this.sprite_size_y - 1);
 
                 if (tile.location == 'board') {
-                    var position_top = (this.tile_height + this.margin) * tile.y / 2 - this.tile_height / 2;
-                    var position_left = tile.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+                    var position_top = this.getTileTopPosition(tile.y);
+                    var position_left = this.getTileLeftPosition(tile.x);
 
                     return dojo.place(this.format_block('jstpl_tile', {
                         div_id: 'board_tile_' + tile.tile_id,
@@ -274,30 +350,29 @@ define([
                     var x = possibleTiles[i].x;
                     var y = possibleTiles[i].y;
                     if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
-                        this.renderPossibleTileSpot(x, y);
+                        var possibleTileSpot = this.renderPossibleTileSpot(x, y);
+                        dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
                     }
                 }
             },
 
             // Displays a possible spot in a given location (+ adds JS handlers)
             renderPossibleTileSpot: function(x, y) {
-                var position_top = (this.tile_height + this.margin) * y / 2 - this.tile_height / 2;
-                var position_left = x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
+                var position_top = this.getTileTopPosition(tile.y);
+                var position_left = this.getTileLeftpPosition(tile.x);
 
-                dojo.place(this.format_block('jstpl_possible_spot', {
-                    tile_type: 'possibleSpot',
+                return dojo.place(this.format_block('jstpl_possible_spot', {
+                    tile_type: 'possible_spot',
                     x: x,
                     y: y,
                     top: position_top,
                     left: position_left,
                 }), document.getElementById('map_scrollable_oversurface'));
-
-                dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
             },
 
             // Destroys possible spots
             destroyPossibleTileSpots: function() {
-                dojo.query('.trl_tile_possibleSpot').forEach(dojo.destroy);
+                dojo.query('.trl_tile_possible_spot').forEach(dojo.destroy);
                 this.destroyRotatingArrows();
             },
 
@@ -318,6 +393,54 @@ define([
                     player_color: this.players[flower.player_id].player_color,
                     angle: flower.angle,
                 }), document.getElementById('board_tile_' + flower.tile_id));
+            },
+
+            // Displays the possible flower blooms (as white areas)
+            displayBloomSpots: function(bloomSpots) {
+                for (tile_id in bloomSpots) {
+                    var tile = this.tiles[tile_id];
+
+                    var spotContainer = this.renderBloomSpotContainer(tile);
+
+                    for (vine_color in bloomSpots[tile_id]) {
+                        var data = bloomSpots[tile_id][vine_color]
+                        var angle = data.angle;
+                        var players = data.players;
+
+                        var bloomSpot = {
+                            'tile_id': tile_id,
+                            'vine_color': vine_color,
+                            'angle': data.angle,
+                            'players': data.players,
+                            'container': spotContainer,
+                        }
+
+                        var bloomSpotDiv = this.renderBloomSpot(bloomSpot);
+                        dojo.connect(bloomSpotDiv, 'onclick', this, 'onClickBloomSpot');
+                    }
+                }
+            },
+
+            // Renders an empty tile for blooming (easier to place this way)
+            renderBloomSpotContainer: function(tile) {
+                var position_top = this.getTileTopPosition(tile.y);
+                var position_left = this.getTileLeftPosition(tile.x);
+
+                return dojo.place(this.format_block('jstpl_bloom_spot_container', {
+                    'tile_id': tile.tile_id,
+                    'top': position_top,
+                    'left': position_left,
+                }), document.getElementById('map_scrollable_oversurface'));
+            },
+
+            // Renders a white box for bloom spots (when choice is needed)
+            renderBloomSpot: function(bloomSpot) {
+                return dojo.place(this.format_block('jstpl_bloom_spot', {
+                    'tile_id': bloomSpot.tile_id,
+                    'vine_color': bloomSpot.vine_color,
+                    'angle': bloomSpot.angle,
+                    'players': bloomSpot.players,
+                }), bloomSpot.container);
             },
 
 
