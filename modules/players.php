@@ -96,4 +96,15 @@ trait PlayersTrait {
             $this->players[$player_id]['flowers_left']= 15;
         }
     }
+
+    // Updated flower count on players
+    private function notifScores() {
+        $this->loadPlayersInfos();
+
+        $scores = array_map(function ($v) {
+            return $v['player_score'];
+        }, $this->players);
+
+        self::notifyAllPlayers('playerScores', '', ['score' => $scores]);
+    }
 }
