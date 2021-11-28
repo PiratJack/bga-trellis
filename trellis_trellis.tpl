@@ -29,7 +29,7 @@
 </div>
 
 <script type="text/javascript">
-    const jstpl_tile = '<div id="${div_id}" class="trl_tile trl_tile_actualTile" data-id="${id}" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px; background-position: ${bg_x}% ${bg_y}%; transform: rotate(${angle}deg);" data-angle="${angle}"><div class="hexagon"></div></div>';
+    const jstpl_tile = '<div id="${div_id}" class="trl_tile trl_tile_actual_tile" data-id="${id}" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px; background-position: ${bg_x}% ${bg_y}%; transform: rotate(${angle}deg);" data-angle="${angle}"><div class="hexagon"></div></div>';
 
     const jstpl_possible_spot = '<div id="possible_spot_${x}_${y}" class="trl_tile trl_tile_possible_spot" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px;"><div class="hexagon clickable"></div></div>';
 
@@ -37,9 +37,9 @@
 
     const jstpl_flower = '<div id="trl_flower_${flower_id}" class="trl_flower trl_flower_${player_color} trl_flower_angle_${angle}"></div>';
 
-    const jstpl_bloom_spot_container = '<div id="bloom_spot_container_${tile_id}" class="trl_tile trl_bloom_spot_container" data-tile="${tile_id}" style="top: ${top}px; left: ${left}px;"><div class="hexagon"></div></div>';
+    const jstpl_flower_spot_container = '<div id="trl_flower_spot_container_${tile_id}" class="trl_tile trl_flower_spot_container" data-tile="${tile_id}" style="top: ${top}px; left: ${left}px;"><div class="hexagon"></div></div>';
 
-    const jstpl_bloom_spot = '<div id="trl_bloom_spot_${tile_id}_${vine_color}" class="trl_flower trl_bloom_spot trl_flower_angle_${angle} clickable" data-vine="${vine_color}" data-players="${players}"></div>';
+    const jstpl_flower_spot = '<div id="trl_flower_spot_${tile_id}_${vine_color}" class="trl_flower trl_flower_spot trl_flower_angle_${angle} clickable" data-vine="${vine_color}" data-players="${players}"></div>';
 </script>
 
 {OVERALL_GAME_FOOTER}

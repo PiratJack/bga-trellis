@@ -197,8 +197,8 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
 
         // Displays a possible spot in a given location (+ adds JS handlers)
         renderPossibleTileSpot: function(x, y) {
-            var position_top = this.getTileTopPosition(tile.y);
-            var position_left = this.getTileLeftpPosition(tile.x);
+            var position_top = this.getTileTopPosition(y);
+            var position_left = this.getTileLeftPosition(x);
 
             return dojo.place(this.format_block('jstpl_possible_spot', {
                 tile_type: 'possible_spot',

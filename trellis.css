@@ -250,11 +250,11 @@
 
 /****************** Blooming spots ******************/
 
-.trl_bloom_spot_container {
+.trl_flower_spot_container {
     pointer-events: none;
 }
 
-.trl_bloom_spot_container .trl_flower {
+.trl_flower_spot_container .trl_flower {
     background-image: none;
     background-color: white;
     opacity: 0.8;
@@ -262,25 +262,25 @@
     pointer-events: initial;
 }
 
-.trl_bloom_spot_container .trl_flower.selected {
+.trl_flower_spot_container .trl_flower.selected {
     background-image: url(img/flowers.png);
 }
 
-.trl_bloom_spot_container .hexagon,
-.trl_bloom_spot_container .hexagon:before,
-.trl_bloom_spot_container .hexagon:after {
+.trl_flower_spot_container .hexagon,
+.trl_flower_spot_container .hexagon:before,
+.trl_flower_spot_container .hexagon:after {
     background: none;
 }
 
-.trl_bloom_spot {
+.trl_flower_spot {
     border: 3px solid;
 }
 
-.trl_bloom_spot.selected {
+.trl_flower_spot.selected {
     border-color: lightgreen;
 }
 
-.trl_bloom_spot:not(.selected) {
+.trl_flower_spot:not(.selected) {
     border-color: red;
 }
 

@@ -82,6 +82,13 @@ define([
                             this.displayBloomSpots(this.possibleBlooms);
                         }
                         break;
+
+                    case 'claim':
+                        if (this.isCurrentPlayerActive()) {
+                            this.possibleFlowerSpots = args.args._private.possibleFlowerSpots;
+                            this.displayFlowerSpots(this.possibleFlowerSpots);
+                        }
+                        break;
                 }
             },
 
@@ -95,10 +102,17 @@ define([
                         this.destroyTentativeTiles();
                         dojo.query('.selected').removeClass('selected');
                         dojo.query('.clickable').removeClass('clickable');
+                        delete(this.possibleTileSpots);
                         break;
 
                     case 'plantChooseBloom':
-                        dojo.query('.trl_bloom_spot_container').forEach(dojo.destroy);
+                        dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
+                        delete(this.possibleBlooms);
+                        break;
+
+                    case 'claim':
+                        dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
+                        delete(this.possibleFlowerSpots);
                         break;
                 }
             },
@@ -114,6 +128,10 @@ define([
 
                         case 'plantChooseBloom':
                             this.addActionButton('confirm_bloom', _('Confirm'), 'onConfirmBloom');
+                            break;
+
+                        case 'claim':
+                            this.addActionButton('confirm_claim', _('Confirm'), 'onConfirmClaim');
                             break;
 
                     }

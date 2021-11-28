@@ -115,17 +115,17 @@ trait StatesTrait {
         {
             if (!in_array($vine_color, array_keys($this->color_translated)))
             {
-                throw new \feException("Unknown vine color", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Unknown vine color", true, true, FEX_bad_input_argument);
             }
 
             if (!in_array($player_id, $possible_blooms[$vine_color]['players']))
             {
-                throw new \feException("Placing this flower here is impossible", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Placing this flower here is impossible", true, true, FEX_bad_input_argument);
             }
 
             if (!array_key_exists($player_id, $this->players))
             {
-                throw new \feException("This player does not exist", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("This player does not exist", true, true, FEX_bad_input_argument);
             }
 
             $this->bloomFlower(['player_id' => $player_id, 'tile_id' => $tile_id, 'vine' => $vine_color]);
@@ -135,7 +135,7 @@ trait StatesTrait {
         {
             if (!array_key_exists($vine_color, $selection))
             {
-                throw new \feException("Missing choice for vine ".$vine_color, true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Missing choice for vine ".$vine_color, true, true, FEX_bad_input_argument);
             }
         }
 
@@ -153,14 +153,40 @@ trait StatesTrait {
 
     // Return which vines can be claimed by active player (regular move)
     public function argClaim() {
-        //TODO: states > argClaim
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        return [
+            '_private' => [
+                'active' => [
+                    'possibleFlowerSpots' => $this->getPossibleFlowerSpots($tile_id)
+                ]
+            ]
+        ];
     }
 
     // The player claims a vine
-    public function actClaim($x, $y, $angle) {
-        //TODO: states > actClaim
+    public function actClaim($tile_id, $vine_color) {
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $possibleFlowerSpots = $this->getPossibleFlowerSpots($tile_id);
 
-        // Transition: 'continueGame', 'endGame'
+        if (!array_key_exists($tile_id, $possibleFlowerSpots))
+        {
+            throw new \BgaUserException("That tile is not available", true, true, FEX_bad_input_argument);
+        }
+        if (!array_key_exists($vine_color, $possibleFlowerSpots[$tile_id]))
+        {
+            throw new \BgaUserException("That vine is not available", true, true, FEX_bad_input_argument);
+        }
+
+        $this->bloomFlower(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        else
+        {
+            $this->gamestate->nextState('continueGame');
+        }
     }
 
     // Blooms flowers after player claims a vine

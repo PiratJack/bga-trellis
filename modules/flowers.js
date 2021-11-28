@@ -17,9 +17,9 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         // Confirm button for blooming flowers
         onConfirmBloom: function(evt) {
             // Check all spots have flowers selected
-            if (dojo.query('.trl_bloom_spot:not(.selected)').length) {
+            if (dojo.query('.trl_flower_spot:not(.selected)').length) {
                 this.showMessage(_('Some spots are missing a flower'), 'error');
-                var missingFlower = dojo.query('.trl_bloom_spot:not(.selected)')[0].parentNode;
+                var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')[0].parentNode;
                 var x = -parseInt(missingFlower.style.left.substring(0, missingFlower.style.left.length - 2)) - this.tile_width / 2;
                 var y = -parseInt(missingFlower.style.top.substring(0, missingFlower.style.left.length - 2)) - this.tile_height / 2;
                 this.scrollmap.scrollto(x, y);
@@ -28,21 +28,20 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
 
             // Get choices made
             var selectedFlowers = {};
-            var allSpots = dojo.query('.trl_bloom_spot').forEach(function(bloomingSpot) {
+            var allSpots = dojo.query('.trl_flower_spot').forEach(function(bloomingSpot) {
                 var playerId = bloomingSpot.dataset.selected_player;
                 var vineColor = bloomingSpot.dataset.vine;
                 selectedFlowers[vineColor] = playerId;
             });
 
             var selection_text = JSON.stringify(selectedFlowers);
-            console.log('sending data');
             this.ajaxcall('/trellis/trellis/plantChooseBloom.html', {
                 selection: selection_text,
                 lock: true
             }, this, function(result) {});
         },
 
-        // Confirm button for planting tiles
+        // Click on a bloom spot (& get to choose what blooms)
         onClickBloomSpot: function(evt) {
             var clickedSpot = evt.currentTarget;
             var playerNames = {};
@@ -68,6 +67,34 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             dojo.addClass(clickedSpot, 'selected trl_flower_' + this.players[player_id].player_color);
         },
 
+        // Click on an empty flower spot
+        onClickFlowerSpot: function(evt) {
+            var clickedSpot = evt.currentTarget;
+            dojo.query('.trl_flower_spot.selected').removeClass('selected trl_flower_' + this.player_id);
+
+            dojo.addClass(clickedSpot, 'selected trl_flower_' + this.player_id);
+        },
+
+        // Confirm button for claming vines
+        onConfirmClaim: function(evt) {
+            // Check a spot is selected
+            var selectedSpot = dojo.query('.trl_flower_spot.selected');
+            if (selectedSpot.length != 1) {
+                this.showMessage(_('Please choose a spot to claim'), 'error');
+                return;
+            }
+
+            // Get choice made
+            var selectedSpot = selectedSpot[0];
+            var tileId = selectedSpot.parentNode.dataset.tile;
+            var vineColor = selectedSpot.dataset.vine;
+
+            this.ajaxcall('/trellis/trellis/claim.html', {
+                tile_id: tileId,
+                vine_color: vineColor,
+                lock: true
+            }, this, function(result) {});
+        },
 
         ///////////////////////////////////////////////////
         //// Utility methods
@@ -86,7 +113,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             for (tile_id in bloomSpots) {
                 var tile = this.tiles[tile_id];
 
-                var spotContainer = this.renderBloomSpotContainer(tile);
+                var spotContainer = this.renderFlowerSpotContainer(tile);
 
                 for (vine_color in bloomSpots[tile_id]) {
                     var data = bloomSpots[tile_id][vine_color]
@@ -101,18 +128,42 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                         'container': spotContainer,
                     }
 
-                    var bloomSpotDiv = this.renderBloomSpot(bloomSpot);
+                    var bloomSpotDiv = this.renderFlowerSpot(bloomSpot);
                     dojo.connect(bloomSpotDiv, 'onclick', this, 'onClickBloomSpot');
                 }
             }
         },
 
+        // Displays the possible flower spots (as white areas)
+        displayFlowerSpots: function(flowerSpots) {
+            for (tile_id in flowerSpots) {
+                var tile = this.tiles[tile_id];
+
+                var spotContainer = this.renderFlowerSpotContainer(tile);
+
+                for (vine_color in flowerSpots[tile_id]) {
+                    var angles = flowerSpots[tile_id][vine_color]
+
+                    var bloomSpot = {
+                        'tile_id': tile_id,
+                        'vine_color': vine_color,
+                        'angle': angles[0],
+                        'players': '',
+                        'container': spotContainer,
+                    }
+
+                    var flowerSpotDiv = this.renderFlowerSpot(bloomSpot);
+                    dojo.connect(flowerSpotDiv, 'onclick', this, 'onClickFlowerSpot');
+                }
+            }
+        },
+
         // Renders an empty tile for blooming (easier to place this way)
-        renderBloomSpotContainer: function(tile) {
+        renderFlowerSpotContainer: function(tile) {
             var position_top = this.getTileTopPosition(tile.y);
             var position_left = this.getTileLeftPosition(tile.x);
 
-            return dojo.place(this.format_block('jstpl_bloom_spot_container', {
+            return dojo.place(this.format_block('jstpl_flower_spot_container', {
                 'tile_id': tile.tile_id,
                 'top': position_top,
                 'left': position_left,
@@ -120,8 +171,8 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         },
 
         // Renders a white box for bloom spots (when choice is needed)
-        renderBloomSpot: function(bloomSpot) {
-            return dojo.place(this.format_block('jstpl_bloom_spot', {
+        renderFlowerSpot: function(bloomSpot) {
+            return dojo.place(this.format_block('jstpl_flower_spot', {
                 'tile_id': bloomSpot.tile_id,
                 'vine_color': bloomSpot.vine_color,
                 'angle': bloomSpot.angle,

@@ -46,17 +46,17 @@ class action_trellis extends APP_GameAction {
         {
             if (!is_string($vine_color))
             {
-                throw new \feException("Invalid value for bloom selection - vine color", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Invalid value for bloom selection - vine color", true, true, FEX_bad_input_argument);
             }
 
             if (!is_numeric($player_id))
             {
-                throw new \feException("Non-numeric value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Non-numeric value for bloom selection - player ID", true, true, FEX_bad_input_argument);
             }
 
             if ((int)$player_id <= 0)
             {
-                throw new \feException("Negative value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException("Negative value for bloom selection - player ID", true, true, FEX_bad_input_argument);
             }
 
             $selection[$vine_color] = (int)$player_id;
@@ -70,11 +70,10 @@ class action_trellis extends APP_GameAction {
     public function claim() {
         self::setAjaxMode();
 
-        $x = self::getArg("x", AT_int, true);
-        $y = self::getArg("y", AT_int, true);
-        $position = self::getArg("position", AT_enum, true, null, ['top', 'topleft', 'topright', 'bottomleft', 'bottomright', 'bottom']);
+        $tile_id = self::getArg("tile_id", AT_posint, true);
+        $vine_color = self::getArg("vine_color", AT_enum, true, null, ['purple', 'orange', 'green', 'blue', 'pink', 'yellow']);
 
-        $this->game->actClaim($x, $y, $position);
+        $this->game->actClaim($tile_id, $vine_color);
 
         self::ajaxResponse();
     }
