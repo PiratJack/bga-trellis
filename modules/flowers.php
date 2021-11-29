@@ -155,11 +155,11 @@ trait FlowersTrait {
             $flower = $this->placeFlower($flower);
             if ($flower['player_id'] == $this->getActivePlayerId())
             {
-                $message = clienttranslate('The ${vine_color_translated} vine blooms a flower for ${player_name}');
+                $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}');
             }
             else
             {
-                $message = clienttranslate('The ${vine_color_translated} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
+                $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
                 $this->addGiftPoints($this->getActivePlayerId(), 1);
             }
 
@@ -172,7 +172,7 @@ trait FlowersTrait {
                     'player_name' => self::getPlayerNameById($flower['player_id']),
                     'player_name2' => self::getActivePlayerName(),
                     'flower' => $flower,
-                    'preserve' => [ 'vine_color' ],
+                    'i18n' => ['vine_color'],
                 ]
             );
         }
