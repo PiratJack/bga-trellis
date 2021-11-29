@@ -67,33 +67,13 @@ define([
             //                  You can use this method to perform some user interface changes at this moment.
             //
             onEnteringState: function(stateName, args) {
-                if (this.isCurrentPlayerActive()) {
-                    switch (stateName) {
-                        case 'plant':
-                            if (this.isCurrentPlayerActive()) {
-                                this.possibleTileSpots = args.args._private.possibleTileSpots;
-                                this.handTilesHandlers = [];
-                                dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
-                                    this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
-                                });
-                                dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
-                            }
-                            break;
-
-                        case 'plantChooseBloom':
-                            if (this.isCurrentPlayerActive()) {
-                                this.possibleBlooms = args.args._private.possibleBlooms;
-                                this.displayBloomSpots(this.possibleBlooms);
-                            }
-                            break;
-
-                        case 'claim':
-                            if (this.isCurrentPlayerActive()) {
-                                this.possibleFlowerSpots = args.args._private.possibleFlowerSpots;
-                                this.displayFlowerSpots(this.possibleFlowerSpots);
-                            }
-                            break;
-                    }
+                switch (stateName) {
+                    case 'plant':
+                    case 'plantChooseBloom':
+                    case 'claim':
+                        var methodName = "onEnteringState_" + stateName;
+                        this[methodName](args.args);
+                        break;
                 }
             },
 
@@ -101,28 +81,13 @@ define([
             //                 You can use this method to perform some user interface changes at this moment.
             //
             onLeavingState: function(stateName) {
-                if (this.isCurrentPlayerActive()) {
-                    switch (stateName) {
-                        case 'plant':
-                            this.destroyPossibleTileSpots();
-                            this.destroyTentativeTiles();
-                            dojo.query('.selected').removeClass('selected');
-                            this.handTilesHandlers.forEach(dojo.disconnect);
-                            delete(this.handTilesHandlers);
-                            dojo.query('.clickable').removeClass('clickable');
-                            delete(this.possibleTileSpots);
-                            break;
-
-                        case 'plantChooseBloom':
-                            dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
-                            delete(this.possibleBlooms);
-                            break;
-
-                        case 'claim':
-                            dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
-                            delete(this.possibleFlowerSpots);
-                            break;
-                    }
+                switch (stateName) {
+                    case 'plant':
+                    case 'plantChooseBloom':
+                    case 'claim':
+                        var methodName = "onLeavingState_" + stateName;
+                        this[methodName]();
+                        break;
                 }
             },
 

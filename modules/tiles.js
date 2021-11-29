@@ -12,6 +12,35 @@
 define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
     return declare("trellis.tiles", null, {
         ///////////////////////////////////////////////////
+        //// Game & client states - Only the ones where tiles are the main point
+
+        // Allows for tile selection
+        onEnteringState_plant: function(args) {
+            if (this.isCurrentPlayerActive()) {
+                this.possibleTileSpots = args._private.possibleTileSpots;
+                this.handTilesHandlers = [];
+                dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
+                    this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
+                });
+                dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
+            }
+        },
+
+        // Disables interaction & hides possible spots for tiles
+        onLeavingState_plant: function() {
+            if (this.isCurrentPlayerActive()) {
+                this.destroyPossibleTileSpots();
+                this.destroyTentativeTiles();
+                dojo.query('.selected').removeClass('selected');
+                this.handTilesHandlers.forEach(dojo.disconnect);
+                delete(this.handTilesHandlers);
+                dojo.query('.clickable').removeClass('clickable');
+                delete(this.possibleTileSpots);
+            }
+        },
+
+
+        ///////////////////////////////////////////////////
         //// Player actions
 
         // Stores clicked tile + displays relevant spots

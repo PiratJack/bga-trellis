@@ -85,7 +85,6 @@ trait StatesTrait {
         }
         elseif ($need_choice)
         {
-            //TODO: Test transition plant => bloom choice needed
             $this->gamestate->nextState('choiceNeeded');
         }
         else

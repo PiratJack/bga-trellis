@@ -12,6 +12,41 @@
 define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
     return declare("trellis.flowers", null, {
         ///////////////////////////////////////////////////
+        //// Game & client states - Only the ones where flowers are the main point
+
+        // Displays selection boxes for flowers
+        onEnteringState_plantChooseBloom: function(args) {
+            if (this.isCurrentPlayerActive()) {
+                this.possibleBlooms = args._private.possibleBlooms;
+                this.displayBloomSpots(this.possibleBlooms);
+            }
+        },
+
+        // Displays selection boxes for flowers
+        onEnteringState_claim: function(args) {
+            if (this.isCurrentPlayerActive()) {
+                this.possibleFlowerSpots = args._private.possibleFlowerSpots;
+                this.displayFlowerSpots(this.possibleFlowerSpots);
+            }
+        },
+
+        // Disables interaction & hides possible spots for flowers
+        onLeavingState_plantChooseBloom: function() {
+            if (this.isCurrentPlayerActive()) {
+                dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
+                delete(this.possibleBlooms);
+            }
+        },
+
+        // Disables interaction & hides possible spots for flowers
+        onLeavingState_claim: function() {
+            if (this.isCurrentPlayerActive()) {
+                dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
+                delete(this.possibleFlowerSpots);
+            }
+        },
+
+        ///////////////////////////////////////////////////
         //// Player actions
 
         // Confirm button for blooming flowers
