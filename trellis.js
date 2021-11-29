@@ -71,6 +71,7 @@ define([
                     case 'plant':
                     case 'plantChooseBloom':
                     case 'claim':
+                    case 'claimGift':
                         var methodName = "onEnteringState_" + stateName;
                         this[methodName](args.args);
                         break;
@@ -85,6 +86,7 @@ define([
                     case 'plant':
                     case 'plantChooseBloom':
                     case 'claim':
+                    case 'claimGift':
                         var methodName = "onLeavingState_" + stateName;
                         this[methodName]();
                         break;
@@ -108,6 +110,9 @@ define([
                             this.addActionButton('confirm_claim', _('Confirm'), 'onConfirmClaim');
                             break;
 
+                        case 'claimGift':
+                            this.addActionButton('confirm_claim_gift', _('Confirm'), 'onConfirmClaimGift');
+                            break;
                     }
                 }
             },
@@ -118,6 +123,14 @@ define([
 
             ///////////////////////////////////////////////////
             //// Utility methods
+
+            // Scolls to a given element
+            scrollTo: function(element) {
+                var x = -parseInt(element.style.left.substring(0, element.style.left.length - 2)) - this.tile_width / 2;
+                var y = -parseInt(element.style.top.substring(0, element.style.left.length - 2)) - this.tile_height / 2;
+                this.scrollmap.scrollto(x, y);
+            },
+
 
             ///////////////////////////////////////////////////
             //// Reaction to cometD notifications

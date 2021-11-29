@@ -85,7 +85,7 @@ trait FlowersTrait {
     // Determines where flowers can be placed, based on a given tile
     // if tile is full, then all tiles will be considered
     // Returns $tile_id => [$vine_color => $angles]
-    private function getPossibleFlowerSpots($tile_id) {
+    private function getPossibleFlowerSpots($tile_id, $gift_points = 0) {
         $tile = $this->getTileById($tile_id);
 
         // Get data on vines & flowers
@@ -101,7 +101,8 @@ trait FlowersTrait {
         }, ARRAY_FILTER_USE_KEY)];
 
         // No spot left on this tile, so we can plant anywhere
-        if ($available_vines == [])
+        // OR I get more gifts than the tile can provide
+        if ($available_vines == [] || count($available_vines[$tile_id]) < $gift_points)
         {
             $tiles = $this->getTilesFromLocation('board');
             foreach ($tiles as $tile_id => $tile)

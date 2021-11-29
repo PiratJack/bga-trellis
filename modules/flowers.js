@@ -26,7 +26,17 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         onEnteringState_claim: function(args) {
             if (this.isCurrentPlayerActive()) {
                 this.possibleFlowerSpots = args._private.possibleFlowerSpots;
-                this.displayFlowerSpots(this.possibleFlowerSpots);
+                this.displayFlowerSpots(this.possibleFlowerSpots, 'onClickFlowerSpot');
+            }
+        },
+
+        // Displays selection boxes for gifts
+        onEnteringState_claimGift: function(args) {
+            if (this.isCurrentPlayerActive()) {
+                this.possibleGiftSpots = args._private.possibleFlowerSpots;
+                this.mainTile = args._private.mainTile;
+                this.nbGifts = args.gift_points;
+                this.displayFlowerSpots(this.possibleGiftSpots, 'onClickGiftSpot');
             }
         },
 
@@ -46,18 +56,26 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             }
         },
 
+        // Disables interaction & hides possible spots for flowers
+        onLeavingState_claimGift: function() {
+            if (this.isCurrentPlayerActive()) {
+                dojo.query('.trl_flower_spot_container').forEach(dojo.destroy);
+                delete(this.possibleGiftSpots);
+                delete(this.mainTile);
+                delete(this.nbGifts);
+            }
+        },
+
         ///////////////////////////////////////////////////
         //// Player actions
 
         // Confirm button for blooming flowers
         onConfirmBloom: function(evt) {
             // Check all spots have flowers selected
-            if (dojo.query('.trl_flower_spot:not(.selected)').length) {
+            var missingFlower = dojo.query('.trl_flower_spot:not(.selected)');
+            if (missingFlower.length) {
                 this.showMessage(_('Some spots are missing a flower'), 'error');
-                var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')[0].parentNode;
-                var x = -parseInt(missingFlower.style.left.substring(0, missingFlower.style.left.length - 2)) - this.tile_width / 2;
-                var y = -parseInt(missingFlower.style.top.substring(0, missingFlower.style.left.length - 2)) - this.tile_height / 2;
-                this.scrollmap.scrollto(x, y);
+                this.scrollTo(missingFlower[0].parentNode);
                 return;
             }
 
@@ -117,9 +135,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             if (selectedSpot.length != 1) {
                 this.showMessage(_('Please choose a spot to claim'), 'error');
                 var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')[0].parentNode;
-                var x = -parseInt(missingFlower.style.left.substring(0, missingFlower.style.left.length - 2)) - this.tile_width / 2;
-                var y = -parseInt(missingFlower.style.top.substring(0, missingFlower.style.left.length - 2)) - this.tile_height / 2;
-                this.scrollmap.scrollto(x, y);
+                this.scrollTo(missingFlower);
                 return;
             }
 
@@ -131,6 +147,53 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             this.ajaxcall('/trellis/trellis/claim.html', {
                 tile_id: tileId,
                 vine_color: vineColor,
+                lock: true
+            }, this, function(result) {});
+        },
+
+        // Click on an empty flower spot (with in gift state)
+        onClickGiftSpot: function(evt) {
+            var clickedSpot = evt.currentTarget;
+
+            dojo.toggleClass(clickedSpot, 'selected trl_flower_' + this.players[this.player_id].player_color);
+        },
+
+        // Confirm button for claming gifts
+        onConfirmClaimGift: function(evt) {
+            // Check a spot is selected
+            var selectedSpots = dojo.query('.trl_flower_spot.selected');
+            if (selectedSpots.length != this.nbGifts) {
+                // Player hasn't selected the right number of gifts
+                if (selectedSpots.length < this.nbGifts)
+                    this.showMessage(_('You received more gifts, please choose additional spots'), 'error');
+                else if (selectedSpots.length > this.nbGifts)
+                    this.showMessage(_('You received less gifts, please choose less spots'), 'error');
+                return;
+            }
+            // Player has more gifts than the main tile can accomodate
+            // ==> he/she has to claim all vines from the main tile
+            var mainTileSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot');
+            var mainTileSelectedSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot.selected');
+            if (this.nbGifts >= mainTileSpots.length && mainTileSelectedSpots.length != mainTileSpots.length) {
+                this.showMessage(_('You must claim all vines from the last tile placed before claiming others'), 'error');
+
+                this.scrollmap.scrollto(mainTileSelectedSpots[0].parentNode);
+                return;
+            }
+
+            // Get choice made
+            var selectedGifts = {};
+            var allSpots = selectedSpots.forEach(function(giftSpot) {
+                var tileId = giftSpot.parentNode.dataset.tile;
+                var vineColor = giftSpot.dataset.vine;
+                if (!(tileId in selectedGifts))
+                    selectedGifts[tileId] = [];
+                selectedGifts[tileId].push(vineColor);
+            });
+
+            var selection_text = JSON.stringify(selectedGifts);
+            this.ajaxcall('/trellis/trellis/claimGift.html', {
+                selection: selection_text,
                 lock: true
             }, this, function(result) {});
         },
@@ -174,7 +237,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         },
 
         // Displays the possible flower spots (as white areas)
-        displayFlowerSpots: function(flowerSpots) {
+        displayFlowerSpots: function(flowerSpots, handler) {
             for (tile_id in flowerSpots) {
                 var tile = this.tiles[tile_id];
 
@@ -192,7 +255,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                     }
 
                     var flowerSpotDiv = this.renderFlowerSpot(bloomSpot);
-                    dojo.connect(flowerSpotDiv, 'onclick', this, 'onClickFlowerSpot');
+                    dojo.connect(flowerSpotDiv, 'onclick', this, handler);
                 }
             }
         },

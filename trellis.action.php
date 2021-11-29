@@ -77,4 +77,36 @@ class action_trellis extends APP_GameAction {
 
         self::ajaxResponse();
     }
+
+    public function claimGift() {
+        self::setAjaxMode();
+
+        $selectionAJAX = self::getArg('selection', AT_json, true);
+        $selection = [];
+        foreach ($selectionAJAX as $tile_id => $vine_colors)
+        {
+            foreach ($vine_colors as $vine_color)
+            {
+                if (!is_string($vine_color))
+                {
+                    throw new \BgaUserException("Invalid value for gift selection - vine color", true, true, FEX_bad_input_argument);
+                }
+
+                if (!is_numeric($tile_id))
+                {
+                    throw new \BgaUserException("Non-numeric value for gift selection - player ID", true, true, FEX_bad_input_argument);
+                }
+
+                if ((int)$tile_id <= 0)
+                {
+                    throw new \BgaUserException("Negative value for gift selection - player ID", true, true, FEX_bad_input_argument);
+                }
+                $selection[(int)$tile_id][] = $vine_color;
+            }
+        }
+
+        $this->game->actClaimGift($selection);
+
+        self::ajaxResponse();
+    }
 }

@@ -234,14 +234,92 @@ trait StatesTrait {
 
     // Return which vines can be claimed by active player (through gifts)
     public function argClaimGift() {
-        //TODO: states > argClaimGift
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $player_id = $this->getActivePlayerId();
+        $gift_points = $this->loadPlayersInfos()[$player_id]['gift_points'];
+
+        return [
+            '_private' => [
+                'active' => [
+                    'possibleFlowerSpots' => $this->getPossibleFlowerSpots($tile_id, $gift_points),
+                    'mainTile' => $tile_id,
+                ]
+            ],
+            'gift_points' => $gift_points,
+        ];
     }
 
     // The player claims a vine
-    public function actClaimGift($x, $y, $angle) {
-        //TODO: states > actClaimGift
+    public function actClaimGift($selection) {
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $player_id = $this->getActivePlayerId();
+        $gift_points = $this->loadPlayersInfos()[$player_id]['gift_points'];
+        $possible_spots = $this->getPossibleFlowerSpots($tile_id, $gift_points);
 
-        // Transition: 'continueGame', 'endGame'
+        // Check enough gift points were claimed
+        $selection_count = array_sum(array_map(function ($v) {
+            return count($v);
+        }, $selection));
+        if ($selection_count < $gift_points)
+        {
+            throw new \BgaUserException(_('You received more gifts, please choose additional spots'));
+        }
+        elseif ($selection_count > $gift_points)
+        {
+            throw new \BgaUserException(_('You received less gifts, please choose less spots'));
+        }
+
+        // Check the player took all the "last tile played" gifts
+        if (in_array($tile_id, $possible_spots))
+        {
+            if (count($possible_spots[$tile_id]) <= $gift_points)
+            {
+                if (!in_array($tile_id, $selection) || count($possible_spots[$tile_id]) != count($selection[$tile_id]))
+                {
+                    throw new \BgaUserException(_('You must claim all vines from the last tile placed before claiming others'));
+                }
+            }
+        }
+
+        $vines_claimed = [];
+        if (!array_key_exists($tile_id, $possible_spots))
+        {
+            throw new \BgaUserException(str_replace('${tile}', $tile_id, _('Tile ${tile} can\'t be selected')));
+        }
+        foreach ($selection as $tile_id => $vines)
+        {
+            foreach ($vines as $vine_color)
+            {
+                if (!array_key_exists($vine_color, $possible_spots[$tile_id]))
+                {
+                    throw new \BgaUserException(str_replace('${vine}', $vine_color, str_replace('${tile}', $tile_id, _('Tile ${tile} does not have a ${vine} vine'))));
+                }
+                $vines_claimed[] = ['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color];
+            }
+        }
+
+        self::notifyAllPlayers(
+            'message',
+            '${player_name} claims ${gift_points} gift(s)',
+            [
+                'player_name' => self::getActivePlayerName(),
+                'gift_points' => $gift_points,
+            ]
+        );
+
+        foreach ($vines_claimed as $vine)
+        {
+            $this->claimVine($vine);
+        }
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        else
+        {
+            $this->gamestate->nextState('continueGame');
+        }
     }
 
     // Blooms flowers after player claims gifts

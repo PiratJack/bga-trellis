@@ -80,8 +80,8 @@ $machinestates = [
     // Claim a gift if possible
     TRL_STATE_CLAIM_GIFT => [
         'name' => 'claimGift',
-        'description' => clienttranslate('${actplayer} claims gift(s)'),
-        'descriptionmyturn' => clienttranslate('${you} claims gift(s)'),
+        'description' => clienttranslate('${actplayer} claims ${gift_points} gift(s)'),
+        'descriptionmyturn' => clienttranslate('${you} claim ${gift_points} gift(s)'),
         'type' => 'activeplayer',
         'args' => 'argClaimGift',
         'possibleactions' => [ 'claimGift', 'endGame' ],
