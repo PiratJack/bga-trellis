@@ -81,6 +81,10 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             var selectedSpot = dojo.query('.trl_flower_spot.selected');
             if (selectedSpot.length != 1) {
                 this.showMessage(_('Please choose a spot to claim'), 'error');
+                var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')[0].parentNode;
+                var x = -parseInt(missingFlower.style.left.substring(0, missingFlower.style.left.length - 2)) - this.tile_width / 2;
+                var y = -parseInt(missingFlower.style.top.substring(0, missingFlower.style.left.length - 2)) - this.tile_height / 2;
+                this.scrollmap.scrollto(x, y);
                 return;
             }
 
