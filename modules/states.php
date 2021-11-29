@@ -58,14 +58,20 @@ trait StatesTrait {
 
     // Blooms flowers after player puts a vine
     public function stPlantBloom() {
-        $possible_bloom = $this->getBloomForTile($this->getGameStateValue('last_tile_planted'));
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $possible_bloom = $this->getBloomForTile($tile_id);
 
         $need_choice = false;
         foreach ($possible_bloom as $color => $flowers)
         {
-            if (count($flowers) == 1)
+            if (count($flowers['players']) == 1)
             {
-                $this->bloomFlower(current($flowers));
+                $flower = [
+                    'player_id' => current($flowers['players']),
+                    'tile_id' => $tile_id,
+                    'vine' => $color,
+                ];
+                $this->bloomFlower($flower);
             }
             else
             {
