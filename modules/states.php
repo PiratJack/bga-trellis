@@ -254,7 +254,18 @@ trait StatesTrait {
 
     // Draw to 3 tiles and end a player's turn
     public function stEndTurn() {
-        //TODO: states > stEndTurn
+        // Pick a tile for player's hand
+        $this->pickTiles(1, "deck", $this->getActivePlayerId());
+        $this->activeNextPlayer();
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        else
+        {
+            $this->gamestate->nextState('nextPlayer');
+        }
 
         // Transition: 'nextPlayer', 'endGame'
     }
