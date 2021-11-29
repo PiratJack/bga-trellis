@@ -20,7 +20,7 @@ trait FlowersTrait {
     // Determines which flowers should bloom
     // Returns structure: vine_color => ['players' => $player_ids, 'angle' => $angle]
     private function getBloomForTile($tile_id) {
-        $tile = $this->getTile(['tile_id' => $tile_id]);
+        $tile = $this->getTileById($tile_id);
 
         // Get data on vines & flowers
         $vines = $this->rotateTileType($this->tile_types[$tile['tile_type']], $tile['angle'])['vines'];
@@ -86,7 +86,7 @@ trait FlowersTrait {
     // if tile is full, then all tiles will be considered
     // Returns $tile_id => [$vine_color => $angles]
     private function getPossibleFlowerSpots($tile_id) {
-        $tile = $this->getTile(['tile_id' => $tile_id]);
+        $tile = $this->getTileById($tile_id);
 
         // Get data on vines & flowers
         $vines = $this->rotateTileType($this->tile_types[$tile['tile_type']], $tile['angle'])['vines'];
@@ -192,10 +192,7 @@ trait FlowersTrait {
 
     // Gets flowers based on some parameters
     private function getFlowers($params = []) {
-        if (!isset($this->flowers))
-        {
-            $this->reloadFlowers();
-        }
+        $this->loadFlowers();
 
         foreach ($params as $key => $value)
         {

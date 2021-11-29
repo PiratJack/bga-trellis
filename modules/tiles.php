@@ -264,6 +264,18 @@ trait TilesTrait {
         return current($tiles);
     }
 
+    // Gets a single tile based on its ID
+    private function getTileById($tile_id) {
+        $tiles = $this->getTiles(['tile_id' => $tile_id]);
+
+        if (count($tiles) != 1)
+        {
+            return null;
+        }
+
+        return current($tiles);
+    }
+
     // Gets tiles from a given location
     private function getTilesFromLocation($location) {
         return $this->getTiles(['location' => $location]);

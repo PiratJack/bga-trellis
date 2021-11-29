@@ -76,7 +76,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
             var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
-            var newAngle = (currentAngle + 60 * clickedArrow.dataset.direction) % 360;
+            var newAngle = (currentAngle + 360 + 60 * clickedArrow.dataset.direction) % 360;
 
             selectedTentativeTile.dataset.angle = newAngle;
             selectedTentativeTile.style.transform = 'rotate(' + newAngle + 'deg)';

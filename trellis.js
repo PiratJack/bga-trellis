@@ -178,7 +178,7 @@ define([
 
                         // list of special keys we want to replace with images
                         if ('vine_color' in args)
-                            args['vine_color'] = '<span style="color: ' + args['vine_color'] + ';" class="trl_vine_color">&nbsp;' + args['vine_color_translated'] + '&nbsp;</span>';
+                            args['vine_color'] = '<span style="color: ' + args['vine_color'] + ';" class="trl_vine_color">&nbsp;' + _(args['vine_color']) + '&nbsp;</span>';
                     }
                 } catch (e) {
                     console.error(log, args, "Exception thrown", e.stack);

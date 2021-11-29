@@ -31,7 +31,7 @@ trait StatesTrait {
         $this->checkAction('plant');
 
         // Check tile exists
-        $tile = $this->getTile(['tile_id' => $tile_id]);
+        $tile = $this->getTileById($tile_id);
         if ($tile === null)
         {
             throw new BgaVisibleSystemException(_('This tile does not exist'));
