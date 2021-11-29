@@ -183,7 +183,8 @@ trait StatesTrait {
             throw new \BgaUserException("That vine is not available", true, true, FEX_bad_input_argument);
         }
 
-        $this->bloomFlower(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
+        $this->claimVine(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
+
 
         if ($this->checkPlayerWon())
         {
@@ -197,9 +198,37 @@ trait StatesTrait {
 
     // Blooms flowers after player claims a vine
     public function stClaimBloom() {
-        //TODO: states > stClaimBloom
+        $blooms = $this->getBloomForFlower($this->getGameStateValue('last_flower_claimed'));
+        foreach ($blooms as $vine_color => $tile_ids)
+        {
+            $flowers = array_map(function ($tile_id) use ($vine_color) {
+                return [
+                    'player_id' => $this->getActivePlayerId(),
+                    'tile_id' => $tile_id,
+                    'vine' => $vine_color
+                ];
+            }, $tile_ids);
 
-        // Transition: 'giftReceived', 'noGiftReceived', 'endGame'
+            foreach ($flowers as $flower)
+            {
+                $this->bloomFlower($flower);
+            }
+        }
+
+        $this->reloadPlayersInfos();
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        elseif ($this->players[$this->getActivePlayerId()]['gift_points'] != 0)
+        {
+            $this->gamestate->nextState('giftReceived');
+        }
+        else
+        {
+            $this->gamestate->nextState('noGiftReceived');
+        }
     }
 
 

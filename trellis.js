@@ -168,6 +168,9 @@ define([
 
                 dojo.subscribe('flowerBlooms', this, "notif_flowerBlooms");
                 this.notifqueue.setSynchronous('flowerBlooms', 500);
+
+                dojo.subscribe('claimVine', this, "notif_flowerBlooms");
+                this.notifqueue.setSynchronous('claimVine', 500);
             },
 
             // Notify about scores

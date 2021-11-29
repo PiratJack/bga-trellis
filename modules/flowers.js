@@ -70,9 +70,9 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         // Click on an empty flower spot
         onClickFlowerSpot: function(evt) {
             var clickedSpot = evt.currentTarget;
-            dojo.query('.trl_flower_spot.selected').removeClass('selected trl_flower_' + this.player_id);
+            dojo.query('.trl_flower_spot.selected').removeClass('selected trl_flower_' + this.players[this.player_id].player_color);
 
-            dojo.addClass(clickedSpot, 'selected trl_flower_' + this.player_id);
+            dojo.addClass(clickedSpot, 'selected trl_flower_' + this.players[this.player_id].player_color);
         },
 
         // Confirm button for claming vines

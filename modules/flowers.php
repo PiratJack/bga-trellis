@@ -128,6 +128,61 @@ trait FlowersTrait {
         return $available_vines;
     }
 
+    // Determines where a given flower will bloom
+    // Returns structure: vine_color => [$tile_ids]
+    public function getBloomForFlower($flower_id) {
+        // Get data on flower & tile
+        $flower = $this->getFlowerById($flower_id);
+        $vine_color = $flower['vine'];
+        $tile = $this->getTileById($flower['tile_id']);
+        $tile_type = $this->rotateTileType($this->tile_types[$tile['tile_type']], $tile['angle']);
+        $angles = $tile_type['vines'][$flower['vine']];
+
+        // Travel through the vine in both directions
+        $blooming_flowers = [];
+        foreach ($angles as $direction)
+        {
+            $angle = $direction;
+            $neighbor = $tile;
+
+            // The 10 is random, to avoid infinite loops
+            for ($i = 0; $i <= 10; $i++)
+            {
+                $neighbor = $this->getTileNeighborByAngle($neighbor, $angle);
+                if ($neighbor == null)
+                {
+                    break;
+                }
+
+                // A vine of the same color exists
+                $neighbor_type = $this->rotateTileType($this->tile_types[$neighbor['tile_type']], $neighbor['angle']);
+                if (!array_key_exists($vine_color, $neighbor_type['vines']))
+                {
+                    break;
+                }
+
+                // The vine is in the right angle
+                if (!in_array(($angle+180)%360, $neighbor_type['vines'][$vine_color]))
+                {
+                    break;
+                }
+
+                $blooming_flowers[$vine_color][] = $neighbor['tile_id'];
+                $angle = array_filter($neighbor_type['vines'][$vine_color], function ($a) use ($angle) {
+                    return $a != ($angle+180)%360;
+                });
+                if (count($angle) == 0)
+                {
+                    break;
+                }
+
+                $angle = current($angle);
+            }
+        }
+        return $blooming_flowers;
+    }
+
+
     // Puts a flower on a given position
     private function placeFlower($flower) {
         // Generate SQL
@@ -168,7 +223,6 @@ trait FlowersTrait {
                 $message,
                 [
                     'vine_color' => $flower['vine'],
-                    'vine_color_translated' => $this->color_translated[$flower['vine']],
                     'player_name' => self::getPlayerNameById($flower['player_id']),
                     'player_name2' => self::getActivePlayerName(),
                     'flower' => $flower,
@@ -178,6 +232,29 @@ trait FlowersTrait {
         }
 
         $this->reloadFlowers();
+        $this->notifScores();
+    }
+
+    // Claims a flower & notify players
+    private function claimVine($flower) {
+        $flower = $this->placeFlower($flower);
+
+        $this->addPoints($flower['player_id'], 1);
+        $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
+
+        self::notifyAllPlayers(
+            'flowerBlooms',
+            clienttranslate('${player_name} claims the ${vine_color} vine'),
+            [
+                'vine_color' => $flower['vine'],
+                'player_name' => self::getActivePlayerName(),
+                'flower' => $flower,
+                'i18n' => ['vine_color'],
+            ]
+        );
+
+        $this->reloadFlowers();
+        $this->notifScores();
     }
 
     // Remove all flowers from the board
