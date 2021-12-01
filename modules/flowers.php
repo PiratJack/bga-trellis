@@ -77,6 +77,7 @@ trait FlowersTrait {
                 // We need the "original" angle (before rotating) because it rotates after
                 $blooming_flowers[$vine_color]['angle'] = $angle - $tile['angle'];
                 $blooming_flowers[$vine_color]['players'][] = $blooming_flower['player_id'];
+                $blooming_flowers[$vine_color]['players'] = array_unique($blooming_flowers[$vine_color]['players']);
             }
         }
         return $blooming_flowers;
@@ -168,7 +169,19 @@ trait FlowersTrait {
                     break;
                 }
 
+                // Check there is no flower there already. If there is one, stop (because we can't go further anyway)
+                $existing_flower = array_filter($this->flowers, function ($f) use ($neighbor, $vine_color) {
+                    return $f['tile_id'] == $neighbor['tile_id'] && $f['vine'] == $vine_color;
+                });
+                if (count($existing_flower) != 0)
+                {
+                    break;
+                }
+
+                // Add spot to list
                 $blooming_flowers[$vine_color][] = $neighbor['tile_id'];
+
+                // Continue the file
                 $angle = array_filter($neighbor_type['vines'][$vine_color], function ($a) use ($angle) {
                     return $a != ($angle+180)%360;
                 });
@@ -200,47 +213,39 @@ trait FlowersTrait {
     }
 
     // Blooms a flower & notifies the players
-    private function bloomFlower($flowers) {
-        if (array_key_exists('player_id', $flowers))
+    private function bloomFlower($flower) {
+        $flower = $this->placeFlower($flower);
+        if ($flower['player_id'] == $this->getActivePlayerId())
         {
-            $flowers = [$flowers];
+            $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}');
+        }
+        else
+        {
+            $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
+            $this->addGiftPoints($this->getActivePlayerId(), 1);
         }
 
-        foreach ($flowers as $flower)
-        {
-            $flower = $this->placeFlower($flower);
-            if ($flower['player_id'] == $this->getActivePlayerId())
-            {
-                $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}');
-            }
-            else
-            {
-                $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
-                $this->addGiftPoints($this->getActivePlayerId(), 1);
-            }
-
-            self::notifyAllPlayers(
-                'flowerBlooms',
-                $message,
-                [
-                    'vine_color' => $flower['vine'],
-                    'player_name' => self::getPlayerNameById($flower['player_id']),
-                    'player_name2' => self::getActivePlayerName(),
-                    'flower' => $flower,
-                    'i18n' => ['vine_color'],
-                ]
-            );
-        }
+        self::notifyAllPlayers(
+            'flowerBlooms',
+            $message,
+            [
+                'vine_color' => $flower['vine'],
+                'player_name' => self::getPlayerNameById($flower['player_id']),
+                'player_name2' => self::getActivePlayerName(),
+                'flower' => $flower,
+                'i18n' => ['vine_color'],
+            ]
+        );
 
         $this->reloadFlowers();
         $this->notifScores();
+        return $flower;
     }
 
     // Claims a flower & notify players
     private function claimVine($flower) {
         $flower = $this->placeFlower($flower);
 
-        $this->addPoints($flower['player_id'], 1);
         $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
 
         self::notifyAllPlayers(
@@ -256,6 +261,8 @@ trait FlowersTrait {
 
         $this->reloadFlowers();
         $this->notifScores();
+
+        return $flower;
     }
 
     // Remove all flowers from the board

@@ -66,12 +66,27 @@ trait StatesTrait {
         {
             if (count($flowers['players']) == 1)
             {
+                $player_id = current($flowers['players']);
                 $flower = [
-                    'player_id' => current($flowers['players']),
+                    'player_id' => $player_id,
                     'tile_id' => $tile_id,
                     'vine' => $color,
                 ];
-                $this->bloomFlower($flower);
+                $new_flower = $this->bloomFlower($flower);
+                $vines = $this->getBloomForFlower($new_flower['flower_id']);
+
+                foreach ($vines as $vine_color => $tile_ids)
+                {
+                    foreach ($tile_ids as $add_tile_id)
+                    {
+                        $additional_flower = [
+                            'player_id' => $player_id,
+                            'tile_id' => $add_tile_id,
+                            'vine' => $vine_color,
+                        ];
+                        $f = $this->bloomFlower($additional_flower);
+                    }
+                }
             }
             else
             {
@@ -249,12 +264,12 @@ trait StatesTrait {
         ];
     }
 
-    // The player claims a vine
+    // The player claims gift(s)
     public function actClaimGift($selection) {
-        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $last_tile_id = $this->getGameStateValue('last_tile_planted');
         $player_id = $this->getActivePlayerId();
         $gift_points = $this->loadPlayersInfos()[$player_id]['gift_points'];
-        $possible_spots = $this->getPossibleFlowerSpots($tile_id, $gift_points);
+        $possible_spots = $this->getPossibleFlowerSpots($last_tile_id, $gift_points);
 
         // Check enough gift points were claimed
         $selection_count = array_sum(array_map(function ($v) {
@@ -270,11 +285,11 @@ trait StatesTrait {
         }
 
         // Check the player took all the "last tile played" gifts
-        if (in_array($tile_id, $possible_spots))
+        if (array_key_exists($last_tile_id, $possible_spots))
         {
-            if (count($possible_spots[$tile_id]) <= $gift_points)
+            if (count($possible_spots[$last_tile_id]) <= $gift_points)
             {
-                if (!in_array($tile_id, $selection) || count($possible_spots[$tile_id]) != count($selection[$tile_id]))
+                if (!array_key_exists($last_tile_id, $selection) || count($possible_spots[$last_tile_id]) != count($selection[$last_tile_id]))
                 {
                     throw new \BgaUserException(_('You must claim all vines from the last tile placed before claiming others'));
                 }
@@ -282,12 +297,12 @@ trait StatesTrait {
         }
 
         $vines_claimed = [];
-        if (!array_key_exists($tile_id, $possible_spots))
-        {
-            throw new \BgaUserException(str_replace('${tile}', $tile_id, _('Tile ${tile} can\'t be selected')));
-        }
         foreach ($selection as $tile_id => $vines)
         {
+            if (!array_key_exists($tile_id, $possible_spots))
+            {
+                throw new \BgaUserException(str_replace('${tile}', $tile_id, _('Tile ${tile} can\'t be selected')));
+            }
             foreach ($vines as $vine_color)
             {
                 if (!array_key_exists($vine_color, $possible_spots[$tile_id]))
@@ -307,10 +322,18 @@ trait StatesTrait {
             ]
         );
 
+        $first_flower = true;
         foreach ($vines_claimed as $vine)
         {
-            $this->claimVine($vine);
+            $flower = $this->claimVine($vine);
+            if ($first_flower)
+            {
+                $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
+            }
+            $first_flower = false;
         }
+
+        $this->resetGiftPoints($player_id);
 
         if ($this->checkPlayerWon())
         {
@@ -324,15 +347,59 @@ trait StatesTrait {
 
     // Blooms flowers after player claims gifts
     public function stClaimGiftBloom() {
-        //TODO: states > stClaimGiftBloom
+        $flowers = $this->getFlowers();
+        $last_flower_claimed = $this->getGameStateValue('last_flower_claimed');
+        $new_flowers = array_filter($flowers, function ($f) use ($last_flower_claimed) {
+            return $f['flower_id'] >= $last_flower_claimed;
+        });
 
-        // Transition: 'bloomingDone', 'choiceNeeded', 'endGame'
+        foreach ($new_flowers as $flower)
+        {
+            $blooms = $this->getBloomForFlower($flower['flower_id']);
+            foreach ($blooms as $vine_color => $tile_ids)
+            {
+                $flowers = array_map(function ($tile_id) use ($vine_color) {
+                    return [
+                        'player_id' => $this->getActivePlayerId(),
+                        'tile_id' => $tile_id,
+                        'vine' => $vine_color
+                    ];
+                }, $tile_ids);
+
+                foreach ($flowers as $flower)
+                {
+                    $this->bloomFlower($flower);
+                }
+            }
+
+            $this->reloadPlayersInfos();
+        }
+
+        if ($this->checkPlayerWon())
+        {
+            $this->gamestate->nextState('endGame');
+        }
+        else
+        {
+            $this->gamestate->nextState('bloomingDone');
+        }
     }
 
     // Draw to 3 tiles and end a player's turn
     public function stEndTurn() {
+        $active_player_id = $this->getActivePlayerId();
         // Pick a tile for player's hand
-        $this->pickTiles(1, "deck", $this->getActivePlayerId());
+        $new_tile = $this->pickTiles(1, "deck", $active_player_id);
+
+        self::notifyPlayer(
+            $active_player_id,
+            'pickTile',
+            '',
+            [
+                'tile' => current($new_tile),
+            ]
+        );
+
         $this->activeNextPlayer();
 
         if ($this->checkPlayerWon())
@@ -343,7 +410,5 @@ trait StatesTrait {
         {
             $this->gamestate->nextState('nextPlayer');
         }
-
-        // Transition: 'nextPlayer', 'endGame'
     }
 }

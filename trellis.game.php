@@ -28,6 +28,7 @@ class TrellisPiratJack extends Table {
 
         self::initGameStateLabels([
             'last_tile_planted' => 10,
+            'last_flower_claimed' => 11,
         ]);
     }
 
@@ -98,10 +99,6 @@ class TrellisPiratJack extends Table {
 
         return ($winner != 0);
     }
-
-
-
-
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Zombie

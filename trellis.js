@@ -149,6 +149,9 @@ define([
 
                 dojo.subscribe('claimVine', this, "notif_flowerBlooms");
                 this.notifqueue.setSynchronous('claimVine', 500);
+
+                dojo.subscribe('pickTile', this, "notif_pickTile");
+                this.notifqueue.setSynchronous('pickTile', 500);
             },
 
             // Notify about scores
@@ -157,6 +160,16 @@ define([
                     var score = args.args.score[playerId];
                     this.scoreCtrl[playerId].toValue(score);
                 }
+            },
+
+            // Pick a new tile
+            notif_pickTile: function(args) {
+                this.tiles[args.args.tile.tile_id] = args.args.tile;
+                var newTile = this.renderTile(args.args.tile);
+                dojo.style(newTile, 'opacity', 0);
+                dojo.fadeIn({
+                    node: newTile
+                }).play();
             },
 
             // Display vine_color with the actual color

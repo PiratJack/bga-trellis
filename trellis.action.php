@@ -97,7 +97,7 @@ class action_trellis extends APP_GameAction {
                     throw new \BgaUserException("Non-numeric value for gift selection - player ID", true, true, FEX_bad_input_argument);
                 }
 
-                if ((int)$tile_id <= 0)
+                if ((int)$tile_id < 0)
                 {
                     throw new \BgaUserException("Negative value for gift selection - player ID", true, true, FEX_bad_input_argument);
                 }

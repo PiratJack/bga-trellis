@@ -113,16 +113,22 @@ trait TilesTrait {
         return null;
     }
 
-    // Returns whether 2 tiles are a match based on their vines & orientation
-    private function isMatch($tile1, $tile2) {
-        //TODO: Tiles > isMatch
-    }
-
     // Picks the first n tiles from one location to another
     private function pickTiles($nb_tiles, $source, $target) {
-        $sql = 'UPDATE tiles SET location = "'.$target.'" WHERE location = "'.$source.'" ORDER BY location_order LIMIT '.$nb_tiles;
+        $sql = 'SELECT tile_id FROM tiles WHERE location = "'.$source.'" ORDER BY location_order LIMIT '.$nb_tiles;
+        $tile_ids = array_keys(self::getCollectionFromDB($sql));
+        if (count($tile_ids) == 0)
+        {
+            return null;
+        }
+
+        $sql = 'UPDATE tiles SET location = "'.$target.'" WHERE tile_id IN ('.implode(', ', $tile_ids).')';
         self::DbQuery($sql);
-        $this->reloadTiles();
+        $tiles = $this->reloadTiles();
+
+        return array_filter($tiles, function ($t) use ($tile_ids) {
+            return in_array($t['tile_id'], $tile_ids);
+        });
     }
 
     // Moves some tiles to a location

@@ -44,6 +44,12 @@ trait PlayersTrait {
         self::reloadPlayersInfos();
     }
 
+    // Resets gift points to 0 for a player
+    private function resetGiftPoints($player_id) {
+        self::DbQuery('UPDATE player SET gift_points = 0 WHERE player_id = '.$player_id);
+        self::reloadPlayersInfos();
+    }
+
     // Returns all players data for getAllDatas
     private function players_getAllDatas() {
         return self::loadPlayersInfos();

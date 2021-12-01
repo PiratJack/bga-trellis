@@ -173,11 +173,11 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             // Player has more gifts than the main tile can accomodate
             // ==> he/she has to claim all vines from the main tile
             var mainTileSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot');
-            var mainTileSelectedSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot.selected');
-            if (this.nbGifts >= mainTileSpots.length && mainTileSelectedSpots.length != mainTileSpots.length) {
+            var mainTileUnSelectedSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot:not(.selected)');
+            if (this.nbGifts >= mainTileSpots.length && mainTileUnSelectedSpots.length != 0) {
                 this.showMessage(_('You must claim all vines from the last tile placed before claiming others'), 'error');
 
-                this.scrollmap.scrollto(mainTileSelectedSpots[0].parentNode);
+                this.scrollTo(mainTileUnSelectedSpots[0].parentNode);
                 return;
             }
 
