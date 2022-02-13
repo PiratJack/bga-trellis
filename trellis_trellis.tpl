@@ -26,6 +26,9 @@
         <div id="trl_hand_tiles"></div>
     </div>
 
+    <div id="map_footer" class="whiteblock">
+        <a href="#" id="enlargedisplay">↓  {LABEL_ENLARGE_DISPLAY}  ↓</a>
+    </div>
 </div>
 
 <script type="text/javascript">

@@ -21,5 +21,6 @@
           $players_nbr = count($players);
 
           $this->tpl['MY_TILES'] = self::_("My tiles");
+          $this->tpl['LABEL_ENLARGE_DISPLAY'] = self::_("Enlarge display");
       }
   }

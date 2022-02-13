@@ -41,6 +41,8 @@ define([
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
                 this.scrollmap.setupOnScreenArrows(150);
 
+                dojo.connect( $('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight' );
+
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
                 for (var tile_id in this.tiles) {
@@ -63,9 +65,6 @@ define([
             ///////////////////////////////////////////////////
             //// Game & client states
 
-            // onEnteringState: this method is called each time we are entering into a new game state.
-            //                  You can use this method to perform some user interface changes at this moment.
-            //
             onEnteringState: function(stateName, args) {
                 switch (stateName) {
                     case 'plant':
@@ -78,9 +77,6 @@ define([
                 }
             },
 
-            // onLeavingState: this method is called each time we are leaving a game state.
-            //                 You can use this method to perform some user interface changes at this moment.
-            //
             onLeavingState: function(stateName) {
                 switch (stateName) {
                     case 'plant':
@@ -118,10 +114,6 @@ define([
             },
 
             ///////////////////////////////////////////////////
-            //// Player actions
-
-
-            ///////////////////////////////////////////////////
             //// Utility methods
 
             // Scolls to a given element
@@ -131,6 +123,13 @@ define([
                 this.scrollmap.scrollto(x, y);
             },
 
+            onIncreaseDisplayHeight: function(evt) {
+                console.log('Event: onIncreaseDisplayHeight');
+                evt.preventDefault();
+
+                var cur_h = toint(dojo.style( $('map_container'), 'height'));
+                dojo.style($('map_container'), 'height', (cur_h + 300) + 'px');
+            },
 
             ///////////////////////////////////////////////////
             //// Reaction to cometD notifications
