@@ -103,7 +103,7 @@ trait FlowersTrait {
 
         // No spot left on this tile, so we can plant anywhere
         // OR I get more gifts than the tile can provide
-        if ($available_vines == [] || count($available_vines[$tile_id]) < $gift_points)
+        if ($available_vines == [] || $available_vines[$tile_id] == [] || count($available_vines[$tile_id]) < $gift_points)
         {
             $tiles = $this->getTilesFromLocation('board');
             foreach ($tiles as $tile_id => $tile)
