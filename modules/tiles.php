@@ -201,6 +201,8 @@ trait TilesTrait {
         $this->moveTilesToLocation($tile['tile_id'], $target);
         $tile = $target + $tile;
 
+        $this->incStat(1, 'tiles_placed', $this->getCurrentPlayerId());
+
         self::notifyAllPlayers(
             'playTileToBoard',
             clienttranslate('${player_name} plays a tile to the table'),

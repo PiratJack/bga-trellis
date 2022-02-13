@@ -185,7 +185,6 @@ trait StatesTrait {
 
     // The player claims a vine
     public function actClaim($tile_id, $vine_color) {
-        $tile_id = $this->getGameStateValue('last_tile_planted');
         $possibleFlowerSpots = $this->getPossibleFlowerSpots($tile_id);
 
         if (!array_key_exists($tile_id, $possibleFlowerSpots))
@@ -198,7 +197,6 @@ trait StatesTrait {
         }
 
         $this->claimVine(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
-
 
         if ($this->checkPlayerWon())
         {

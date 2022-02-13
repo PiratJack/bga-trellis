@@ -27,6 +27,14 @@ trait PlayersTrait {
         $sql .= implode($values, ',');
         self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
+
+        // Init game statistics
+        // (note: statistics used in this file must be defined in your stats.inc.php file)
+        self::initStat('player', 'tiles_placed', 0);
+        self::initStat('player', 'flowers_placed', 0);
+        self::initStat('player', 'gifts_given', 0);
+        self::initStat('player', 'flowers_received', 0);
+
         $this->reloadPlayersInfos(true);
     }
 
@@ -41,6 +49,7 @@ trait PlayersTrait {
     // Gives gift points to a player
     private function addGiftPoints($player_id, $nb_points) {
         self::DbQuery('UPDATE player SET gift_points = gift_points + '.$nb_points.' WHERE player_id = '.$player_id);
+        $this->incStat($nb_points, 'gifts_given', $player_id);
         self::reloadPlayersInfos();
     }
 

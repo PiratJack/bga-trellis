@@ -218,11 +218,13 @@ trait FlowersTrait {
         if ($flower['player_id'] == $this->getActivePlayerId())
         {
             $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}');
+            $this->incStat(1, 'flowers_bloomed', $this->getActivePlayerId());
         }
         else
         {
             $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
             $this->addGiftPoints($this->getActivePlayerId(), 1);
+            $this->incStat(1, 'flowers_received', $flower['player_id']);
         }
 
         self::notifyAllPlayers(
@@ -245,6 +247,7 @@ trait FlowersTrait {
     // Claims a flower & notify players
     private function claimVine($flower) {
         $flower = $this->placeFlower($flower);
+        $this->incStat(1, 'flowers_placed', $flower['player_id']);
 
         $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
 
