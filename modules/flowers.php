@@ -74,8 +74,7 @@ trait FlowersTrait {
                 ];
                 $blooming_flower = $target + current($neighbor_flower);
 
-                // We need the "original" angle (before rotating) because it rotates after
-                $blooming_flowers[$vine_color]['angle'] = $angle - $tile['angle'];
+                $blooming_flowers[$vine_color]['angle'] = $angle;
                 $blooming_flowers[$vine_color]['players'][] = $blooming_flower['player_id'];
                 $blooming_flowers[$vine_color]['players'] = array_unique($blooming_flowers[$vine_color]['players']);
             }
