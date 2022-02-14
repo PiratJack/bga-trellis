@@ -34,7 +34,7 @@ trait StatesTrait {
         $tile = $this->getTileById($tile_id);
         if ($tile === null)
         {
-            throw new BgaVisibleSystemException(_('This tile does not exist'));
+            throw new \BgaVisibleSystemException(_('This tile does not exist'));
         }
 
 
@@ -159,14 +159,7 @@ trait StatesTrait {
             }
         }
 
-        if ($this->checkPlayerWon())
-        {
-            $this->gamestate->nextState('endGame');
-        }
-        else
-        {
-            $this->gamestate->nextState('continueGame');
-        }
+        $this->transitionIfPlayerWon('endGame', 'continueGame');
     }
 
 
@@ -198,14 +191,7 @@ trait StatesTrait {
 
         $this->claimVine(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
 
-        if ($this->checkPlayerWon())
-        {
-            $this->gamestate->nextState('endGame');
-        }
-        else
-        {
-            $this->gamestate->nextState('continueGame');
-        }
+        $this->transitionIfPlayerWon('endGame', 'continueGame');
     }
 
     // Blooms flowers after player claims a vine
@@ -311,36 +297,9 @@ trait StatesTrait {
             }
         }
 
-        self::notifyAllPlayers(
-            'message',
-            '${player_name} claims ${gift_points} gift(s)',
-            [
-                'player_name' => self::getActivePlayerName(),
-                'gift_points' => $gift_points,
-            ]
-        );
+        $this->claimVines($vines_claimed, $player_id);
 
-        $first_flower = true;
-        foreach ($vines_claimed as $vine)
-        {
-            $flower = $this->claimVine($vine);
-            if ($first_flower)
-            {
-                $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
-            }
-            $first_flower = false;
-        }
-
-        $this->resetGiftPoints($player_id);
-
-        if ($this->checkPlayerWon())
-        {
-            $this->gamestate->nextState('endGame');
-        }
-        else
-        {
-            $this->gamestate->nextState('continueGame');
-        }
+        $this->transitionIfPlayerWon('endGame', 'continueGame');
     }
 
     // Blooms flowers after player claims gifts
@@ -373,14 +332,7 @@ trait StatesTrait {
             $this->reloadPlayersInfos();
         }
 
-        if ($this->checkPlayerWon())
-        {
-            $this->gamestate->nextState('endGame');
-        }
-        else
-        {
-            $this->gamestate->nextState('bloomingDone');
-        }
+        $this->transitionIfPlayerWon('endGame', 'bloomingDone');
     }
 
     // Draw to 3 tiles and end a player's turn
@@ -400,13 +352,18 @@ trait StatesTrait {
 
         $this->activeNextPlayer();
 
+        $this->transitionIfPlayerWon('endGame', 'nextPlayer');
+    }
+
+    // Transitions to different game states if a player has won or not
+    public function transitionIfPlayerWon($if_won, $if_not_won) {
         if ($this->checkPlayerWon())
         {
-            $this->gamestate->nextState('endGame');
+            $this->gamestate->nextState($if_won);
         }
         else
         {
-            $this->gamestate->nextState('nextPlayer');
+            $this->gamestate->nextState($if_not_won);
         }
     }
 }

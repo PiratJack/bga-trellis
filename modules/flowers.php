@@ -46,7 +46,6 @@ trait FlowersTrait {
                     continue 1;
                 }
 
-
                 // A vine of the same color exists
                 $neighbor_type = $this->rotateTileType($this->tile_types[$neighbor['tile_type']], $neighbor['angle']);
                 if (!array_key_exists($vine_color, $neighbor_type['vines']))
@@ -266,6 +265,32 @@ trait FlowersTrait {
 
         return $flower;
     }
+
+    // Claims all gifts at once
+    private function claimVines($vines_claimed, $player_id) {
+        self::notifyAllPlayers(
+            'message',
+            '${player_name} claims ${gift_points} gift(s)',
+            [
+                'player_name' => $this->loadPlayersInfos()[$player_id]['player_name'],
+                'gift_points' => count($vines_claimed),
+            ]
+        );
+
+        $first_flower = true;
+        foreach ($vines_claimed as $vine)
+        {
+            $flower = $this->claimVine($vine);
+            if ($first_flower)
+            {
+                $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
+            }
+            $first_flower = false;
+        }
+
+        $this->resetGiftPoints($player_id);
+    }
+
 
     // Remove all flowers from the board
     private function removeAllFlowers() {

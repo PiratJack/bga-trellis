@@ -100,26 +100,110 @@ class TrellisPiratJack extends Table {
         return ($winner != 0);
     }
 
+    public function getRandomValue($array) {
+        shuffle($array);
+        return reset($array);
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////// Zombie
     ////////////
 
     // Zombie turn: just play randomly
     public function zombieTurn($state, $active_player) {
-        $statename = $state['name'];
-
         if ($state['type'] === "activeplayer")
         {
-            switch ($statename) {
-                default:
-                    $this->gamestate->nextState("zombiePass");
+            switch ($state['name']) {
+                case 'plant':
+                    // Select a tile
+                    $possible_tiles = $this->getTiles(['location' => $active_player]);
+                    $selected_tile = $this->getRandomValue($possible_tiles);
+
+                    // Select a spot
+                    $possible_spots = $this->argPlant()['_private']['active']['possibleTileSpots'];
+                    $selected_spot = $this->getRandomValue($possible_spots);
+
+                    // Select an angle
+                    $angles = range(0, 300, 60);
+                    $selected_angle = $this->getRandomValue($angles);
+
+                    // Actually plant
+                    //DEBUG
+                    if ($active_player == 2357053)
+                    {
+                        $this->plantTile($this->getTileById(50), 1, -1, 60);
+                        $this->gamestate->nextState("");
+                        return;
+                    }
+                    $this->plantTile($selected_tile, $selected_spot['x'], $selected_spot['y'], $selected_angle);
+
+                    $this->gamestate->nextState("");
+                    break;
+
+                case 'plantChooseBloom':
+                    $possible_blooms = $this->argPlantChooseBloom()['_private']['active']['possibleBlooms'];
+                    foreach ($possible_blooms as $tile_id => $vines)
+                    {
+                        foreach ($vines as $vine_color => $vine)
+                        {
+                            $selected_player = $this->getRandomValue($vine['players']);
+                            $this->bloomFlower(['player_id' => $selected_player, 'tile_id' => $tile_id, 'vine' => $vine_color]);
+                        }
+                    }
+
+                    $this->transitionIfPlayerWon('endGame', 'continueGame');
+                    break;
+
+                case 'claim':
+                    $possible_claims = $this->argClaim()['_private']['active']['possibleFlowerSpots'];
+
+                    foreach ($possible_claims as $tile_id => $tile)
+                    {
+                        $selected_vine = $this->getRandomValue(array_keys($tile));
+                        $this->claimVine(['player_id' => $active_player, 'tile_id' => $tile_id, 'vine' => $selected_vine]);
+                    }
+
+                    $this->transitionIfPlayerWon('endGame', 'continueGame');
+                    break;
+
+                case 'claimGift':
+                    $gift_info = $this->argClaimGift();
+                    $gift_points = $gift_info['gift_points'];
+                    $possible_flower_spots = $gift_info['_private']['active']['possibleFlowerSpots'];
+                    $main_tile = $gift_info['_private']['active']['mainTile'];
+
+                    $vines_claimed = [];
+                    for ($i = 0; $i < $gift_points; $i++)
+                    {
+                        // Force to select the tile that was just placed
+                        if (array_key_exists($main_tile, $possible_flower_spots))
+                        {
+                            $tile_id = $main_tile;
+                        }
+                        else
+                        {
+                            $tile_id = $this->getRandomValue(array_keys($possible_flower_spots));
+                        }
+
+                        // Select a random vine and claim it
+                        $selected_vine_color = $this->getRandomValue(array_keys($possible_flower_spots[$tile_id]));
+                        $vines_claimed[] = ['player_id' => $active_player, 'tile_id' => $tile_id, 'vine' => $selected_vine_color];
+                        unset($possible_flower_spots[$tile_id][$selected_vine_color]);
+                        if (count($possible_flower_spots[$tile_id]) == 0)
+                        {
+                            unset($possible_flower_spots[$tile_id]);
+                        }
+                    }
+                    $this->claimVines($vines_claimed, $active_player);
+
+                    $this->transitionIfPlayerWon('endGame', 'continueGame');
                     break;
             }
 
             return;
         }
 
-        throw new BgaUserException("Zombie mode not supported at this game state: ".$statename);
+        throw new BgaUserException("Zombie mode not supported at this game state: ".$state['name']);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////:
