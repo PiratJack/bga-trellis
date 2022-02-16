@@ -307,8 +307,24 @@
     margin-left: 0;
 }
 
+.spectatorMode #trl_hand,
+.spectatorMode .trl_flower_spot_container {
+    display:none;
+}
 
 /****************** Misc ******************/
+
+.player_board_content .trl_gift {
+    margin-left: 10px;
+    padding-left: 20px;
+    background: url("img/gift.png") no-repeat left;
+    background-size: 20px;
+
+    height: 20px;
+    color: black;
+    text-shadow: 0 0 10px white;
+}
+
 
 #logs .trl_vine_color {
     background: black;

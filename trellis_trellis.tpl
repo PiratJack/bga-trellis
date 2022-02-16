@@ -43,6 +43,9 @@
     const jstpl_flower_spot_container = '<div id="trl_flower_spot_container_${tile_id}" class="trl_tile trl_flower_spot_container" data-tile="${tile_id}" style="top: ${top}px; left: ${left}px;"><div class="hexagon"></div></div>';
 
     const jstpl_flower_spot = '<div id="trl_flower_spot_${tile_id}_${vine_color}" class="trl_flower trl_flower_spot trl_flower_angle_${angle} clickable" data-vine="${vine_color}" data-players="${players}"></div>';
+
+    const jstpl_player_board = '<div class="trl_gift" id="trl_gift_${player_id}">${gift_points}</div>';
+
 </script>
 
 {OVERALL_GAME_FOOTER}

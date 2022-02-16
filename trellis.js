@@ -57,6 +57,18 @@ define([
                     this.renderFlower(flower);
                 }
 
+                /***** Player board *****/
+                for (var playerId in gamedatas.players) {
+                    var player_board_div = $('player_board_' + playerId);
+                    dojo.place(this.format_block('jstpl_player_board', {
+                        player_id: playerId,
+                        gift_points: gamedatas.players[playerId].gift_points,
+                    }), player_board_div);
+                    this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '')
+                }
+
+
+
                 /***** Notifications *****/
                 this.setupNotifications();
             },
@@ -140,6 +152,8 @@ define([
 
                 dojo.subscribe('playerScores', this, 'notif_playerScores');
 
+                dojo.subscribe('playerGifts', this, 'notif_playerGifts');
+
                 dojo.subscribe('playTileToBoard', this, "notif_playTileToBoard");
                 this.notifqueue.setSynchronous('playTileToBoard', 500);
 
@@ -158,6 +172,14 @@ define([
                 for (var playerId in args.args.score) {
                     var score = args.args.score[playerId];
                     this.scoreCtrl[playerId].toValue(score);
+                }
+            },
+
+            // Notify about gift points
+            notif_playerGifts: function(args) {
+                for (var playerId in args.args.giftPoints) {
+                    var giftPoints = args.args.giftPoints[playerId];
+                    $('trl_gift_' + playerId).innerHTML = giftPoints;
                 }
             },
 

@@ -51,12 +51,14 @@ trait PlayersTrait {
         self::DbQuery('UPDATE player SET gift_points = gift_points + '.$nb_points.' WHERE player_id = '.$player_id);
         $this->incStat($nb_points, 'gifts_given', $player_id);
         self::reloadPlayersInfos();
+        $this->notifGifts();
     }
 
     // Resets gift points to 0 for a player
     private function resetGiftPoints($player_id) {
         self::DbQuery('UPDATE player SET gift_points = 0 WHERE player_id = '.$player_id);
         self::reloadPlayersInfos();
+        $this->notifGifts();
     }
 
     // Returns all players data for getAllDatas
@@ -102,7 +104,7 @@ trait PlayersTrait {
         return $this->players;
     }
 
-    // Updated flower count on players
+    // Resets flower count on players
     private function players_removeAllFlowers() {
         $this->loadPlayersInfos();
 
@@ -112,7 +114,7 @@ trait PlayersTrait {
         }
     }
 
-    // Updated flower count on players
+    // Updates score
     private function notifScores() {
         $this->loadPlayersInfos();
 
@@ -121,5 +123,16 @@ trait PlayersTrait {
         }, $this->players);
 
         self::notifyAllPlayers('playerScores', '', ['score' => $scores]);
+    }
+
+    // Notifies gift points
+    private function notifGifts() {
+        $this->loadPlayersInfos();
+
+        $gift_points = array_map(function ($v) {
+            return $v['gift_points'];
+        }, $this->players);
+
+        self::notifyAllPlayers('playerGifts', '', ['giftPoints' => $gift_points]);
     }
 }
