@@ -56,8 +56,6 @@ class TrellisPiratJack extends Table {
     protected function getAllDatas() {
         $result = [];
 
-        $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
-
         $result['players'] = $this->players_getAllDatas();
         $result['tiles'] = $this->tiles_getAllDatas();
         $result['flowers'] = $this->flowers_getAllDatas();

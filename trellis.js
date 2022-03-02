@@ -20,16 +20,17 @@ define([
         return declare("bgagame.trellis", [ebg.core.gamegui, trellis.tiles, trellis.flowers], {
             constructor: function() {
                 // Tile sizes
-                this.tile_width = 314;
-                this.sin_60 = 0.8660; // sin(60°) = 0.8660
-                this.tile_height = this.tile_width * this.sin_60;
+                this.resizeBoard();
 
                 // Margin between tiles
                 this.margin = 4;
 
-                //REAL_ART: sprite dimensions
-                this.sprite_size_x = 5;
-                this.sprite_size_y = 1;
+                // Number of tiles in the sprite
+                this.sprite_size_x = 8;
+                this.sprite_size_y = 8;
+
+                // Resizing the screen ==> adjust tile sizes
+                dojo.connect(window, 'resize', () => this.resizeBoard());
             },
 
             setup: function(gamedatas) {
@@ -41,7 +42,7 @@ define([
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
                 this.scrollmap.setupOnScreenArrows(150);
 
-                dojo.connect( $('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight' );
+                dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
@@ -71,6 +72,31 @@ define([
 
                 /***** Notifications *****/
                 this.setupNotifications();
+            },
+
+            // Resizes the board and cards based on the screen size
+            resizeBoard: function() {
+                if (window.matchMedia("(min-width: 1350px)").matches)
+                    this.tile_width = 316;
+                else if (window.matchMedia("(min-width: 1000px) and (max-width: 1350px)").matches)
+                    this.tile_width = 158;
+                else if (window.matchMedia("(max-width: 1000px)").matches)
+                    this.tile_width = 100;
+
+                this.sin_60 = 0.8660; // sin(60°) = 0.8660
+                this.tile_height = this.tile_width * this.sin_60;
+
+                all_tiles = dojo.query('.trl_tile').forEach(
+                    (tile) => {
+
+                        var test = this.getTileTopPosition(tile.dataset.y) + 'px';
+                        var test2 = this.getTileLeftPosition(tile.dataset.x) + 'px';
+
+                        debugger;
+                        tile.style.top = this.getTileTopPosition(tile.dataset.y) + 'px';
+                        tile.style.left = this.getTileLeftPosition(tile.dataset.x) + 'px';
+                    }
+                );
             },
 
 
@@ -139,8 +165,8 @@ define([
                 console.log('Event: onIncreaseDisplayHeight');
                 evt.preventDefault();
 
-                var cur_h = toint(dojo.style( $('map_container'), 'height'));
-                dojo.style($('map_container'), 'height', (cur_h + 300) + 'px');
+                var current_height = toint(dojo.style($('map_container'), 'height'));
+                dojo.style($('map_container'), 'height', (current_height + 300) + 'px');
             },
 
             ///////////////////////////////////////////////////

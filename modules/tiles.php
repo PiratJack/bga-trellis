@@ -16,7 +16,8 @@ trait TilesTrait {
     private function tiles_setupNewGame($players, $options = []) {
         $sql = 'INSERT INTO tiles (tile_id, tile_type, location) VALUES ';
         $values = [];
-        //REAL_ART : is the tile_type counting still valid? do we need a separate tile_type or not?
+
+        // Adding the tiles
         for ($i = 0; $i < count($this->tile_types); $i++)
         {
             $values[] = '('.$i.', '.$i.', "'.($i==0?'board':'deck').'")';
@@ -306,6 +307,11 @@ trait TilesTrait {
 
     // Returns all tile data for getAllDatas
     private function tiles_getAllDatas() {
+        if ($this->isSpectator())
+        {
+            return $this->getTilesFromLocation('board');
+        }
+
         return $this->getTilesFromLocation('board') + $this->getTilesFromLocation(self::getCurrentPlayerId());
     }
 }

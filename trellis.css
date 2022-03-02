@@ -10,22 +10,60 @@
 
 
 /****************** Dimensions ******************/
-#map_container {
-    width: 100%;
-    height: 600px;
+@media only screen and (min-width: 1350px) {
+    #map_container {
+        width: 100%;
+        height: 800px;
+    }
+
+    #map_container {
+        --tile_width: 316px;
+        --tile_margin: 4px;
+    }
+
+    #trl_hand {
+        --tile_width: 150px;
+        --tile_margin: 6px;
+    }
 }
 
-/*** Sizes & positons ***/
-#map_container {
-    --tile_width: 314px;
-    --tile_margin: 4px;
+
+
+@media only screen and (min-width: 1000px) and (max-width: 1350px) {
+    #map_container {
+        height: 400px;
+    }
+
+    /*** Sizes & positions ***/
+    #map_container {
+        --tile_width: 159px;
+        --tile_margin: 2px;
+    }
+
+    #trl_hand {
+        k --tile_width: 75px;
+        --tile_margin: 3px;
+    }
+
 }
 
-#trl_hand {
-    --tile_width: 150px;
-    --tile_margin: 6px;
-}
+@media only screen and (max-width: 1000px) {
+    #map_container {
+        height: 400px;
+    }
 
+    /*** Sizes & positions ***/
+    #map_container {
+        --tile_width: 100px;
+        --tile_margin: 2px;
+    }
+
+    #trl_hand {
+        --tile_width: 50px;
+        --tile_margin: 3px;
+    }
+
+}
 
 
 /****************** Scrollmap ******************/
@@ -145,7 +183,7 @@
 
 .trl_tile_actual_tile {
     background-image: url(img/tiles.png);
-    background-size: 500% 100%;
+    background-size: 800% 800%;
 }
 
 .trl_tile_actual_tile.selected .hexagon,
@@ -192,7 +230,6 @@
 
 /****************** Flowers ******************/
 
-/* REAL_ART: check color order in sprite file */
 .trl_flower {
     width: calc(var(--tile_width) / 6);
     height: calc(var(--tile_width) * 0.866 / 6);
@@ -206,15 +243,15 @@
     background-position: 66%;
 }
 
-.trl_flower_f07f16 {
+.trl_flower_168d63 {
     background-position: 33%;
 }
 
-.trl_flower_ffa500 {
+.trl_flower_ff775f {
     background-position: 0;
 }
 
-.trl_flower_008000 {
+.trl_flower_ffd26b {
     background-position: 100%;
 }
 
@@ -309,7 +346,7 @@
 
 .spectatorMode #trl_hand,
 .spectatorMode .trl_flower_spot_container {
-    display:none;
+    display: none;
 }
 
 /****************** Misc ******************/

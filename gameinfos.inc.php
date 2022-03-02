@@ -54,14 +54,14 @@ $gameinfos = [
 
     'language_dependency' => false,
 
-    'complexity' => 2,
+    'complexity' => 1,
     'luck' => 2,
     'strategy' => 4,
     'diplomacy' => 0,
 
     // Colors attributed to players
-    'player_colors' => [ "ffffff", "f07f16", "ffa500", "008000" ],
-    // Corresponds to "white", "orange", "yellow", "green" ,
+    'player_colors' => [ 'ff775f', '168d63', 'ffffff', 'ffd26b'],
+    // Corresponds to "orange", "green", "white", "yellow" ,
     'favorite_colors_support' => true,
 
     'disable_player_order_swap_on_rematch' => false,
