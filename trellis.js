@@ -71,8 +71,6 @@ define([
                     this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '')
                 }
 
-
-
                 /***** Notifications *****/
                 this.setupNotifications();
 

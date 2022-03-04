@@ -15,10 +15,10 @@
         <div id="map_surface"></div>
         <div id="map_scrollable_oversurface"></div>
 
-        <div class="movetop"></div>
-        <div class="movedown"></div>
-        <div class="moveleft"></div>
-        <div class="moveright"></div>
+        <div id="movetop" class="clickable"></div>
+        <div id="moveleft" class="clickable"></div>
+        <div id="movedown" class="clickable"></div>
+        <div id="moveright" class="clickable"></div>
         <div id="zoomplus"></div>
         <div id="zoomminus"></div>
     </div>
