@@ -270,7 +270,7 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
 
-        // Setup notifications
+        // Someone plays a tile to a board
         notif_playTileToBoard: function(args) {
             if (this.isCurrentPlayerActive()) {
                 // Remove from hand, display on board
@@ -287,6 +287,17 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                     node: newTile
                 }).play();
             }
+        },
+
+
+        // Pick a new tile
+        notif_pickTile: function(args) {
+            this.tiles[args.args.tile.tile_id] = args.args.tile;
+            var newTile = this.renderTile(args.args.tile);
+            dojo.style(newTile, 'opacity', 0);
+            dojo.fadeIn({
+                node: newTile
+            }).play();
         },
     });
 });

@@ -355,6 +355,8 @@ trait StatesTrait {
         );
 
         $this->activeNextPlayer();
+        $active_player_id = $this->getActivePlayerId();
+        self::giveExtraTime($active_player_id);
 
         $this->transitionIfPlayerWon('endGame', 'nextPlayer');
     }

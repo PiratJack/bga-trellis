@@ -19,7 +19,7 @@ $gameinfos = [
 
     'publisher' => 'Breaking Games',
     'publisher_website' => 'http://breakinggames.com/',
-    'publisher_bgg_id' => 230,
+    'publisher_bgg_id' => 29082,
     'bgg_id' => 202582,
 
 

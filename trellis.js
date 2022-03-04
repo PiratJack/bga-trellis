@@ -88,11 +88,6 @@ define([
 
                 all_tiles = dojo.query('.trl_tile').forEach(
                     (tile) => {
-
-                        var test = this.getTileTopPosition(tile.dataset.y) + 'px';
-                        var test2 = this.getTileLeftPosition(tile.dataset.x) + 'px';
-
-                        debugger;
                         tile.style.top = this.getTileTopPosition(tile.dataset.y) + 'px';
                         tile.style.left = this.getTileLeftPosition(tile.dataset.x) + 'px';
                     }
@@ -162,7 +157,6 @@ define([
             },
 
             onIncreaseDisplayHeight: function(evt) {
-                console.log('Event: onIncreaseDisplayHeight');
                 evt.preventDefault();
 
                 var current_height = toint(dojo.style($('map_container'), 'height'));
@@ -174,8 +168,6 @@ define([
 
             // Setup notifications
             setupNotifications: function() {
-                console.log('notifications subscriptions setup');
-
                 dojo.subscribe('playerScores', this, 'notif_playerScores');
 
                 dojo.subscribe('playerGifts', this, 'notif_playerGifts');
@@ -209,18 +201,7 @@ define([
                 }
             },
 
-            // Pick a new tile
-            notif_pickTile: function(args) {
-                this.tiles[args.args.tile.tile_id] = args.args.tile;
-                var newTile = this.renderTile(args.args.tile);
-                dojo.style(newTile, 'opacity', 0);
-                dojo.fadeIn({
-                    node: newTile
-                }).play();
-            },
-
-            // Display vine_color with the actual color
-
+            // Display vine_color and tile with the actual color
             format_string_recursive: function(log, args) {
                 try {
                     if (log && args && !args.processed) {
