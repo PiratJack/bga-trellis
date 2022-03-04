@@ -46,17 +46,17 @@ class action_trellis extends APP_GameAction {
         {
             if (!is_string($vine_color))
             {
-                throw new \BgaUserException("Invalid value for bloom selection - vine color", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('Invalid value for bloom selection - vine color'), true, true, FEX_bad_input_argument);
             }
 
             if (!is_numeric($player_id))
             {
-                throw new \BgaUserException("Non-numeric value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('Non-numeric value for bloom selection - player ID'), true, true, FEX_bad_input_argument);
             }
 
             if ((int)$player_id <= 0)
             {
-                throw new \BgaUserException("Negative value for bloom selection - player ID", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('Negative value for bloom selection - player ID'), true, true, FEX_bad_input_argument);
             }
 
             $selection[$vine_color] = (int)$player_id;
@@ -89,17 +89,17 @@ class action_trellis extends APP_GameAction {
             {
                 if (!is_string($vine_color))
                 {
-                    throw new \BgaUserException("Invalid value for gift selection - vine color", true, true, FEX_bad_input_argument);
+                    throw new \BgaUserException(self::_('Invalid value for gift selection - vine color'), true, true, FEX_bad_input_argument);
                 }
 
                 if (!is_numeric($tile_id))
                 {
-                    throw new \BgaUserException("Non-numeric value for gift selection - player ID", true, true, FEX_bad_input_argument);
+                    throw new \BgaUserException(self::_('Non-numeric value for gift selection - player ID'), true, true, FEX_bad_input_argument);
                 }
 
                 if ((int)$tile_id < 0)
                 {
-                    throw new \BgaUserException("Negative value for gift selection - player ID", true, true, FEX_bad_input_argument);
+                    throw new \BgaUserException(self::_('Negative value for gift selection - player ID'), true, true, FEX_bad_input_argument);
                 }
                 $selection[(int)$tile_id][] = $vine_color;
             }

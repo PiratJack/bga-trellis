@@ -34,21 +34,21 @@ trait StatesTrait {
         $tile = $this->getTileById($tile_id);
         if ($tile === null)
         {
-            throw new \BgaVisibleSystemException(_('This tile does not exist'));
+            throw new \BgaVisibleSystemException(self::_('This tile does not exist'));
         }
 
 
         // Check tile is the player's one
         if ($tile['location'] != $this->getCurrentPlayerId())
         {
-            throw new \BgaUserException(_('This tile is not in your hand'));
+            throw new \BgaUserException(self::_('This tile is not in your hand'));
         }
         $possible_spots = $this->getPossibleTileSpots();
 
         // Check this spot is available
         if (!in_array(['x' => $x, 'y' => $y], $possible_spots))
         {
-            throw new \BgaUserException(_('This tile can\'t be placed here'));
+            throw new \BgaUserException(self::_('This tile can\'t be placed here'));
         }
 
         $this->plantTile($tile, $x, $y, $angle);
@@ -135,17 +135,17 @@ trait StatesTrait {
         {
             if (!in_array($vine_color, array_keys($this->color_translated)))
             {
-                throw new \BgaUserException("Unknown vine color", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('Unknown vine color'), true, true, FEX_bad_input_argument);
             }
 
             if (!in_array($player_id, $possible_blooms[$vine_color]['players']))
             {
-                throw new \BgaUserException("Placing this flower here is impossible", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('Placing this flower here is impossible'), true, true, FEX_bad_input_argument);
             }
 
             if (!array_key_exists($player_id, $this->players))
             {
-                throw new \BgaUserException("This player does not exist", true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(self::_('This player does not exist'), true, true, FEX_bad_input_argument);
             }
 
             $this->bloomFlower(['player_id' => $player_id, 'tile_id' => $tile_id, 'vine' => $vine_color]);
@@ -155,7 +155,7 @@ trait StatesTrait {
         {
             if (!array_key_exists($vine_color, $selection))
             {
-                throw new \BgaUserException("Missing choice for vine ".$vine_color, true, true, FEX_bad_input_argument);
+                throw new \BgaUserException(str_replace('${vine_color}', $vine_color, self::_('Missing choice for vine ${vine_color}')), true, true, FEX_bad_input_argument);
             }
         }
 
@@ -182,11 +182,11 @@ trait StatesTrait {
 
         if (!array_key_exists($tile_id, $possibleFlowerSpots))
         {
-            throw new \BgaUserException("That tile is not available", true, true, FEX_bad_input_argument);
+            throw new \BgaUserException(self::_('That tile is not available'), true, true, FEX_bad_input_argument);
         }
         if (!array_key_exists($vine_color, $possibleFlowerSpots[$tile_id]))
         {
-            throw new \BgaUserException("That vine is not available", true, true, FEX_bad_input_argument);
+            throw new \BgaUserException(self::_('That vine is not available'), true, true, FEX_bad_input_argument);
         }
 
         $this->claimVine(['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color]);
@@ -261,11 +261,11 @@ trait StatesTrait {
         }, $selection));
         if ($selection_count < $gift_points)
         {
-            throw new \BgaUserException(_('You received more gifts, please choose additional spots'));
+            throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
         }
         elseif ($selection_count > $gift_points)
         {
-            throw new \BgaUserException(_('You received less gifts, please choose less spots'));
+            throw new \BgaUserException(self::_('You received less gifts, please choose less spots'));
         }
 
         // Check the player took all the "last tile played" gifts
@@ -275,7 +275,7 @@ trait StatesTrait {
             {
                 if (!array_key_exists($last_tile_id, $selection) || count($possible_spots[$last_tile_id]) != count($selection[$last_tile_id]))
                 {
-                    throw new \BgaUserException(_('You must claim all vines from the last tile placed before claiming others'));
+                    throw new \BgaUserException(self::_('You must claim all vines from the last tile placed before claiming others'));
                 }
             }
         }
@@ -285,13 +285,13 @@ trait StatesTrait {
         {
             if (!array_key_exists($tile_id, $possible_spots))
             {
-                throw new \BgaUserException(str_replace('${tile}', $tile_id, _('Tile ${tile} can\'t be selected')));
+                throw new \BgaUserException(str_replace('${tile}', $tile_id, self::_('Tile ${tile} can\'t be selected')));
             }
             foreach ($vines as $vine_color)
             {
                 if (!array_key_exists($vine_color, $possible_spots[$tile_id]))
                 {
-                    throw new \BgaUserException(str_replace('${vine}', $vine_color, str_replace('${tile}', $tile_id, _('Tile ${tile} does not have a ${vine} vine'))));
+                    throw new \BgaUserException(str_replace('${vine}', $vine_color, str_replace('${tile}', $tile_id, self::_('Tile ${tile} does not have a ${vine} vine'))));
                 }
                 $vines_claimed[] = ['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color];
             }

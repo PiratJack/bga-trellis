@@ -201,7 +201,7 @@ class TrellisPiratJack extends Table {
             return;
         }
 
-        throw new BgaUserException("Zombie mode not supported at this game state: ".$state['name']);
+        throw new BgaUserException(self::_('Zombie mode not supported at this game state: ').$state['name']);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////:
