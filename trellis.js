@@ -226,9 +226,16 @@ define([
                     if (log && args && !args.processed) {
                         args.processed = true;
 
-                        // list of special keys we want to replace with images
+                        // Replace vine color with an image
                         if ('vine_color' in args)
-                            args['vine_color'] = '<span style="color: ' + args['vine_color'] + ';" class="trl_vine_color">&nbsp;' + _(args['vine_color']) + '&nbsp;</span>';
+                            args['vine_color'] = '<div class="trl_vine_color trl_vine_color_' + args['vine_color'] + '" title="' + args['vine_color'] + '"></div>';
+
+                        // Replace a tile with an image
+                        if ('tile_log' in args) {
+                            var tile = args.tile_log;
+                            tile.location = 'notification';
+                            args['tile_log'] = this.renderTile(tile);
+                        }
                     }
                 } catch (e) {
                     console.error(log, args, "Exception thrown", e.stack);

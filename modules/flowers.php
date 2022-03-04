@@ -215,12 +215,12 @@ trait FlowersTrait {
         $flower = $this->placeFlower($flower);
         if ($flower['player_id'] == $this->getActivePlayerId())
         {
-            $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}');
+            $message = clienttranslate('Vine ${vine_color} blooms for ${player_name}');
             $this->incStat(1, 'flowers_bloomed', $this->getActivePlayerId());
         }
         else
         {
-            $message = clienttranslate('The ${vine_color} vine blooms a flower for ${player_name}. ${player_name2} gets a gift point.');
+            $message = clienttranslate('Vine ${vine_color} blooms for ${player_name}. ${player_name2} gets a gift point.');
             $this->addGiftPoints($this->getActivePlayerId(), 1);
             $this->incStat(1, 'flowers_received', $flower['player_id']);
         }
@@ -251,7 +251,7 @@ trait FlowersTrait {
 
         self::notifyAllPlayers(
             'flowerBlooms',
-            clienttranslate('${player_name} claims the ${vine_color} vine'),
+            clienttranslate('${player_name} claims vine ${vine_color}'),
             [
                 'vine_color' => $flower['vine'],
                 'player_name' => self::getActivePlayerName(),
@@ -270,7 +270,7 @@ trait FlowersTrait {
     private function claimVines($vines_claimed, $player_id) {
         self::notifyAllPlayers(
             'message',
-            '${player_name} claims ${gift_points} gift(s)',
+            clienttranslate('${player_name} claims ${gift_points} gift(s)'),
             [
                 'player_name' => $this->loadPlayersInfos()[$player_id]['player_name'],
                 'gift_points' => count($vines_claimed),

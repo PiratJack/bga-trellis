@@ -170,7 +170,20 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                     bg_y: bg_y,
                     angle: tile.angle,
                 }), document.getElementById('map_scrollable'));
-            } else {
+            } else if (tile.location == 'notification') { // In log
+                return this.format_block('jstpl_tile', {
+                    div_id: 'notif_tile_' + tile.tile_id,
+                    id: tile.tile_id,
+                    x: 0,
+                    y: 0,
+                    top: 0,
+                    left: 0,
+                    bg_x: bg_x,
+                    bg_y: bg_y,
+                    angle: 0,
+                });
+
+            } else { // My hand
                 return dojo.place(this.format_block('jstpl_tile', {
                     div_id: 'hand_tile_' + tile.tile_id,
                     id: tile.tile_id,

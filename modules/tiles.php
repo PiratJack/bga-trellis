@@ -206,11 +206,12 @@ trait TilesTrait {
 
         self::notifyAllPlayers(
             'playTileToBoard',
-            clienttranslate('${player_name} plays a tile to the table'),
+            clienttranslate('${player_name} plays tile ${tile_log}'),
             [
                 'player_id' => $this->getCurrentPlayerId(),
                 'player_name' => self::getActivePlayerName(),
                 'tile' => $tile,
+                'tile_log' => $tile,
             ]
         );
         $this->setGameStateValue('last_tile_planted', $tile['tile_id']);
