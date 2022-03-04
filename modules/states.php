@@ -178,6 +178,8 @@ trait StatesTrait {
 
     // The player claims a vine
     public function actClaim($tile_id, $vine_color) {
+        $this->checkAction('claim');
+
         $possibleFlowerSpots = $this->getPossibleFlowerSpots($tile_id);
 
         if (!array_key_exists($tile_id, $possibleFlowerSpots))
@@ -250,6 +252,8 @@ trait StatesTrait {
 
     // The player claims gift(s)
     public function actClaimGift($selection) {
+        $this->checkAction('claimGift');
+
         $last_tile_id = $this->getGameStateValue('last_tile_planted');
         $player_id = $this->getActivePlayerId();
         $gift_points = $this->loadPlayersInfos()[$player_id]['gift_points'];
