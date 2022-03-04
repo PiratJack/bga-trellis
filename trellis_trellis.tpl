@@ -19,6 +19,8 @@
         <div class="movedown"></div>
         <div class="moveleft"></div>
         <div class="moveright"></div>
+        <div id="zoomplus"></div>
+        <div id="zoomminus"></div>
     </div>
 
     <div id="trl_hand" class="whiteblock">

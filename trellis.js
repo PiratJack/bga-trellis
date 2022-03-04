@@ -43,6 +43,9 @@ define([
                 this.scrollmap.setupOnScreenArrows(150);
 
                 dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
+                this.trl_zoom = 1;
+                dojo.connect($('zoomplus'), 'onclick', () => this.onZoomButton(0.1));
+                dojo.connect($('zoomminus'), 'onclick', () => this.onZoomButton(-0.1));
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
@@ -72,6 +75,9 @@ define([
 
                 /***** Notifications *****/
                 this.setupNotifications();
+
+                // User preferences
+                this.setupUserPreferences();
             },
 
             // Resizes the board and cards based on the screen size
@@ -94,6 +100,20 @@ define([
                 );
             },
 
+            // Changes zoom value
+            onZoomButton: function(deltaZoom) {
+                zoom = this.trl_zoom + deltaZoom;
+                zoom = zoom <= 0.2 ? 0.2 : zoom >= 2 ? 2 : zoom;
+                this.onPreferenceChange(100, (zoom * 10).toFixed());
+            },
+
+            // Applies the new zoom
+            onZoomChange: function(newZoom) {
+                this.trl_zoom = newZoom;
+
+                dojo.style($('map_scrollable'), 'transform', 'scale(' + this.trl_zoom + ')');
+                dojo.style($('map_scrollable_oversurface'), 'transform', 'scale(' + this.trl_zoom + ')');
+            },
 
             ///////////////////////////////////////////////////
             //// Game & client states
@@ -161,6 +181,54 @@ define([
 
                 var current_height = toint(dojo.style($('map_container'), 'height'));
                 dojo.style($('map_container'), 'height', (current_height + 300) + 'px');
+            },
+
+            ///////////////////////////////////////////////////
+            //// User preferences
+
+            // Defines handlers when user changes values
+            setupUserPreferences: function() {
+                // Extract the ID and value from the UI control
+                var _this = this;
+
+                function onchange(e) {
+                    var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
+                    if (!match) {
+                        return;
+                    }
+                    var prefId = +match[1];
+                    var prefValue = +e.target.value;
+                    _this.prefs[prefId].value = prefValue;
+                    dojo.query('#preference_control_' + prefId)[0].value = prefValue;
+                    dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
+                    _this.onPreferenceChange(prefId, prefValue);
+                }
+
+                // Call onPreferenceChange() when any value changes
+                dojo.query(".preference_control").connect("onchange", onchange);
+
+                // Call onPreferenceChange() now to initialize the setup
+                dojo.forEach(
+                    dojo.query("#ingame_menu_content .preference_control"),
+                    function(el) {
+                        onchange({
+                            target: el
+                        });
+                    }
+                );
+            },
+
+            // Applies preference changes in the game
+            onPreferenceChange: function(prefId, prefValue) {
+                // Preferences that change display
+                switch (prefId) {
+                    // Zoom level
+                    case 100:
+                        this.onZoomChange(prefValue / 10);
+                        dojo.query('#preference_control_' + prefId)[0].value = prefValue;
+                        dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
+                        break;
+                }
             },
 
             ///////////////////////////////////////////////////
