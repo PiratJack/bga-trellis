@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * TrellisPiratJack implementation : © Jacques de Metz <demetz.jacques@gmail.com>.
+ * Trellis implementation : © Jacques de Metz <demetz.jacques@gmail.com>.
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -81,7 +81,7 @@ trait PlayersTrait {
     private function reloadPlayersInfos($newGame = false) {
         self::reloadPlayersBasicInfos();
         $this->players = self::loadPlayersBasicInfos();
-        $data = self::getCollectionFromDB('SELECT player_id, player_score, gift_points, 15 as flowers_left FROM player');
+        $data = self::getCollectionFromDB('SELECT player_id, player_score as score, gift_points, 15 as flowers_left FROM player');
 
         foreach ($this->players as $player_id => $player)
         {
@@ -119,7 +119,7 @@ trait PlayersTrait {
         $this->loadPlayersInfos();
 
         $scores = array_map(function ($v) {
-            return $v['player_score'];
+            return $v['score'];
         }, $this->players);
 
         self::notifyAllPlayers('playerScores', '', ['score' => $scores]);
