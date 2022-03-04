@@ -27,8 +27,6 @@
     }
 }
 
-
-
 @media only screen and (min-width: 1000px) and (max-width: 1350px) {
     #map_container {
         height: 400px;
@@ -65,6 +63,10 @@
 
 }
 
+#logs {
+    --tile_width: 50px;
+    --tile_margin: 0px;
+}
 
 /****************** Scrollmap ******************/
 
@@ -155,7 +157,6 @@
 
     margin-left: calc(var(--tile_width) * 0.25);
 }
-
 
 .trl_tile .hexagon:before,
 .trl_tile .hexagon:after {
@@ -293,7 +294,7 @@
 
 .trl_flower_spot_container .trl_flower {
     background-image: none;
-    background-color: white;
+    background-color: grey;
     opacity: 0.8;
 
     pointer-events: initial;
@@ -352,20 +353,47 @@
 /****************** Misc ******************/
 
 .player_board_content .trl_gift {
-    margin-left: 10px;
-    padding-left: 20px;
+    margin-left: 5px;
     background: url("img/gift.png") no-repeat left;
-    background-size: 20px;
+    background-size: 100% 100%;
+    display: inline-block;
 
-    height: 20px;
+    height: 15px;
+    width: 15px;
+
     color: black;
     text-shadow: 0 0 10px white;
 }
 
-
 #logs .trl_vine_color {
-    background: black;
-    font-weight: bold;
+    width: 50px;
+    height: 24px;
+    background: url("img/vines.png");
+    background-size: 100% 600%;
+}
+
+#logs .trl_vine_color_orange {
+    background-position: 0 0;
+}
+
+#logs .trl_vine_color_green {
+    background-position: 0 20%;
+}
+
+#logs .trl_vine_color_yellow {
+    background-position: 0 40%;
+}
+
+#logs .trl_vine_color_pink {
+    background-position: 0 60%;
+}
+
+#logs .trl_vine_color_blue {
+    background-position: 0 80%;
+}
+
+#logs .trl_vine_color_purple {
+    background-position: 0 100%;
 }
 
 .clickable {
