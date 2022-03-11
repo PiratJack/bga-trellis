@@ -71,7 +71,7 @@ class Trellis extends Table {
             return $player['flowers_left'];
         }, $this->players);
 
-        return (15-min($flowers_left)) * 100;
+        return (15-min($flowers_left)) / 15 * 100;
     }
 
 
