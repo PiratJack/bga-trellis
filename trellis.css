@@ -39,7 +39,7 @@
     }
 
     #trl_hand {
-        k --tile_width: 75px;
+        --tile_width: 75px;
         --tile_margin: 3px;
     }
 
