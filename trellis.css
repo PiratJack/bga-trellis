@@ -239,19 +239,30 @@
 
 #trl_tile_rotate {
     position: absolute;
-    font-size: calc(var(--tile_width) / 6);
+    font-size: calc(var(--tile_width) / 3);
     width: calc(var(--tile_width) / 2);
+    font-weight: bold;
     top: 0;
-    left: calc(var(--tile_width) / 4);
-    text-align: center;
+    height: 100%;
+    width: 100%;
 }
 
 #trl_tile_rotate div {
-    display: inline-block;
+    top: 0;
+    width: 30%;
+    height: 80%;
+    padding: 10%;
+    text-align: right;
+}
+
+#trl_tile_rotate div:hover {
+    background: lightblue;
 }
 
 #trl_tile_rotate_clockwise {
-    margin-left: calc(var(--tile_width) / 6);
+    position: absolute;
+    text-align: left !important;
+    left: 50%;
 }
 
 
