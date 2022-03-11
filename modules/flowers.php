@@ -9,7 +9,7 @@
  * -----
  */
 
-namespace TrellisPiratJack;
+namespace Trellis;
 
 trait FlowersTrait {
     // Sets up flowers for a new game

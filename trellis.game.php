@@ -17,11 +17,11 @@ require_once('modules/tiles.php');
 require_once('modules/flowers.php');
 
 
-class TrellisPiratJack extends Table {
-    use TrellisPiratJack\StatesTrait;
-    use TrellisPiratJack\PlayersTrait;
-    use TrellisPiratJack\TilesTrait;
-    use TrellisPiratJack\FlowersTrait;
+class Trellis extends Table {
+    use Trellis\StatesTrait;
+    use Trellis\PlayersTrait;
+    use Trellis\TilesTrait;
+    use Trellis\FlowersTrait;
 
     public function __construct() {
         parent::__construct();
