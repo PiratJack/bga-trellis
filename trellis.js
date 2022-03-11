@@ -23,7 +23,7 @@ define([
                 this.resizeBoard();
 
                 // Margin between tiles
-                this.margin = 4;
+                this.margin = 0; //4;
 
                 // Number of tiles in the sprite
                 this.sprite_size_x = 8;

@@ -18,7 +18,8 @@
 
     #map_container {
         --tile_width: 316px;
-        --tile_margin: 4px;
+        --tile_margin: 0;
+        /*4px;*/
     }
 
     #trl_hand {
@@ -35,7 +36,8 @@
     /*** Sizes & positions ***/
     #map_container {
         --tile_width: 159px;
-        --tile_margin: 2px;
+        --tile_margin: 0;
+        /*2px;*/
     }
 
     #trl_hand {
@@ -53,7 +55,8 @@
     /*** Sizes & positions ***/
     #map_container {
         --tile_width: 100px;
-        --tile_margin: 2px;
+        --tile_margin: 0;
+        /*2px;*/
     }
 
     #trl_hand {
