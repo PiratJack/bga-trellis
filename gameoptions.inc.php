@@ -10,12 +10,14 @@
  * -----
  */
 
+require_once('modules/constants.inc.php');
+
 $game_options = [
 ];
 
 
 $game_preferences = [
-    100 => [
+    TRL_PREF_ZOOM_LEVEL => [
         'name' => totranslate('Zoom level'),
         'needReload' => false,
         'values' => [
@@ -41,5 +43,15 @@ $game_preferences = [
             20 => [ 'name' => totranslate('200%') ],
         ],
         'default' => 10
-    ]
+    ],
+    TRL_PREF_MY_TILES => [
+        'name' => totranslate('Display of my tiles'),
+        'needReload' => false,
+        'values' => [
+            TRL_PREF_MY_TILES_ABOVE => [ 'name' => totranslate('Above the board') ],
+            TRL_PREF_MY_TILES_BELOW => [ 'name' => totranslate('Below the board') ],
+        ],
+        'default' => TRL_PREF_MY_TILES_ABOVE
+    ],
+
 ];

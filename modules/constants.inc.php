@@ -22,4 +22,11 @@ if (!defined('TRL_STATE_SETUP'))
     define('TRL_STATE_CLAIM_GIFT_BLOOM', 44);
 
     define('TRL_STATE_END_TURN', 80);
+
+
+    define('TRL_PREF_ZOOM_LEVEL', 100);
+
+    define('TRL_PREF_MY_TILES', 101);
+    define('TRL_PREF_MY_TILES_ABOVE', 1);
+    define('TRL_PREF_MY_TILES_BELOW', 2);
 }

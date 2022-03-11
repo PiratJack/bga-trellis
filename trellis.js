@@ -226,6 +226,14 @@ define([
                         dojo.query('#preference_control_' + prefId)[0].value = prefValue;
                         dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
                         break;
+
+                        // Display my tiles above/below
+                    case 101:
+                        if (prefValue == 1)
+                            dojo.place('trl_hand', 'map_container', 'before');
+                        else
+                            dojo.place('trl_hand', 'map_container', 'after');
+                        break;
                 }
             },
 
