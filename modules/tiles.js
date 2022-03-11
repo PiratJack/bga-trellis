@@ -9,7 +9,7 @@
  */
 
 
-define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
+define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
     return declare("trellis.tiles", null, {
         ///////////////////////////////////////////////////
         //// Game & client states - Only the ones where tiles are the main point
@@ -105,10 +105,15 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
             var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
-            var newAngle = (currentAngle + 360 + 60 * clickedArrow.dataset.direction) % 360;
+            var newAngle = (currentAngle + 60 * clickedArrow.dataset.direction); // % 360;
 
-            selectedTentativeTile.dataset.angle = newAngle;
-            selectedTentativeTile.style.transform = 'rotate(' + newAngle + 'deg)';
+            selectedTentativeTile.dataset.angle = newAngle % 360;
+            new dojo.Animation({
+                curve: [currentAngle, newAngle],
+                onAnimate: function(v) {
+                    selectedTentativeTile.style.transform = 'rotate(' + v + 'deg)';
+                }
+            }).play();
         },
 
         // Confirm button for planting tiles
