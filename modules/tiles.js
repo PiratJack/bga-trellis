@@ -107,7 +107,7 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             var currentAngle = parseInt(selectedTentativeTile.dataset.angle);
             var newAngle = (currentAngle + 60 * clickedArrow.dataset.direction); // % 360;
 
-            selectedTentativeTile.dataset.angle = newAngle % 360;
+            selectedTentativeTile.dataset.angle = (newAngle + 360) % 360;
             new dojo.Animation({
                 curve: [currentAngle, newAngle],
                 onAnimate: function(v) {
