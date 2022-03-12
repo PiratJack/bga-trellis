@@ -181,9 +181,6 @@
     width: calc(var(--tile_width) * 0.5);
     height: calc(var(--tile_width) * 0.866);
 
-    /*border-top: 1px black solid;
-    border-bottom: 1px black solid;*/
-
     margin-left: calc(var(--tile_width) * 0.25);
 }
 
@@ -221,6 +218,8 @@
 .trl_tile_actual_tile.selected .hexagon:after {
     border-top: red solid 2px;
     border-bottom: red solid 2px;
+
+    height: calc(var(--tile_width) * 0.866 - 4px);
 }
 
 /*** Vacant spots ***/
