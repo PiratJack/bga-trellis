@@ -271,7 +271,7 @@ define([
             notif_playerGifts: function(args) {
                 for (var playerId in args.args.giftPoints) {
                     var giftPoints = args.args.giftPoints[playerId];
-                    $('trl_gift_' + playerId).innerHTML = giftPoints;
+                    $('trl_gift_' + playerId).innerText = giftPoints;
                 }
             },
 
