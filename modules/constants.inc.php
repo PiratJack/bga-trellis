@@ -29,4 +29,12 @@ if (!defined('TRL_STATE_SETUP'))
     define('TRL_PREF_MY_TILES', 101);
     define('TRL_PREF_MY_TILES_ABOVE', 1);
     define('TRL_PREF_MY_TILES_BELOW', 2);
+
+
+    define('TRL_STAT_TILES_PLACED', 10);
+    define('TRL_STAT_FLOWERS_PLACED', 11);
+    define('TRL_STAT_FLOWERS_BLOOMED', 12);
+    define('TRL_STAT_GIFTS_GIVEN', 13);
+    define('TRL_STAT_FLOWERS_RECEIVED', 14);
+    define('TRL_STAT_WHO_WON', 15);
 }

@@ -46,6 +46,8 @@ class Trellis extends Table {
 
         self::setGameStateInitialValue('last_tile_planted', 0);
 
+        self::initStat('table', 'who_won', 0);
+
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
@@ -83,7 +85,7 @@ class Trellis extends Table {
     public function checkPlayerWon() {
         $this->loadFlowers();
         $this->loadPlayersInfos();
-        $winner = 0;
+        $winner = false;
         foreach ($this->players as $player_id => $player)
         {
             $flowers = array_filter($this->flowers, function ($v) use ($player_id) {
@@ -95,7 +97,16 @@ class Trellis extends Table {
             }
         }
 
-        return ($winner != 0);
+        if ($winner)
+        {
+            // Statistic: first_player_won
+            $winner_order = $this->players[$winner]['player_no'];
+            $nb_players = count($this->players);
+            $stat_value = $nb_players * 10 + $winner_order;
+            self::setStat($stat_value, 'who_won');
+        }
+
+        return $winner;
     }
 
     public function getRandomValue($array) {
@@ -201,7 +212,7 @@ class Trellis extends Table {
             return;
         }
 
-        throw new BgaUserException(self::_('Zombie mode not supported at this game state: ').$state['name']);
+        throw new BgaUserException(str_replace('${state_name}', $state['name'], self::_('Zombie mode not supported at this game state: ${state_name}')));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////:
