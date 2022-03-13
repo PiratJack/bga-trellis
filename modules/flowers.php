@@ -288,7 +288,7 @@ trait FlowersTrait {
             $first_flower = false;
         }
 
-        $this->resetGiftPoints($player_id);
+        $this->addGiftPoints($player_id, -count($vines_claimed));
     }
 
 

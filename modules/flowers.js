@@ -162,14 +162,22 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
         onConfirmClaimGift: function(evt) {
             // Check a spot is selected
             var selectedSpots = dojo.query('.trl_flower_spot.selected');
-            if (selectedSpots.length != this.nbGifts) {
-                // Player hasn't selected the right number of gifts
+            var availableSpots = dojo.query('.trl_flower_spot');
+
+            // Player hasn't selected the right number of gifts
+            if (availableSpots.length > this.nbGifts) {
+                // Enough spots to get all gifts
                 if (selectedSpots.length < this.nbGifts)
-                    this.showMessage(_('You received more gifts, please choose additional spots'), 'error');
-                else if (selectedSpots.length > this.nbGifts)
-                    this.showMessage(_('You received less gifts, please choose less spots'), 'error');
-                return;
+                    return this.showMessage(_('You received more gifts, please choose additional spots'), 'error');
+            } else {
+                // Not enough spots ==> need to take all spots
+                if (selectedSpots.length != availableSpots.length) {
+                    return this.showMessage(_('You received more gifts, please choose additional spots'), 'error');
+                }
             }
+            if (selectedSpots.length > this.nbGifts)
+                return this.showMessage(_('You received less gifts, please choose less spots'), 'error');
+
             // Player has more gifts than the main tile can accomodate
             // ==> he/she has to claim all vines from the main tile
             var mainTileSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot');

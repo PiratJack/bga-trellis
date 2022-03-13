@@ -258,16 +258,32 @@ trait StatesTrait {
         $player_id = $this->getActivePlayerId();
         $gift_points = $this->loadPlayersInfos()[$player_id]['gift_points'];
         $possible_spots = $this->getPossibleFlowerSpots($last_tile_id, $gift_points);
+        $count_possible_spots = array_sum(array_map(function ($val) {
+            return count($val);
+        }, $possible_spots));
 
         // Check enough gift points were claimed
         $selection_count = array_sum(array_map(function ($v) {
             return count($v);
         }, $selection));
-        if ($selection_count < $gift_points)
+
+        if ($count_possible_spots > $gift_points)
         {
-            throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
+            // Enough available spots to take all gifts
+            if ($selection_count < $gift_points)
+            {
+                throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
+            }
         }
-        elseif ($selection_count > $gift_points)
+        else
+        {
+            // Not enough available spots
+            if ($selection_count != $count_possible_spots)
+            {
+                throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
+            }
+        }
+        if ($selection_count > $gift_points)
         {
             throw new \BgaUserException(self::_('You received less gifts, please choose less spots'));
         }
