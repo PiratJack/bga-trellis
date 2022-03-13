@@ -277,6 +277,7 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Someone plays a tile to a board
         notif_playTileToBoard: function(args) {
+            this.tiles[args.args.tile.tile_id] = args.args.tile;
             if (this.isCurrentPlayerActive()) {
                 // Remove from hand, display on board
                 var hand_tile_div_id = 'hand_tile_' + args.args.tile.tile_id;
@@ -284,8 +285,6 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 this.renderTile(args.args.tile);
             } else {
                 // Display on board, with fading so the player sees what happens
-                this.tiles[args.args.tile.tile_id] = args.args.tile;
-
                 var newTile = this.renderTile(args.args.tile);
                 dojo.style(newTile, 'opacity', 0);
                 dojo.fadeIn({
