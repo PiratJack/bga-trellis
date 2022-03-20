@@ -234,7 +234,42 @@
     background-color: white;
 }
 
+/*** Last tile placed by other player ***/
+.trl_tile_actual_tile.border_ffffff .hexagon,
+.trl_tile_actual_tile.border_ffffff .hexagon:before,
+.trl_tile_actual_tile.border_ffffff .hexagon:after {
+    border-top: white solid 4px;
+    border-bottom: white solid 4px;
 
+    height: calc(var(--tile_width) * 0.866 - 8px);
+}
+
+.trl_tile_actual_tile.border_168d63 .hexagon,
+.trl_tile_actual_tile.border_168d63 .hexagon:before,
+.trl_tile_actual_tile.border_168d63 .hexagon:after {
+    border-top: #168d63 solid 4px;
+    border-bottom: #168d63 solid 4px;
+
+    height: calc(var(--tile_width) * 0.866 - 8px);
+}
+
+.trl_tile_actual_tile.border_ff775f .hexagon,
+.trl_tile_actual_tile.border_ff775f .hexagon:before,
+.trl_tile_actual_tile.border_ff775f .hexagon:after {
+    border-top: #ff775f solid 4px;
+    border-bottom: #ff775f solid 4px;
+
+    height: calc(var(--tile_width) * 0.866 - 8px);
+}
+
+.trl_tile_actual_tile.border_ffd26b .hexagon,
+.trl_tile_actual_tile.border_ffd26b .hexagon:before,
+.trl_tile_actual_tile.border_ffd26b .hexagon:after {
+    border-top: #ffd26b solid 4px;
+    border-bottom: #ffd26b solid 4px;
+
+    height: calc(var(--tile_width) * 0.866 - 8px);
+}
 
 
 /*** Rotating arrows ***/

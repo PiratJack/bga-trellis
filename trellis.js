@@ -63,12 +63,19 @@ define([
 
                 /***** Player board *****/
                 for (var playerId in gamedatas.players) {
+                    var player_data = gamedatas.players[playerId];
                     var player_board_div = $('player_board_' + playerId);
                     dojo.place(this.format_block('jstpl_player_board', {
                         player_id: playerId,
                         gift_points: gamedatas.players[playerId].gift_points,
                     }), player_board_div);
                     this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '')
+
+                    if (player_data.last_tile_placed) {
+                        if (this.player_id != playerId) {
+                            dojo.addClass('board_tile_' + player_data.last_tile_placed, 'border_' + player_data.player_color);
+                        }
+                    }
                 }
 
                 /***** Notifications *****/

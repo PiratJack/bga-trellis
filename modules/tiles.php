@@ -199,21 +199,29 @@ trait TilesTrait {
             'angle' => $angle,
         ];
 
+        $player_id = $this->getActivePlayerId();
+        $player_name = $this->getActivePlayerName();
+
         $this->moveTilesToLocation($tile['tile_id'], $target);
         $tile = $target + $tile;
 
-        $this->incStat(1, 'tiles_placed', $this->getCurrentPlayerId());
+        $this->incStat(1, 'tiles_placed', $player_id);
 
         self::notifyAllPlayers(
             'playTileToBoard',
             clienttranslate('${player_name} plays tile ${tile_log}'),
             [
-                'player_id' => $this->getCurrentPlayerId(),
-                'player_name' => self::getActivePlayerName(),
+                'player_id' => $player_id,
+                'player_name' => $player_name,
                 'tile' => $tile,
                 'tile_log' => $tile,
             ]
         );
+
+        // Update the "last_tile_placed" on the player table
+        $sql = 'UPDATE player SET last_tile_placed = "'.$tile['tile_id'].'" WHERE player_id = "'.$player_id.'"';
+        self::DbQuery($sql);
+
         $this->setGameStateValue('last_tile_planted', $tile['tile_id']);
     }
 

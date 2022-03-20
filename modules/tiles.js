@@ -290,6 +290,11 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 dojo.fadeIn({
                     node: newTile
                 }).play();
+
+                // Hide / display the border
+                var player_color = this.gamedatas.players[args.args.player_id].player_color;
+                dojo.query('.border_' + player_color).removeClass('border_' + player_color);
+                dojo.addClass('board_tile_' + args.args.tile.tile_id, 'border_' + player_color);
             }
         },
 

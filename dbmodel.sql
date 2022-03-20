@@ -27,4 +27,5 @@ CREATE TABLE IF NOT EXISTS `flowers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 
-ALTER TABLE `player` ADD `gift_points`  INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `gift_points`  INT UNSIGNED NOT NULL DEFAULT '0',
+                     ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL;

@@ -137,13 +137,6 @@ class Trellis extends Table {
                     $selected_angle = $this->getRandomValue($angles);
 
                     // Actually plant
-                    //DEBUG
-                    if ($active_player == 2357053)
-                    {
-                        $this->plantTile($this->getTileById(50), 1, -1, 60);
-                        $this->gamestate->nextState("");
-                        return;
-                    }
                     $this->plantTile($selected_tile, $selected_spot['x'], $selected_spot['y'], $selected_angle);
 
                     $this->gamestate->nextState("");
@@ -220,5 +213,11 @@ class Trellis extends Table {
     //////////
 
     public function upgradeTableDb($from_version) {
+        // Added display of last tile placed
+        if ($from_version <= 2203131458)
+        {
+            $sql = 'ALTER TABLE DBPREFIX_player ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL';
+            self::applyDbUpgradeToAllDB($sql);
+        }
     }
 }

@@ -81,7 +81,7 @@ trait PlayersTrait {
     private function reloadPlayersInfos($newGame = false) {
         self::reloadPlayersBasicInfos();
         $this->players = self::loadPlayersBasicInfos();
-        $data = self::getCollectionFromDB('SELECT player_id, player_score as score, gift_points, 15 as flowers_left FROM player');
+        $data = self::getCollectionFromDB('SELECT player_id, player_score as score, gift_points, last_tile_placed FROM player');
 
         foreach ($this->players as $player_id => $player)
         {
