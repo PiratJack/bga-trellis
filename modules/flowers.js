@@ -37,6 +37,26 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                 this.mainTile = args._private.mainTile;
                 this.nbGifts = args.gift_points;
                 this.displayFlowerSpots(this.possibleGiftSpots, 'onClickGiftSpot');
+
+                // In case we have more gifts than the last tile placed (this.mainTile):
+                // this.possibleGiftSpots will have multiple keys (= tiles)
+                // Gifts must be placed on this.mainTile first
+                var temp = this;
+                if (Object.keys(this.possibleGiftSpots).length > 1) {
+                    var mainTileSpots = dojo.query('#trl_flower_spot_container_' + this.mainTile + ' .trl_flower_spot');
+                    mainTileSpots.forEach(function(node) {
+                        // Pre-select those spots
+                        node.click();
+
+                        dojo.connect(node, 'onclick', () => {
+                            // Prevent de-selecting those spots
+                            if (!dojo.hasClass(node, 'selected')) {
+                                temp.showMessage(_('You must claim all vines from the last tile placed before claiming others'), 'error');
+                                node.click();
+                            }
+                        });
+                    });
+                }
             }
         },
 
