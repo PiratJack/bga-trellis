@@ -430,6 +430,12 @@
 
 /****************** Misc ******************/
 
+/* Add shadow to make text readable */
+#player_board_inner_ffffff .player-name a,
+#player_board_inner_ffd26b .player-name a {
+    text-shadow: 0 0 3px black;
+}
+
 .player_board_content .trl_gift {
     margin-left: 5px;
     margin-right: 15px;
