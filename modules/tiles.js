@@ -21,6 +21,8 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 this.handTilesHandlers = [];
                 dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
                     this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
+                    node.draggable = true;
+                    dojo.connect(node, 'dragstart', this, 'onTileDragStart');
                 });
                 dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
             }
@@ -55,7 +57,7 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             this.destroyTentativeTiles();
             dojo.addClass('confirm_tile_placement', 'disabled');
 
-            if (!wasSelected) {
+            if (!wasSelected || evt.type == 'dragstart') {
                 dojo.addClass(clickedTile, 'selected');
                 this.displayPossibleTileSpots(this.possibleTileSpots);
             }
@@ -238,6 +240,8 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
                     var possibleTileSpot = this.renderPossibleTileSpot(x, y);
                     dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
+                    dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('ondrop', this, 'onTileDrop');
+                    dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('ondragover', this, 'onTileDragOver');
                 }
             }
         },
@@ -271,6 +275,22 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         destroyTentativeTiles: function() {
             dojo.query('.tentative').forEach(dojo.destroy);
         },
+
+        onTileDragStart: function(evt) {
+            this.onClickHandTile(evt);
+
+            evt.dataTransfer.setDragImage(evt.target.parentNode, 50, 50);
+        },
+
+        onTileDrop: function(evt) {
+            evt.preventDefault();
+            this.onClickPossibleTileSpot(evt);
+        },
+
+        onTileDragOver: function(evt) {
+            evt.preventDefault();
+        },
+
 
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
