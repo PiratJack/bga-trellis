@@ -206,6 +206,10 @@
     margin-top: calc(var(--tile_width) * -0.866 - 2px);
 }
 
+.clicked_spot {
+    z-index: 100;
+}
+
 /*** Actual tiles ***/
 
 .trl_tile_actual_tile {

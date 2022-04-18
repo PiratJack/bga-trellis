@@ -95,6 +95,7 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             }
 
             this.renderTentativeTile(position);
+            dojo.addClass(clickedSpot, 'clicked_spot');
 
             dojo.removeClass('confirm_tile_placement', 'disabled');
         },
