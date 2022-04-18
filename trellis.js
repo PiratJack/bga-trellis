@@ -68,8 +68,11 @@ define([
                     dojo.place(this.format_block('jstpl_player_board', {
                         player_id: playerId,
                         gift_points: gamedatas.players[playerId].gift_points,
+                        flowers_left: 15 - gamedatas.players[playerId].score,
+                        player_color: gamedatas.players[playerId].color,
                     }), player_board_div);
                     this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '')
+                    this.addTooltip('trl_flowers_left_' + playerId, _('Remaining flowers'), '')
 
                     if (player_data.last_tile_placed) {
                         if (this.player_id != playerId) {
@@ -271,6 +274,7 @@ define([
                 for (var playerId in args.args.score) {
                     var score = args.args.score[playerId];
                     this.scoreCtrl[playerId].toValue(score);
+                    $('trl_flowers_left_' + playerId).innerText = 15 - score;
                 }
             },
 

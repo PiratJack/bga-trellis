@@ -428,8 +428,22 @@
 
 .player_board_content .trl_gift {
     margin-left: 5px;
+    margin-right: 15px;
     background: url("img/sprite.png") no-repeat left;
     background-size: 300% 100%;
+    display: inline-block;
+
+    height: 15px;
+    width: 15px;
+
+    color: black;
+    text-shadow: 0 0 10px white;
+}
+
+.player_board_content .trl_flowers_left {
+    margin-left: 5px;
+    background-image: url(img/flowers.png);
+    background-size: 400% 100%;
     display: inline-block;
 
     height: 15px;
