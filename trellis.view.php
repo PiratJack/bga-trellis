@@ -22,5 +22,6 @@
 
           $this->tpl['MY_TILES'] = self::_("My tiles");
           $this->tpl['LABEL_ENLARGE_DISPLAY'] = self::_("Enlarge display");
+          $this->tpl['LABEL_REDUCE_DISPLAY'] = self::_("Reduce display");
       }
   }

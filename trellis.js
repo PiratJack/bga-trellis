@@ -43,6 +43,8 @@ define([
                 this.scrollmap.setupOnScreenArrows(150);
 
                 dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
+                dojo.connect($('reducedisplay'), 'onclick', this, 'onDecreaseDisplayHeight');
+
                 this.trl_zoom = 1;
                 dojo.connect($('zoomplus'), 'onclick', () => this.onZoomButton(0.1));
                 dojo.connect($('zoomminus'), 'onclick', () => this.onZoomButton(-0.1));
@@ -189,6 +191,13 @@ define([
 
                 var current_height = toint(dojo.style($('map_container'), 'height'));
                 dojo.style($('map_container'), 'height', (current_height + 300) + 'px');
+            },
+
+            onDecreaseDisplayHeight: function(evt) {
+                evt.preventDefault();
+
+                var current_height = toint(dojo.style($('map_container'), 'height'));
+                dojo.style($('map_container'), 'height', Math.max((current_height - 300), 100) + 'px');
             },
 
             ///////////////////////////////////////////////////

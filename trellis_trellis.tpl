@@ -30,6 +30,7 @@
 
     <div id="map_footer" class="whiteblock">
         <a href="#" id="enlargedisplay">↓ {LABEL_ENLARGE_DISPLAY} ↓</a>
+        <a href="#" id="reducedisplay">↑ {LABEL_REDUCE_DISPLAY} ↑</a>
     </div>
 </div>
 
