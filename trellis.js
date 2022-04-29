@@ -115,6 +115,11 @@ define([
                 zoom = this.trl_zoom + deltaZoom;
                 zoom = zoom <= 0.2 ? 0.2 : zoom >= 2 ? 2 : zoom;
                 this.onPreferenceChange(100, (zoom * 10).toFixed());
+
+                // Trigger the change for the server
+                const newEvt = document.createEvent('HTMLEvents');
+                newEvt.initEvent('change', false, true);
+                $('preference_control_100').dispatchEvent(newEvt);
             },
 
             // Applies the new zoom
