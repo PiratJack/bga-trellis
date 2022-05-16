@@ -54,13 +54,6 @@ trait PlayersTrait {
         $this->notifGifts();
     }
 
-    // Resets gift points to 0 for a player
-    private function resetGiftPoints($player_id) {
-        self::DbQuery('UPDATE player SET gift_points = 0 WHERE player_id = '.$player_id);
-        self::reloadPlayersInfos();
-        $this->notifGifts();
-    }
-
     // Returns all players data for getAllDatas
     private function players_getAllDatas() {
         return self::loadPlayersInfos();
@@ -102,16 +95,6 @@ trait PlayersTrait {
         }
 
         return $this->players;
-    }
-
-    // Resets flower count on players
-    private function players_removeAllFlowers() {
-        $this->loadPlayersInfos();
-
-        foreach ($this->players as $player_id => $player)
-        {
-            $this->players[$player_id]['flowers_left']= 15;
-        }
     }
 
     // Updates score

@@ -84,21 +84,6 @@ trait TilesTrait {
         return $tile_type_rotated;
     }
 
-    // Get neighbors of a given tile or position
-    private function getTileNeighbors($tile) {
-        $neighbors = [];
-        foreach ($this->directions as $angle => $delta)
-        {
-            $params = ['x' => $tile['x'] + $delta['x'], 'y' => $tile['y'] + $delta['y'], 'location' => 'board'];
-            $neighbor = $this->getTile($params);
-            if ($neighbor)
-            {
-                $neighbors[$neighbor['tile_id']] = $neighbor;
-            }
-        }
-        return $neighbors;
-    }
-
     // Get the neighbor of a given tile or position in a given direction
     // The $angle should have already been rotated
     private function getTileNeighborByAngle($tile, $angle) {
@@ -162,25 +147,6 @@ trait TilesTrait {
         foreach ($params as $source => $target)
         {
             $sql = str_replace('${' . $source . '}', $target, $sql);
-        }
-
-        self::DbQuery($sql);
-
-        $this->reloadTiles();
-    }
-
-    // Moves all tiles from one place to another
-    private function moveAllTilesToLocation($source, $target) {
-        // Assumptions: this is meant to move to either player's hand or deck
-        // Therefore, x and y do not make sense
-
-        // Generate SQL
-        $sql = 'UPDATE tiles SET location = "${target}", x = 0, y = 0, location_order = 0, angle = 0';
-        $sql = str_replace($sql, '${target}', $target);
-
-        if ($source != '')
-        {
-            $sql .= ' WHERE location = "'.$source.'"';
         }
 
         self::DbQuery($sql);

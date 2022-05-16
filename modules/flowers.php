@@ -292,16 +292,6 @@ trait FlowersTrait {
     }
 
 
-    // Remove all flowers from the board
-    private function removeAllFlowers() {
-        $sql = 'DELETE FROM flowers WHERE 1';
-        self::DbQuery($sql);
-
-        $this->players_removeAllFlowers();
-
-        $this->flowers = [];
-    }
-
     // Gets flowers based on some parameters
     private function getFlowers($params = []) {
         $this->loadFlowers();
