@@ -277,16 +277,17 @@ trait FlowersTrait {
             ]
         );
 
-        $first_flower = true;
+        $first_flower_id = 0;
         foreach ($vines_claimed as $vine)
         {
             $flower = $this->claimVine($vine);
-            if ($first_flower)
+            if (!$first_flower_id)
             {
-                $this->setGameStateValue('last_flower_claimed', $flower['flower_id']);
+                $first_flower_id = $flower['flower_id'];
             }
-            $first_flower = false;
         }
+        // claimVine() sets last_flower_claimed so we have to change it after all claims
+        $this->setGameStateValue('last_flower_claimed', $first_flower_id);
 
         $this->addGiftPoints($player_id, -count($vines_claimed));
     }
