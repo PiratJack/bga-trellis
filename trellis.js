@@ -12,7 +12,7 @@ define([
         "dojo", "dojo/_base/declare", "dojo/json",
         "ebg/core/gamegui",
         "ebg/counter",
-        "ebg/scrollmap",
+        g_gamethemeurl + "modules/scrollmapWithZoom.js",
         g_gamethemeurl + "modules/tiles.js",
         g_gamethemeurl + "modules/flowers.js",
     ],
@@ -38,9 +38,12 @@ define([
                 this.players = gamedatas.players;
 
                 /***** Scrollmap *****/
-                this.scrollmap = new ebg.scrollmap();
+                this.scrollmap = new ebg.scrollmapWithZoom();
+                this.scrollmap.zoom = 1;
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
                 this.scrollmap.setupOnScreenArrows(150);
+                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
+                this.scrollmap.bEnableZooming = true;
 
                 dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
                 dojo.connect($('reducedisplay'), 'onclick', this, 'onDecreaseDisplayHeight');
@@ -125,7 +128,25 @@ define([
 
             // Applies the new zoom
             onZoomChange: function(newZoom) {
+                // Round + apply min & max values (for preference value)
+                zoom = Math.round(newZoom * 10) / 10
+                zoom = zoom <= 0.1 ? 0.1 : zoom >= 2 ? 2 : zoom;
+                this.trl_zoom = zoom;
+
+                // Set zoom in preference
+                this.scrollmap.zoom = this.trl_zoom
+                this.onPreferenceChange(100, (zoom * 10).toFixed());
+
+                // Trigger the change for the server
+                const newEvt = document.createEvent('HTMLEvents');
+                newEvt.initEvent('change', false, true);
+                $('preference_control_100').dispatchEvent(newEvt);
+            },
+
+            // Applies the new zoom
+            setZoomValue: function(newZoom) {
                 this.trl_zoom = newZoom;
+                this.scrollmap.zoom = this.trl_zoom
 
                 dojo.style($('map_scrollable'), 'transform', 'scale(' + this.trl_zoom + ')');
                 dojo.style($('map_scrollable_oversurface'), 'transform', 'scale(' + this.trl_zoom + ')');
@@ -251,7 +272,7 @@ define([
                 switch (prefId) {
                     // Zoom level
                     case 100:
-                        this.onZoomChange(prefValue / 10);
+                        this.setZoomValue(prefValue / 10);
                         dojo.query('#preference_control_' + prefId)[0].value = prefValue;
                         dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
                         break;
