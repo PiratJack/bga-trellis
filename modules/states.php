@@ -12,8 +12,6 @@
 namespace Trellis;
 
 trait StatesTrait {
-
-
     // Returns possible moves for the active player
     public function argPlant() {
         return [

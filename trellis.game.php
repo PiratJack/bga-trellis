@@ -122,7 +122,8 @@ class Trellis extends Table {
     public function zombieTurn($state, $active_player) {
         if ($state['type'] === "activeplayer")
         {
-            switch ($state['name']) {
+            switch ($state['name'])
+            {
                 case 'plant':
                     // Select a tile
                     $possible_tiles = $this->getTiles(['location' => $active_player]);

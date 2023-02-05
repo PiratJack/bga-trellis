@@ -238,7 +238,7 @@
 
 /*** Vacant spots ***/
 .trl_tile_possible_spot {
-    opacity: 50%;
+    opacity: 0.5;
 }
 
 .trl_tile_possible_spot .hexagon,
