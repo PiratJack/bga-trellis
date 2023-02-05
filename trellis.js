@@ -48,6 +48,7 @@ define([
                 this.trl_zoom = 1;
                 dojo.connect($('zoomplus'), 'onclick', () => this.onZoomButton(0.1));
                 dojo.connect($('zoomminus'), 'onclick', () => this.onZoomButton(-0.1));
+                dojo.connect($('back_to_center'), 'onclick', () => this.onBackToCenter());
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
@@ -203,6 +204,10 @@ define([
 
                 var current_height = toint(dojo.style($('map_container'), 'height'));
                 dojo.style($('map_container'), 'height', Math.max((current_height - 300), 100) + 'px');
+            },
+
+            onBackToCenter: function(evt) {
+                this.scrollmap.scrollto(0, 0);
             },
 
             ///////////////////////////////////////////////////

@@ -146,6 +146,16 @@
     background-position: 32px 32px;
 }
 
+#back_to_center {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 8px;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.5);
+}
+
 #zoomplus,
 #zoomminus {
     background-image: url('img/sprite.png');

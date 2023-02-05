@@ -19,6 +19,7 @@
         <div id="moveleft" class="clickable"></div>
         <div id="movedown" class="clickable"></div>
         <div id="moveright" class="clickable"></div>
+        <div id="back_to_center" class="clickable">{LABEL_BACK_TO_CENTER}</div>
         <div id="zoomplus"></div>
         <div id="zoomminus"></div>
     </div>
