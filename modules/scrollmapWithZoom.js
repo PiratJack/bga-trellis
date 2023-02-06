@@ -13,51 +13,102 @@ define([
                 this.scrollable_div = null;
                 this.surface_div = null;
                 this.onsurface_div = null;
+                this.clipped_div = null;
                 this.animation_div = null;
+                this.page = null;
                 this.board_x = 0;
                 this.board_y = 0;
                 this.zoom = 1;
+                this.maxZoom = 2;
+                this.minZoom = 0.1;
+                this.defaultZoom = null;
+                this.defaultPosition = {
+                    x: 0,
+                    y: 0
+                };
                 this._prevZoom = 1;
                 this.bEnableScrolling = true;
                 this.zoomPinchDelta = 0.005;
                 this.zoomWheelDelta = 0.001;
-                this.bEnableZooming = false;
+                this.bEnablePinchZooming = false;
+                this.bEnableWheelZooming = false;
                 this.zoomChangeHandler = null;
                 this.bScrollDeltaAlignWithZoom = true;
                 this.scrollDelta = 0;
                 this._scrollDeltaAlignWithZoom = 0;
                 this._pointers = [];
+                this._classNameSuffix = '';
                 this.resizeObserver = new ResizeObserver(this.onResize.bind(this));
-                this.resizeDocObserver = new ResizeObserver(this.onResizeDoc.bind(this));
             },
 
-            create: function(container_div, scrollable_div, surface_div, onsurface_div, animation_div = null) {
+            create: function(container_div, scrollable_div, surface_div, onsurface_div, clipped_div = null, animation_div = null, page = null, create_extra = null) {
+                console.log("ebg.scrollmapWithZoom create");
+                this.page = page;
                 this.container_div = container_div;
                 this.scrollable_div = scrollable_div;
                 this.surface_div = surface_div;
                 this.onsurface_div = onsurface_div;
+                this.clipped_div = clipped_div;
                 this.animation_div = animation_div;
+
+                var styleElt = document.createElement("style");
+                const styleSheetContent = String.raw`
+                    #${container_div.id}.scrollmap-zoomed{
+                        transform:;
+                    }
+                `;
+                // styleElt.type = "text/css";
+                styleElt.id = 'css-' + container_div.id;
+                styleElt.appendChild(document.createTextNode(styleSheetContent));
+                document.head.appendChild(styleElt);
+
+                if (create_extra !== null)
+                    create_extra(this);
+
                 dojo.connect(this.surface_div, 'onpointerdown', this, 'onPointerDown');
                 dojo.connect(this.container_div, 'onwheel', this, 'onWheel');
 
+                if (this.defaultZoom === null)
+                    this.defaultZoom = this.zoom;
+                this.setMapZoom(this.defaultZoom);
                 this.scrollto(0, 0);
-                this.setMapZoom(this.zoom);
                 this.resizeObserver.observe(this.container_div);
-                this.resizeDocObserver.observe(document.body);
             },
+
+            createCompletely: function(container_div, page = null, create_extra = null) {
+                console.log("createCompletely");
+                var tmpl = String.raw`
+                    <div class="scrollmap_overflow_clipped">
+                        <div class="scrollmap_scrollable"></div>
+                        <div class="scrollmap_surface" ></div>
+                        <div class="scrollmap_onsurface"></div>
+                    </div>
+                    <i class="scrollmap_movetop fa fa-chevron-up scrollmap_centericon"></i>
+                    <i class="scrollmap_moveleft fa fa-chevron-left scrollmap_centericon"></i>
+                    <i class="scrollmap_moveright fa fa-chevron-right scrollmap_centericon"></i>
+                    <i class="scrollmap_movedown fa fa-chevron-down scrollmap_centericon"></i>
+                    <i class="scrollmap_zoomplus fa fa-search-plus scrollmap_centericon"></i>
+                    <i class="scrollmap_zoomminus fa fa-search-minus scrollmap_centericon"></i>
+                    <i class="scrollmap_reset fa fa-refresh scrollmap_centericon"></i>
+                    <div class="scrollmap_anim"></div>
+                `;
+                this._classNameSuffix = 'scrollmap_';
+                dojo.place(tmpl, container_div);
+                var scrollable_div = container_div.querySelector('.scrollmap_scrollable');
+                var surface_div = container_div.querySelector('.scrollmap_surface');
+                var onsurface_div = container_div.querySelector('.scrollmap_onsurface');
+                var clipped_div = container_div.querySelector('.scrollmap_overflow_clipped');
+                var animation_div = container_div.querySelector('.scrollmap_anim');
+                //container_div.innerHTML = tmpl;
+                //this.create(container_div, scrollable_div, surface_div, onsurface_div, clipped_div, animation_div, page);
+                this.create(container_div, scrollable_div, surface_div, onsurface_div, clipped_div, animation_div, page, create_extra);
+            },
+
+            _init: function() {},
 
             onResize: function() {
+                // console.log("onResize");
                 this.scrollto(this.board_x, this.board_y, 0, 0);
-                console.log("onResize");
-            },
-
-            onResizeDoc: function() {
-                console.log("onResizeDoc");
-                if (this.animation_div !== null) {
-                    var pos = this._calcPosAnimationDiv();
-                    dojo.style(this.animation_div, "left", pos.x + "px");
-                    dojo.style(this.animation_div, "top", pos.y + "px");
-                }
             },
 
             _findPointerIndex: function(event) {
@@ -95,6 +146,18 @@ define([
                 }
             },
 
+            _getPageZoom: function() {
+                var pageZoom = 1;
+                if (this.page === null) {
+                    var pageZoomStr = $("page-content").style.getPropertyValue("zoom");
+                    pageZoom = 1;
+                    if (pageZoomStr !== "")
+                        pageZoom = parseFloat($("page-content").style.getPropertyValue("zoom"));
+                } else
+                    pageZoom = this.page.gameinterface_zoomFactor;
+                return pageZoom;
+            },
+
             _getXYCoord: function(ev, ev2) {
                 const width = dojo.style(this.container_div, "width");
                 const height = dojo.style(this.container_div, "height");
@@ -106,13 +169,14 @@ define([
                     clientY = (clientY + ev2.clientY) / 2;
                 }
 
-                const x = clientX - containerRect.x - width / 2;
-                const y = clientY - containerRect.y - height / 2;
+                var pageZoom = this._getPageZoom();
+                const x = clientX / pageZoom - containerRect.x - width / 2;
+                const y = clientY / pageZoom - containerRect.y - height / 2;
                 return [x, y];
             },
 
             onPointerDown: function(ev) {
-                if (!this.bEnableScrolling && !this.bEnableZooming)
+                if (!this.bEnableScrolling && !this.bEnablePinchZooming)
                     return;
                 if (this._pointers.length == 0) {
                     this.onpointermove_handler = dojo.connect(document, "onpointermove", this, "onPointerMove");
@@ -123,6 +187,8 @@ define([
             },
 
             onPointerMove: function(ev) {
+                if ((!this.bEnableScrolling && !this.bEnablePinchZooming))
+                    return;
                 ev.preventDefault();
                 const prevEv = this._addPointer(ev);
 
@@ -138,7 +204,7 @@ define([
                 }
                 // If two _pointers are move, check for pinch gestures
                 else if (this._pointers.length === 2) {
-                    if (!this.bEnableZooming)
+                    if (!this.bEnablePinchZooming)
                         return;
 
                     // Calculate the distance between the two _pointers
@@ -181,27 +247,11 @@ define([
             },
 
             onWheel: function(evt) {
-                if ((!this.bEnableZooming) || (evt.ctrlKey))
+                if ((!this.bEnableWheelZooming) || (evt.ctrlKey))
                     return;
                 evt.preventDefault();
                 const [x, y] = this._getXYCoord(evt);
                 this.changeMapZoom(evt.deltaY * -this.zoomWheelDelta, x, y);
-            },
-
-            _calcPosAnimationDiv: function() {
-                const width = dojo.style(this.container_div, "width");
-                const height = dojo.style(this.container_div, "height");
-                const pos = dojo.position(this.scrollable_div.parentNode);
-                const pos2 = dojo.position(this.animation_div.parentNode);
-                const board_x = toint(this.board_x + width / 2);
-                const board_y = toint(this.board_y + height / 2);
-                console.log("_calcPosAnimationDiv");
-                // console.log(board_x, board_y);
-                // console.log(pos, pos2);
-                return {
-                    x: (pos.x - pos2.x) + board_x,
-                    y: (pos.y - pos2.y) + board_y
-                };
             },
 
             scroll: function(dx, dy, duration, delay) {
@@ -233,21 +283,10 @@ define([
                 this.board_x = x;
                 this.board_y = y;
 
-                if (this.animation_div !== null) {
-                    // var pos = dojo.position(this.scrollable_div.parentNode);
-                    // var pos2 = dojo.position(this.animation_div.parentNode);
-                    // console.log(pos.x - pos2.x, pos.y - pos2.y);
-                    // var anim_x = (pos.x - pos2.x) + board_x;
-                    // var anim_y = (pos.y - pos2.y) + board_y;
-                    var animation_div_pos = this._calcPosAnimationDiv();
-                    var anim_x = animation_div_pos.x;
-                    var anim_y = animation_div_pos.y;
-                }
-
                 if ((duration == 0) && (delay == 0)) {
                     if (this.animation_div !== null) {
-                        dojo.style(this.animation_div, "left", anim_x + "px");
-                        dojo.style(this.animation_div, "top", anim_y + "px");
+                        dojo.style(this.animation_div, "left", board_x + "px");
+                        dojo.style(this.animation_div, "top", board_y + "px");
                     }
                     dojo.style(this.scrollable_div, "left", board_x + "px");
                     dojo.style(this.onsurface_div, "left", board_x + "px");
@@ -276,8 +315,8 @@ define([
                 if (this.animation_div !== null) {
                     var anim3 = dojo.fx.slideTo({
                         node: this.animation_div,
-                        top: anim_y,
-                        left: anim_x,
+                        top: board_y,
+                        left: board_x,
                         unit: "px",
                         duration: duration,
                         delay: delay
@@ -295,6 +334,10 @@ define([
             scrollToCenter: function(custom_css_query) {
                 const center = this.getMapCenter(custom_css_query);
                 this.scrollto(-center.x, -center.y);
+                return {
+                    x: -center.x,
+                    y: -center.y
+                };
             },
 
             getMapCenter: function(custom_css_query) {
@@ -304,12 +347,14 @@ define([
                 var min_x = 0;
                 var min_y = 0;
 
-                var css_query = '#' + this.scrollable_div.id + " > *";
+                var css_query = "> *";
+                var css_query_div = this.scrollable_div;
                 if (typeof custom_css_query != 'undefined') {
                     css_query = custom_css_query;
+                    css_query_div = null;
                 }
 
-                dojo.query(css_query).forEach(dojo.hitch(this, function(node) {
+                dojo.query(css_query, css_query_div).forEach(dojo.hitch(this, function(node) {
                     max_x = Math.max(max_x, dojo.style(node, 'left') + dojo.style(node, 'width'));
                     min_x = Math.min(min_x, dojo.style(node, 'left'));
 
@@ -332,7 +377,8 @@ define([
             },
 
             setMapZoom: function(zoom, x = 0, y = 0) {
-                this.zoom = Math.min(Math.max(zoom, 0.2), 2);
+                this.zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
+
                 if (this.bScrollDeltaAlignWithZoom)
                     this._scrollDeltaAlignWithZoom = this.scrollDelta * zoom;
                 else
@@ -341,8 +387,15 @@ define([
                 this.setScale(this.onsurface_div, this.zoom);
                 if (this.animation_div !== null)
                     this.setScale(this.animation_div, this.zoom);
-                if (this.zoomChangeHandler)
-                    this.zoomChangeHandler(this.zoom);
+                const css = String.raw;
+                const styleSheetContent = css`
+                    #${this.container_div.id} .scrollmap-zoomed{
+                        transform:scale(${this.zoom});
+                    }
+                `;
+                document.querySelector('#css-' + this.container_div.id).textContent = styleSheetContent;
+                if (this.zoomChangeHandler);
+                this.zoomChangeHandler(this.zoom);
                 const zoomDelta = this.zoom / this._prevZoom;
                 //console.log(x+' '+ y+' '+ zoomDelta+' '+ this.zoom);
                 this.scrollto((this.board_x * zoomDelta) + x * (1 - zoomDelta), (this.board_y * zoomDelta) + y * (1 - zoomDelta), 0, 0);
@@ -380,33 +433,48 @@ define([
                 }
 
                 // New controls
-                dojo.query('#' + this.container_div.id + ' .movetop').connect('onclick', this, 'onMoveTop').style('cursor', 'pointer');
-                dojo.query('#' + this.container_div.id + ' .movedown').connect('onclick', this, 'onMoveDown').style('cursor', 'pointer');
-                dojo.query('#' + this.container_div.id + ' .moveleft').connect('onclick', this, 'onMoveLeft').style('cursor', 'pointer');
-                dojo.query('#' + this.container_div.id + ' .moveright').connect('onclick', this, 'onMoveRight').style('cursor', 'pointer');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movetop').connect('onclick', this, 'onMoveTop').style('cursor', 'pointer').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movedown').connect('onclick', this, 'onMoveDown').style('cursor', 'pointer').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveleft').connect('onclick', this, 'onMoveLeft').style('cursor', 'pointer').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveright').connect('onclick', this, 'onMoveRight').style('cursor', 'pointer').style('display', 'block');
 
+                this.showOnScreenArrows();
+            },
+
+            showOnScreenArrows: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movetop').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveleft').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveright').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movedown').style('display', 'block');
+            },
+
+            hideOnScreenArrows: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movetop').style('display', 'none');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveleft').style('display', 'none');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'moveright').style('display', 'none');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'movedown').style('display', 'none');
             },
 
             onMoveTop: function(evt) {
-                console.log("onMoveTop");
+                // console.log("onMoveTop");
                 evt.preventDefault();
                 this.scroll(0, this._scrollDeltaAlignWithZoom);
             },
 
             onMoveLeft: function(evt) {
-                console.log("onMoveLeft");
+                // console.log("onMoveLeft");
                 evt.preventDefault();
                 this.scroll(this._scrollDeltaAlignWithZoom, 0);
             },
 
             onMoveRight: function(evt) {
-                console.log("onMoveRight");
+                // console.log("onMoveRight");
                 evt.preventDefault();
                 this.scroll(-this._scrollDeltaAlignWithZoom, 0);
             },
 
             onMoveDown: function(evt) {
-                console.log("onMoveDown");
+                // console.log("onMoveDown");
                 evt.preventDefault();
                 this.scroll(0, -this._scrollDeltaAlignWithZoom);
             },
@@ -429,28 +497,16 @@ define([
             enableScrolling: function() {
                 if (!this.bEnableScrolling) {
                     this.bEnableScrolling = true;
-
-                    dojo.query('#' + this.container_div.id + ' .movetop').style('display', 'block');
-                    dojo.query('#' + this.container_div.id + ' .moveleft').style('display', 'block');
-                    dojo.query('#' + this.container_div.id + ' .moveright').style('display', 'block');
-                    dojo.query('#' + this.container_div.id + ' .movedown').style('display', 'block');
-
                 }
+                this.showOnScreenArrows();
             },
 
             disableScrolling: function() {
                 if (this.bEnableScrolling) {
                     this.bEnableScrolling = false;
-
-                    // hide arrows
-
-                    dojo.query('#' + this.container_div.id + ' .movetop').style('display', 'none');
-                    dojo.query('#' + this.container_div.id + ' .moveleft').style('display', 'none');
-                    dojo.query('#' + this.container_div.id + ' .moveright').style('display', 'none');
-                    dojo.query('#' + this.container_div.id + ' .movedown').style('display', 'none');
-
                 }
-
+                // hide arrows
+                this.hideOnScreenArrows();
             },
 
             //////////////////////////////////////////////////
@@ -459,17 +515,28 @@ define([
                 this.zoomDelta = zoomDelta;
 
                 // Old controls - for compatibility
-                if ($('zoomin')) {
-                    dojo.connect($('zoomin'), 'onclick', this, 'onZoomIn');
+                if ($('zoomplus')) {
+                    dojo.connect($('zoomplus'), 'onclick', this, 'onZoomIn');
                 }
-                if ($('zoomout')) {
-                    dojo.connect($('zoomout'), 'onclick', this, 'onZoomOut');
+                if ($('zoomminus')) {
+                    dojo.connect($('zoomminus'), 'onclick', this, 'onZoomOut');
                 }
 
-                // New controls
-                dojo.query('#' + this.container_div.id + ' .zoomin').connect('onclick', this, 'onZoomIn').style('cursor', 'pointer');
-                dojo.query('#' + this.container_div.id + ' .zoomout').connect('onclick', this, 'onZoomOut').style('cursor', 'pointer');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomplus').connect('onclick', this, 'onZoomIn').style('cursor', 'pointer');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomminus').connect('onclick', this, 'onZoomOut').style('cursor', 'pointer');
 
+                this.showOnScreenZoomButtons();
+
+            },
+
+            showOnScreenZoomButtons: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomplus').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomminus').style('display', 'block');
+            },
+
+            hideOnScreenZoomButtons: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomplus').style('display', 'none');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'zoomminus').style('display', 'none');
             },
 
             onZoomIn: function(evt) {
@@ -480,6 +547,70 @@ define([
             onZoomOut: function(evt) {
                 evt.preventDefault();
                 this.changeMapZoom(-this.zoomDelta);
+            },
+
+            //////////////////////////////////////////////////
+            //// Reset with buttons
+            setupOnScreenResetButtons: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'reset').connect('onclick', this, 'onReset').style('cursor', 'pointer');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'back_to_center').connect('onclick', this, 'onBackToCenter').style('cursor', 'pointer');
+                this.showOnScreenResetButtons();
+            },
+
+            showOnScreenResetButtons: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'reset').style('display', 'block');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'back_to_center').style('display', 'block');
+            },
+
+            hideOnScreenResetButtons: function() {
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'reset').style('display', 'none');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'back_to_center').style('display', 'block');
+            },
+
+            onReset: function(evt) {
+                this.setMapZoom(this.defaultZoom);
+                this.scrollto(this.defaultPosition.x, this.defaultPosition.y);
+            },
+
+            onBackToCenter: function(evt) {
+                this.scrollto(this.defaultPosition.x, this.defaultPosition.y);
+            },
+
+            //////////////////////////////////////////////////
+            //// Increase/decrease display height with buttons
+            setupEnlargeReduceButtons: function(incrHeightDelta, incrHeightKeepInPos, minHeight) {
+                // Old controls - for compatibility
+                if ($('enlargedisplay')) {
+                    dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
+                }
+                if ($('reducedisplay')) {
+                    dojo.connect($('reducedisplay'), 'onclick', this, 'onDecreaseDisplayHeight');
+                }
+
+                this.incrHeightDelta = incrHeightDelta;
+                this.incrHeightKeepInPos = incrHeightKeepInPos;
+                this.minHeight = minHeight;
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'enlargedisplay').connect('onclick', this, 'onIncreaseDisplayHeight').style('cursor', 'pointer');
+                dojo.query('#' + this.container_div.id + ' .' + this._classNameSuffix + 'reducedisplay').connect('onclick', this, 'onDecreaseDisplayHeight').style('cursor', 'pointer');
+            },
+
+            onIncreaseDisplayHeight: function(evt) {
+                evt.preventDefault();
+
+                var current_height = toint(dojo.style($('map_container'), 'height'));
+                if (this.incrHeightKeepInPos)
+                    this.board_y -= this.incrHeightDelta / 2;
+                dojo.style($('map_container'), 'height', (current_height + this.incrHeightDelta) + 'px');
+            },
+
+            onDecreaseDisplayHeight: function(evt) {
+                evt.preventDefault();
+
+                var current_height = toint(dojo.style($('map_container'), 'height'));
+                var new_height = Math.max((current_height - this.incrHeightDelta), this.minHeight);
+                if (this.incrHeightKeepInPos)
+                    this.board_y += (current_height - new_height) / 2;
+                dojo.style($('map_container'), 'height', new_height + 'px');
             },
         });
     });

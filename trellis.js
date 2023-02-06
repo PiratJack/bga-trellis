@@ -40,18 +40,15 @@ define([
                 /***** Scrollmap *****/
                 this.scrollmap = new ebg.scrollmapWithZoom();
                 this.scrollmap.zoom = 1;
+                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
                 this.scrollmap.setupOnScreenArrows(150);
-                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
-                this.scrollmap.bEnableZooming = true;
-
-                dojo.connect($('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight');
-                dojo.connect($('reducedisplay'), 'onclick', this, 'onDecreaseDisplayHeight');
-
-                this.trl_zoom = 1;
-                dojo.connect($('zoomplus'), 'onclick', () => this.onZoomButton(0.1));
-                dojo.connect($('zoomminus'), 'onclick', () => this.onZoomButton(-0.1));
-                dojo.connect($('back_to_center'), 'onclick', () => this.onBackToCenter());
+                this.scrollmap.setupOnScreenZoomButtons(0.1);
+                this.scrollmap.setupEnlargeReduceButtons(300, true, 300);
+                this.scrollmap.setupOnScreenResetButtons();
+                this.scrollmap.bEnablePinchZooming = true;
+                this.scrollmap.bEnableWheelZooming = true;
+                dojo.connect($('back_to_center'), 'onclick', () => this.scrollmap.scrollToCenter());
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
@@ -77,8 +74,8 @@ define([
                         flowers_left: 15 - gamedatas.players[playerId].score,
                         player_color: gamedatas.players[playerId].color,
                     }), player_board_div);
-                    this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '')
-                    this.addTooltip('trl_flowers_left_' + playerId, _('Remaining flowers'), '')
+                    this.addTooltip('trl_gift_' + playerId, _('Gifts points won'), '');
+                    this.addTooltip('trl_flowers_left_' + playerId, _('Remaining flowers'), '');
 
                     if (player_data.last_tile_placed) {
                         if (this.player_id != playerId) {
@@ -106,7 +103,7 @@ define([
                 this.sin_60 = 0.8660; // sin(60°) = 0.8660
                 this.tile_height = this.tile_width * this.sin_60;
 
-                all_tiles = dojo.query('.trl_tile').forEach(
+                dojo.query('.trl_tile').forEach(
                     (tile) => {
                         tile.style.top = this.getTileTopPosition(tile.dataset.y) + 'px';
                         tile.style.left = this.getTileLeftPosition(tile.dataset.x) + 'px';
@@ -114,42 +111,15 @@ define([
                 );
             },
 
-            // Changes zoom value
-            onZoomButton: function(deltaZoom) {
-                zoom = this.trl_zoom + deltaZoom;
-                zoom = zoom <= 0.2 ? 0.2 : zoom >= 2 ? 2 : zoom;
-                this.onPreferenceChange(100, (zoom * 10).toFixed());
-
-                // Trigger the change for the server
-                const newEvt = document.createEvent('HTMLEvents');
-                newEvt.initEvent('change', false, true);
-                $('preference_control_100').dispatchEvent(newEvt);
-            },
-
             // Applies the new zoom
             onZoomChange: function(newZoom) {
-                // Round + apply min & max values (for preference value)
-                zoom = Math.round(newZoom * 10) / 10
-                zoom = zoom <= 0.1 ? 0.1 : zoom >= 2 ? 2 : zoom;
-                this.trl_zoom = zoom;
-
                 // Set zoom in preference
-                this.scrollmap.zoom = this.trl_zoom
-                this.onPreferenceChange(100, (zoom * 10).toFixed());
+                this.onPreferenceChange(100, (newZoom * 10).toFixed());
 
                 // Trigger the change for the server
                 const newEvt = document.createEvent('HTMLEvents');
                 newEvt.initEvent('change', false, true);
                 $('preference_control_100').dispatchEvent(newEvt);
-            },
-
-            // Applies the new zoom
-            setZoomValue: function(newZoom) {
-                this.trl_zoom = newZoom;
-                this.scrollmap.zoom = this.trl_zoom
-
-                dojo.style($('map_scrollable'), 'transform', 'scale(' + this.trl_zoom + ')');
-                dojo.style($('map_scrollable_oversurface'), 'transform', 'scale(' + this.trl_zoom + ')');
             },
 
             ///////////////////////////////////////////////////
@@ -213,24 +183,6 @@ define([
                 this.scrollmap.scrollto(x, y);
             },
 
-            onIncreaseDisplayHeight: function(evt) {
-                evt.preventDefault();
-
-                var current_height = toint(dojo.style($('map_container'), 'height'));
-                dojo.style($('map_container'), 'height', (current_height + 300) + 'px');
-            },
-
-            onDecreaseDisplayHeight: function(evt) {
-                evt.preventDefault();
-
-                var current_height = toint(dojo.style($('map_container'), 'height'));
-                dojo.style($('map_container'), 'height', Math.max((current_height - 300), 100) + 'px');
-            },
-
-            onBackToCenter: function(evt) {
-                this.scrollmap.scrollto(0, 0);
-            },
-
             ///////////////////////////////////////////////////
             //// User preferences
 
@@ -272,7 +224,10 @@ define([
                 switch (prefId) {
                     // Zoom level
                     case 100:
-                        this.setZoomValue(prefValue / 10);
+                        var newZoom = prefValue / 10;
+                        var prevZoom = Math.round(this.scrollmap.zoom * 10) / 10;
+                        if (newZoom != prevZoom)
+                            this.scrollmap.setMapZoom(newZoom);
                         dojo.query('#preference_control_' + prefId)[0].value = prefValue;
                         dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
                         break;
