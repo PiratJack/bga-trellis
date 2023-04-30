@@ -14,6 +14,7 @@ if (!defined('TRL_STATE_SETUP')) {
     define('TRL_STATE_PLANT_BLOOM', 24);
     define('TRL_STATE_PLANT_CHOOSE', 28);
 
+    define('TRL_STATE_CHECK_CLAIM_VINE', 29);
     define('TRL_STATE_CLAIM_VINE', 30);
     define('TRL_STATE_CLAIM_VINE_BLOOM', 34);
 

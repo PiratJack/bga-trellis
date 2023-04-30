@@ -40,7 +40,7 @@ $machinestates = [
         'description' => clienttranslate('Blooming vines'),
         'type' => 'game',
         'action' => 'stPlantBloom',
-        'transitions' => [ 'bloomingDone' => TRL_STATE_CLAIM_VINE, 'choiceNeeded' => TRL_STATE_PLANT_CHOOSE, 'endGame' => 99 ]
+        'transitions' => [ 'bloomingDone' => TRL_STATE_CHECK_CLAIM_VINE, 'choiceNeeded' => TRL_STATE_PLANT_CHOOSE, 'endGame' => 99 ]
     ],
 
     TRL_STATE_PLANT_CHOOSE => [
@@ -50,9 +50,18 @@ $machinestates = [
         'type' => 'activeplayer',
         'args' => 'argPlantChooseBloom',
         'possibleactions' => [ 'plantChooseBloom' ],
-        'transitions' => [ 'continueGame' => TRL_STATE_CLAIM_VINE, 'endGame' => 99 ]
+        'transitions' => [ 'continueGame' => TRL_STATE_CHECK_CLAIM_VINE, 'endGame' => 99 ]
     ],
 
+
+    // Check if a claim can be done (is there a free vine?)
+    TRL_STATE_CHECK_CLAIM_VINE => [
+        'name' => 'checkClaimVine',
+        'description' => clienttranslate('Checking that a vine can be claimed'),
+        'type' => 'game',
+        'action' => 'stCheckClaimVine',
+        'transitions' => [ 'claimPossible' => TRL_STATE_CLAIM_VINE, 'claimImpossible' => TRL_STATE_END_TURN ]
+    ],
 
     // Claim a vine on the new tile
     TRL_STATE_CLAIM_VINE => [

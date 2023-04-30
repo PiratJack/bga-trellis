@@ -154,8 +154,9 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             var selectedSpot = dojo.query('.trl_flower_spot.selected');
             if (selectedSpot.length != 1) {
                 this.showMessage(_('Please choose a spot to claim'), 'error');
-                var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')[0].parentNode;
-                this.scrollTo(missingFlower);
+                var missingFlower = dojo.query('.trl_flower_spot:not(.selected)')
+                if (missingFlower.length > 0)
+                    this.scrollTo(missingFlower[0].parentNode);
                 return;
             }
 

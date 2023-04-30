@@ -141,6 +141,23 @@ trait StatesTrait {
     }
 
 
+    // Check if a vine can be claimed (enough room?)
+    public function stCheckClaimVine() {
+        $tile_id = $this->getGameStateValue('last_tile_planted');
+        $possible_flower_spots = $this->getPossibleFlowerSpots($tile_id);
+        if (count($possible_flower_spots) == 0) {
+            self::notifyAllPlayers(
+                'message',
+                clienttranslate('${player_name} can\'t claim any flower as there is no room left'),
+                [
+                    'player_name' => $this->getActivePlayerName(),
+                ]
+            );
+            $this->gamestate->nextState('claimImpossible');
+        } else {
+            $this->gamestate->nextState('claimPossible');
+        }
+    }
 
     // Return which vines can be claimed by active player (regular move)
     public function argClaim() {
