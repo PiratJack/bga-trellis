@@ -19,8 +19,7 @@ trait PlayersTrait {
         $default_colors = $gameinfos['player_colors'];
         $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
         $values = [];
-        foreach ($players as $player_id => $player)
-        {
+        foreach ($players as $player_id => $player) {
             $color = array_shift($default_colors);
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes($player['player_name'])."','".addslashes($player['player_avatar'])."')";
         }
@@ -62,8 +61,7 @@ trait PlayersTrait {
     // Loads player data, with caching
     private function loadPlayersInfos() {
         $this->players = self::loadPlayersBasicInfos();
-        if (!array_key_exists('gift_points', current($this->players)))
-        {
+        if (!array_key_exists('gift_points', current($this->players))) {
             $this->reloadPlayersInfos();
         }
 
@@ -76,17 +74,14 @@ trait PlayersTrait {
         $this->players = self::loadPlayersBasicInfos();
         $data = self::getCollectionFromDB('SELECT player_id, player_score as score, gift_points, last_tile_placed FROM player');
 
-        foreach ($this->players as $player_id => $player)
-        {
+        foreach ($this->players as $player_id => $player) {
             $this->players[$player_id] = array_merge($player, $data[$player_id]);
         }
 
-        if (!$newGame)
-        {
+        if (!$newGame) {
             $this->loadFlowers();
 
-            foreach (array_keys($data) as $player_id)
-            {
+            foreach (array_keys($data) as $player_id) {
                 $flowers_left = 15 - count(array_filter($this->flowers, function ($v) use ($player_id) {
                     return $v['player_id'] == $player_id;
                 }));

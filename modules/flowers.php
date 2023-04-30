@@ -35,34 +35,28 @@ trait FlowersTrait {
         }, ARRAY_FILTER_USE_KEY);
 
         $blooming_flowers = [];
-        foreach ($available_vines as $vine_color => $angles)
-        {
-            foreach ($angles as $angle)
-            {
+        foreach ($available_vines as $vine_color => $angles) {
+            foreach ($angles as $angle) {
                 // Get neighbor in that direction
                 $neighbor = $this->getTileNeighborByAngle($tile, $angle);
-                if ($neighbor === null)
-                {
+                if ($neighbor === null) {
                     continue 1;
                 }
 
                 // A vine of the same color exists
                 $neighbor_type = $this->rotateTileType($this->tile_types[$neighbor['tile_type']], $neighbor['angle']);
-                if (!array_key_exists($vine_color, $neighbor_type['vines']))
-                {
+                if (!array_key_exists($vine_color, $neighbor_type['vines'])) {
                     continue 1;
                 }
 
                 // The vine is in the right angle
-                if (!in_array(($angle+180)%360, $neighbor_type['vines'][$vine_color]))
-                {
+                if (!in_array(($angle+180)%360, $neighbor_type['vines'][$vine_color])) {
                     continue 1;
                 }
 
                 // There is a flower on that vine
                 $neighbor_flower = $this->getFlowers(['tile_id' => $neighbor['tile_id'], 'vine' => $vine_color]);
-                if (count($neighbor_flower) != 1)
-                {
+                if (count($neighbor_flower) != 1) {
                     continue 1;
                 }
 
@@ -101,11 +95,9 @@ trait FlowersTrait {
 
         // No spot left on this tile, so we can plant anywhere
         // OR I get more gifts than the tile can provide
-        if ($available_vines == [] || $available_vines[$tile_id] == [] || count($available_vines[$tile_id]) < $gift_points)
-        {
+        if ($available_vines == [] || $available_vines[$tile_id] == [] || count($available_vines[$tile_id]) < $gift_points) {
             $tiles = $this->getTilesFromLocation('board');
-            foreach ($tiles as $tile_id => $tile)
-            {
+            foreach ($tiles as $tile_id => $tile) {
                 // Get data on vines & flowers
                 $vines = $this->rotateTileType($this->tile_types[$tile['tile_type']], $tile['angle'])['vines'];
                 $flowers_on_tile = $this->getFlowers(['tile_id' => $tile['tile_id']]);
@@ -118,8 +110,7 @@ trait FlowersTrait {
                     return !in_array($vine_color, $occupied_vines);
                 }, ARRAY_FILTER_USE_KEY);
 
-                if ($available_vines[$tile_id] == [])
-                {
+                if ($available_vines[$tile_id] == []) {
                     unset($available_vines[$tile_id]);
                 }
             }
@@ -140,30 +131,25 @@ trait FlowersTrait {
 
         // Travel through the vine in both directions
         $blooming_flowers = [];
-        foreach ($angles as $direction)
-        {
+        foreach ($angles as $direction) {
             $angle = $direction;
             $neighbor = $tile;
 
             // The 10 is random, to avoid infinite loops
-            for ($i = 0; $i <= 10; $i++)
-            {
+            for ($i = 0; $i <= 10; $i++) {
                 $neighbor = $this->getTileNeighborByAngle($neighbor, $angle);
-                if ($neighbor == null)
-                {
+                if ($neighbor == null) {
                     break;
                 }
 
                 // A vine of the same color exists
                 $neighbor_type = $this->rotateTileType($this->tile_types[$neighbor['tile_type']], $neighbor['angle']);
-                if (!array_key_exists($vine_color, $neighbor_type['vines']))
-                {
+                if (!array_key_exists($vine_color, $neighbor_type['vines'])) {
                     break;
                 }
 
                 // The vine is in the right angle
-                if (!in_array(($angle+180)%360, $neighbor_type['vines'][$vine_color]))
-                {
+                if (!in_array(($angle+180)%360, $neighbor_type['vines'][$vine_color])) {
                     break;
                 }
 
@@ -171,8 +157,7 @@ trait FlowersTrait {
                 $existing_flower = array_filter($this->flowers, function ($f) use ($neighbor, $vine_color) {
                     return $f['tile_id'] == $neighbor['tile_id'] && $f['vine'] == $vine_color;
                 });
-                if (count($existing_flower) != 0)
-                {
+                if (count($existing_flower) != 0) {
                     break;
                 }
 
@@ -183,8 +168,7 @@ trait FlowersTrait {
                 $angle = array_filter($neighbor_type['vines'][$vine_color], function ($a) use ($angle) {
                     return $a != ($angle+180)%360;
                 });
-                if (count($angle) == 0)
-                {
+                if (count($angle) == 0) {
                     break;
                 }
 
@@ -213,13 +197,10 @@ trait FlowersTrait {
     // Blooms a flower & notifies the players
     private function bloomFlower($flower) {
         $flower = $this->placeFlower($flower);
-        if ($flower['player_id'] == $this->getActivePlayerId())
-        {
+        if ($flower['player_id'] == $this->getActivePlayerId()) {
             $message = clienttranslate('Vine ${vine_color} blooms for ${player_name}');
             $this->incStat(1, 'flowers_bloomed', $this->getActivePlayerId());
-        }
-        else
-        {
+        } else {
             $message = clienttranslate('Vine ${vine_color} blooms for ${player_name}. ${player_name2} gets a gift point.');
             $this->addGiftPoints($this->getActivePlayerId(), 1);
             $this->incStat(1, 'flowers_received', $flower['player_id']);
@@ -278,11 +259,9 @@ trait FlowersTrait {
         );
 
         $first_flower_id = 0;
-        foreach ($vines_claimed as $vine)
-        {
+        foreach ($vines_claimed as $vine) {
             $flower = $this->claimVine($vine);
-            if (!$first_flower_id)
-            {
+            if (!$first_flower_id) {
                 $first_flower_id = $flower['flower_id'];
             }
         }
@@ -297,19 +276,15 @@ trait FlowersTrait {
     private function getFlowers($params = []) {
         $this->loadFlowers();
 
-        foreach ($params as $key => $value)
-        {
-            if (!is_array($value))
-            {
+        foreach ($params as $key => $value) {
+            if (!is_array($value)) {
                 $params[$key] = [$value];
             }
         }
 
         $flowers = array_filter($this->flowers, function ($flower) use ($params) {
-            foreach ($params as $key => $value)
-            {
-                if (!in_array($flower[$key], $value))
-                {
+            foreach ($params as $key => $value) {
+                if (!in_array($flower[$key], $value)) {
                     return false;
                 }
             }
@@ -330,8 +305,7 @@ trait FlowersTrait {
         $this->flowers = self::getCollectionFromDB('SELECT flower_id, player_id, tile_id, vine FROM flowers');
         $this->getTiles();
 
-        foreach ($this->flowers as $id => $flower)
-        {
+        foreach ($this->flowers as $id => $flower) {
             $tile = $this->tiles[$flower['tile_id']];
             $tile_type = $this->tile_types[$tile['tile_id']];
 
@@ -343,8 +317,7 @@ trait FlowersTrait {
 
     // Get flowers data, with caching
     private function loadFlowers() {
-        if (!isset($this->flowers))
-        {
+        if (!isset($this->flowers)) {
             $this->reloadFlowers();
         }
 

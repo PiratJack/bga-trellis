@@ -9,8 +9,7 @@
  * -----
  */
 
-if (!defined('TRL_STATE_SETUP'))
-{
+if (!defined('TRL_STATE_SETUP')) {
     define('TRL_STATE_PLANT', 20);
     define('TRL_STATE_PLANT_BLOOM', 24);
     define('TRL_STATE_PLANT_CHOOSE', 28);

@@ -18,8 +18,7 @@ trait TilesTrait {
         $values = [];
 
         // Adding the tiles
-        for ($i = 0; $i < count($this->tile_types); $i++)
-        {
+        for ($i = 0; $i < count($this->tile_types); $i++) {
             $values[] = '('.$i.', '.$i.', "'.($i==0?'board':'deck').'")';
         }
         $sql .= implode(', ', $values);
@@ -28,8 +27,7 @@ trait TilesTrait {
         // Shuffle and distribute
         $this->shuffleTilesInLocation('deck');
 
-        foreach ($this->players as $player_id => $player)
-        {
+        foreach ($this->players as $player_id => $player) {
             $this->pickTiles(3, 'deck', $player_id);
         }
         $this->reloadTiles();
@@ -40,11 +38,9 @@ trait TilesTrait {
         // Find all spots near existing tiles
         $spots = [];
         $board_tiles = $this->getTilesFromLocation('board');
-        foreach ($board_tiles as $tile_id => $board_tile)
-        {
+        foreach ($board_tiles as $tile_id => $board_tile) {
             $tile_type = $this->rotateTileType($this->tile_types[$board_tile['tile_type']], $board_tile['angle']);
-            foreach ($this->directions as $angle => $delta_position)
-            {
+            foreach ($this->directions as $angle => $delta_position) {
                 $neighbor_x = $board_tile['x'] + $delta_position['x'];
                 $neighbor_y = $board_tile['y'] + $delta_position['y'];
 
@@ -53,16 +49,14 @@ trait TilesTrait {
                 }))[0];
                 $neighbor_direction = (180 + $angle) % 360;
 
-                if (!in_array(['x' => $neighbor_x, 'y' => $neighbor_y], $spots))
-                {
+                if (!in_array(['x' => $neighbor_x, 'y' => $neighbor_y], $spots)) {
                     $spots[] = ['x' => $neighbor_x, 'y' => $neighbor_y];
                 }
             }
         }
 
         // Remove occupied spots
-        foreach ($board_tiles as $tile_id => $board_tile)
-        {
+        foreach ($board_tiles as $tile_id => $board_tile) {
             $spots = array_filter($spots, function ($spot) use ($board_tile) {
                 return ($spot['x'] != $board_tile['x'] || $spot['y'] != $board_tile['y']);
             });
@@ -91,8 +85,7 @@ trait TilesTrait {
         $delta = $this->directions[$angle];
         $params = ['x' => $tile['x'] + $delta['x'], 'y' => $tile['y'] + $delta['y'], 'location' => 'board'];
         $neighbor = $this->getTile($params);
-        if ($neighbor)
-        {
+        if ($neighbor) {
             return $neighbor;
         }
 
@@ -103,8 +96,7 @@ trait TilesTrait {
     private function pickTiles($nb_tiles, $source, $target) {
         $sql = 'SELECT tile_id FROM tiles WHERE location = "'.$source.'" ORDER BY location_order LIMIT '.$nb_tiles;
         $tile_ids = array_keys(self::getCollectionFromDB($sql));
-        if (count($tile_ids) == 0)
-        {
+        if (count($tile_ids) == 0) {
             return null;
         }
 
@@ -121,8 +113,7 @@ trait TilesTrait {
     // Default for $target: 'location' => 'deck', 'x' => 0, 'y' => 0, 'location_order' => 0, 'angle' => 0
     private function moveTilesToLocation($tiles, $target) {
         // $tiles can be the ID of a single tile, or an array of tile IDs
-        if (!is_array($tiles) || !array_key_exists('tile_id', current($tiles)))
-        {
+        if (!is_array($tiles) || !array_key_exists('tile_id', current($tiles))) {
             $tiles = $this->getTiles(['tile_id' => $tiles]);
         }
 
@@ -144,8 +135,7 @@ trait TilesTrait {
         // Generate SQL
         $sql = 'UPDATE tiles SET location = "${location}", x = ${x}, y = ${y}, location_order = ${location_order}, angle = ${angle} WHERE tile_id IN (${tiles_id})';
 
-        foreach ($params as $source => $target)
-        {
+        foreach ($params as $source => $target) {
             $sql = str_replace('${' . $source . '}', $target, $sql);
         }
 
@@ -197,8 +187,7 @@ trait TilesTrait {
 
         $tiles_ids = array_keys($tiles);
         shuffle($tiles_ids);
-        foreach ($tiles_ids as $order => $tile_id)
-        {
+        foreach ($tiles_ids as $order => $tile_id) {
             self::DbQuery('UPDATE tiles SET location_order = '.$order.'. WHERE tile_id = '.$tile_id);
         }
 
@@ -207,25 +196,20 @@ trait TilesTrait {
 
     // Gets tiles based on some parameters
     private function getTiles($params = []) {
-        if (!isset($this->tiles))
-        {
+        if (!isset($this->tiles)) {
             $this->reloadTiles();
         }
 
-        foreach ($params as $key => $value)
-        {
-            if (!is_array($value))
-            {
+        foreach ($params as $key => $value) {
+            if (!is_array($value)) {
                 $params[$key] = [$value];
             }
         }
 
 
         $tiles = array_filter($this->tiles, function ($tile) use ($params) {
-            foreach ($params as $key => $value)
-            {
-                if (!in_array($tile[$key], $value))
-                {
+            foreach ($params as $key => $value) {
+                if (!in_array($tile[$key], $value)) {
                     return false;
                 }
             }
@@ -240,8 +224,7 @@ trait TilesTrait {
     private function getTile($params = []) {
         $tiles = $this->getTiles($params);
 
-        if (count($tiles) != 1)
-        {
+        if (count($tiles) != 1) {
             return null;
         }
 
@@ -252,8 +235,7 @@ trait TilesTrait {
     private function getTileById($tile_id) {
         $tiles = $this->getTiles(['tile_id' => $tile_id]);
 
-        if (count($tiles) != 1)
-        {
+        if (count($tiles) != 1) {
             return null;
         }
 
@@ -269,8 +251,7 @@ trait TilesTrait {
     private function reloadTiles() {
         $this->tiles = self::getCollectionFromDB('SELECT tile_id, tile_type, location, location_order, x, y, angle FROM tiles');
 
-        foreach ($this->tiles as $id => $tile)
-        {
+        foreach ($this->tiles as $id => $tile) {
             $this->tiles[$id]['x']     = intval($tile['x']);
             $this->tiles[$id]['y']     = intval($tile['y']);
             $this->tiles[$id]['angle'] = intval($tile['angle']);
@@ -282,8 +263,7 @@ trait TilesTrait {
 
     // Returns all tile data for getAllDatas
     private function tiles_getAllDatas() {
-        if ($this->isSpectator())
-        {
+        if ($this->isSpectator()) {
             return $this->getTilesFromLocation('board');
         }
 

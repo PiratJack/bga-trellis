@@ -86,19 +86,16 @@ class Trellis extends Table {
         $this->loadFlowers();
         $this->loadPlayersInfos();
         $winner = false;
-        foreach ($this->players as $player_id => $player)
-        {
+        foreach ($this->players as $player_id => $player) {
             $flowers = array_filter($this->flowers, function ($v) use ($player_id) {
                 return $v['player_id'] == $player_id;
             });
-            if (count($flowers) >= 15)
-            {
+            if (count($flowers) >= 15) {
                 $winner = $player_id;
             }
         }
 
-        if ($winner)
-        {
+        if ($winner) {
             // Statistic: first_player_won
             $winner_order = $this->players[$winner]['player_no'];
             $nb_players = count($this->players);
@@ -120,10 +117,8 @@ class Trellis extends Table {
 
     // Zombie turn: just play randomly
     public function zombieTurn($state, $active_player) {
-        if ($state['type'] === "activeplayer")
-        {
-            switch ($state['name'])
-            {
+        if ($state['type'] === "activeplayer") {
+            switch ($state['name']) {
                 case 'plant':
                     // Select a tile
                     $possible_tiles = $this->getTiles(['location' => $active_player]);
@@ -145,10 +140,8 @@ class Trellis extends Table {
 
                 case 'plantChooseBloom':
                     $possible_blooms = $this->argPlantChooseBloom()['_private']['active']['possibleBlooms'];
-                    foreach ($possible_blooms as $tile_id => $vines)
-                    {
-                        foreach ($vines as $vine_color => $vine)
-                        {
+                    foreach ($possible_blooms as $tile_id => $vines) {
+                        foreach ($vines as $vine_color => $vine) {
                             $selected_player = $this->getRandomValue($vine['players']);
                             $this->bloomFlower(['player_id' => $selected_player, 'tile_id' => $tile_id, 'vine' => $vine_color]);
                         }
@@ -160,8 +153,7 @@ class Trellis extends Table {
                 case 'claim':
                     $possible_claims = $this->argClaim()['_private']['active']['possibleFlowerSpots'];
 
-                    foreach ($possible_claims as $tile_id => $tile)
-                    {
+                    foreach ($possible_claims as $tile_id => $tile) {
                         $selected_vine = $this->getRandomValue(array_keys($tile));
                         $this->claimVine(['player_id' => $active_player, 'tile_id' => $tile_id, 'vine' => $selected_vine]);
                     }
@@ -176,15 +168,11 @@ class Trellis extends Table {
                     $main_tile = $gift_info['_private']['active']['mainTile'];
 
                     $vines_claimed = [];
-                    for ($i = 0; $i < $gift_points; $i++)
-                    {
+                    for ($i = 0; $i < $gift_points; $i++) {
                         // Force to select the tile that was just placed
-                        if (array_key_exists($main_tile, $possible_flower_spots))
-                        {
+                        if (array_key_exists($main_tile, $possible_flower_spots)) {
                             $tile_id = $main_tile;
-                        }
-                        else
-                        {
+                        } else {
                             $tile_id = $this->getRandomValue(array_keys($possible_flower_spots));
                         }
 
@@ -192,8 +180,7 @@ class Trellis extends Table {
                         $selected_vine_color = $this->getRandomValue(array_keys($possible_flower_spots[$tile_id]));
                         $vines_claimed[] = ['player_id' => $active_player, 'tile_id' => $tile_id, 'vine' => $selected_vine_color];
                         unset($possible_flower_spots[$tile_id][$selected_vine_color]);
-                        if (count($possible_flower_spots[$tile_id]) == 0)
-                        {
+                        if (count($possible_flower_spots[$tile_id]) == 0) {
                             unset($possible_flower_spots[$tile_id]);
                         }
                     }
@@ -215,8 +202,7 @@ class Trellis extends Table {
 
     public function upgradeTableDb($from_version) {
         // Added display of last tile placed
-        if ($from_version <= 2203131458)
-        {
+        if ($from_version <= 2203131458) {
             $sql = 'ALTER TABLE DBPREFIX_player ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL';
             self::applyDbUpgradeToAllDB($sql);
         }

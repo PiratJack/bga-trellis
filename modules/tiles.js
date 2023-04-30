@@ -89,7 +89,8 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             if (!{
                     x: position.x,
                     y: position.y
-                } in this.possibleTileSpots) {
+                }
+                in this.possibleTileSpots) {
                 this.showMessage(_('This spot is not possible'), 'error');
                 return
             }

@@ -12,13 +12,10 @@
 class action_trellis extends APP_GameAction {
     // Constructor: please do not modify
     public function __default() {
-        if (self::isArg('notifwindow'))
-        {
+        if (self::isArg('notifwindow')) {
             $this->view = "common_notifwindow";
             $this->viewArgs['table'] = self::getArg("table", AT_posint, true);
-        }
-        else
-        {
+        } else {
             $this->view = "trellis_trellis";
             self::trace("Complete reinitialization of board game");
         }
@@ -42,20 +39,16 @@ class action_trellis extends APP_GameAction {
 
         $selectionAJAX = self::getArg('selection', AT_json, true);
         $selection = [];
-        foreach ($selectionAJAX as $vine_color => $player_id)
-        {
-            if (!is_string($vine_color))
-            {
+        foreach ($selectionAJAX as $vine_color => $player_id) {
+            if (!is_string($vine_color)) {
                 throw new \BgaUserException(self::_('Invalid value for bloom selection - vine color'), true, true, FEX_bad_input_argument);
             }
 
-            if (!is_numeric($player_id))
-            {
+            if (!is_numeric($player_id)) {
                 throw new \BgaUserException(self::_('Non-numeric value for bloom selection - player ID'), true, true, FEX_bad_input_argument);
             }
 
-            if ((int)$player_id <= 0)
-            {
+            if ((int)$player_id <= 0) {
                 throw new \BgaUserException(self::_('Negative value for bloom selection - player ID'), true, true, FEX_bad_input_argument);
             }
 
@@ -83,22 +76,17 @@ class action_trellis extends APP_GameAction {
 
         $selectionAJAX = self::getArg('selection', AT_json, true);
         $selection = [];
-        foreach ($selectionAJAX as $tile_id => $vine_colors)
-        {
-            foreach ($vine_colors as $vine_color)
-            {
-                if (!is_string($vine_color))
-                {
+        foreach ($selectionAJAX as $tile_id => $vine_colors) {
+            foreach ($vine_colors as $vine_color) {
+                if (!is_string($vine_color)) {
                     throw new \BgaUserException(self::_('Invalid value for gift selection - vine color'), true, true, FEX_bad_input_argument);
                 }
 
-                if (!is_numeric($tile_id))
-                {
+                if (!is_numeric($tile_id)) {
                     throw new \BgaUserException(self::_('Non-numeric value for gift selection - player ID'), true, true, FEX_bad_input_argument);
                 }
 
-                if ((int)$tile_id < 0)
-                {
+                if ((int)$tile_id < 0) {
                     throw new \BgaUserException(self::_('Negative value for gift selection - player ID'), true, true, FEX_bad_input_argument);
                 }
                 $selection[(int)$tile_id][] = $vine_color;

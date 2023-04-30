@@ -288,13 +288,13 @@ define([
 
                         // Replace vine color with an image
                         if ('vine_color' in args)
-                            args['vine_color'] = '<div class="trl_vine_color trl_vine_color_' + args['vine_color'] + '" title="' + args['vine_color'] + '"></div>';
+                            args.vine_color = '<div class="trl_vine_color trl_vine_color_' + args.vine_color + '" title="' + args.vine_color + '"></div>';
 
                         // Replace a tile with an image
                         if ('tile_log' in args) {
                             var tile = args.tile_log;
                             tile.location = 'notification';
-                            args['tile_log'] = this.renderTile(tile);
+                            args.tile_log = this.renderTile(tile);
                         }
                     }
                 } catch (e) {

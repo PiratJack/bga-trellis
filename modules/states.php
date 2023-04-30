@@ -30,22 +30,19 @@ trait StatesTrait {
 
         // Check tile exists
         $tile = $this->getTileById($tile_id);
-        if ($tile === null)
-        {
+        if ($tile === null) {
             throw new \BgaVisibleSystemException(self::_('This tile does not exist'));
         }
 
 
         // Check tile is the player's one
-        if ($tile['location'] != $this->getCurrentPlayerId())
-        {
+        if ($tile['location'] != $this->getCurrentPlayerId()) {
             throw new \BgaUserException(self::_('This tile is not in your hand'));
         }
         $possible_spots = $this->getPossibleTileSpots();
 
         // Check this spot is available
-        if (!in_array(['x' => $x, 'y' => $y], $possible_spots))
-        {
+        if (!in_array(['x' => $x, 'y' => $y], $possible_spots)) {
             throw new \BgaUserException(self::_('This tile can\'t be placed here'));
         }
 
@@ -60,10 +57,8 @@ trait StatesTrait {
         $possible_bloom = $this->getBloomForTile($tile_id);
 
         $need_choice = false;
-        foreach ($possible_bloom as $color => $flowers)
-        {
-            if (count($flowers['players']) == 1)
-            {
+        foreach ($possible_bloom as $color => $flowers) {
+            if (count($flowers['players']) == 1) {
                 $player_id = current($flowers['players']);
                 $flower = [
                     'player_id' => $player_id,
@@ -73,10 +68,8 @@ trait StatesTrait {
                 $new_flower = $this->bloomFlower($flower);
                 $vines = $this->getBloomForFlower($new_flower['flower_id']);
 
-                foreach ($vines as $vine_color => $tile_ids)
-                {
-                    foreach ($tile_ids as $add_tile_id)
-                    {
+                foreach ($vines as $vine_color => $tile_ids) {
+                    foreach ($tile_ids as $add_tile_id) {
                         $additional_flower = [
                             'player_id' => $player_id,
                             'tile_id' => $add_tile_id,
@@ -85,23 +78,16 @@ trait StatesTrait {
                         $f = $this->bloomFlower($additional_flower);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 $need_choice = true;
             }
         }
 
-        if ($this->checkPlayerWon())
-        {
+        if ($this->checkPlayerWon()) {
             $this->gamestate->nextState('endGame');
-        }
-        elseif ($need_choice)
-        {
+        } elseif ($need_choice) {
             $this->gamestate->nextState('choiceNeeded');
-        }
-        else
-        {
+        } else {
             $this->gamestate->nextState('bloomingDone');
         }
     }
@@ -129,30 +115,24 @@ trait StatesTrait {
         $possible_blooms = $this->getBloomForTile($tile_id);
 
         // Check values provided are correct
-        foreach ($selection as $vine_color => $player_id)
-        {
-            if (!in_array($vine_color, array_keys($this->color_translated)))
-            {
+        foreach ($selection as $vine_color => $player_id) {
+            if (!in_array($vine_color, array_keys($this->color_translated))) {
                 throw new \BgaUserException(self::_('Unknown vine color'), true, true, FEX_bad_input_argument);
             }
 
-            if (!in_array($player_id, $possible_blooms[$vine_color]['players']))
-            {
+            if (!in_array($player_id, $possible_blooms[$vine_color]['players'])) {
                 throw new \BgaUserException(self::_('Placing this flower here is impossible'), true, true, FEX_bad_input_argument);
             }
 
-            if (!array_key_exists($player_id, $this->players))
-            {
+            if (!array_key_exists($player_id, $this->players)) {
                 throw new \BgaUserException(self::_('This player does not exist'), true, true, FEX_bad_input_argument);
             }
 
             $this->bloomFlower(['player_id' => $player_id, 'tile_id' => $tile_id, 'vine' => $vine_color]);
         }
         // Check all vines have a flower now
-        foreach ($possible_blooms as $vine_color => $blooming)
-        {
-            if (!array_key_exists($vine_color, $selection))
-            {
+        foreach ($possible_blooms as $vine_color => $blooming) {
+            if (!array_key_exists($vine_color, $selection)) {
                 throw new \BgaUserException(str_replace('${vine_color}', $vine_color, self::_('Missing choice for vine ${vine_color}')), true, true, FEX_bad_input_argument);
             }
         }
@@ -180,12 +160,10 @@ trait StatesTrait {
 
         $possibleFlowerSpots = $this->getPossibleFlowerSpots($tile_id);
 
-        if (!array_key_exists($tile_id, $possibleFlowerSpots))
-        {
+        if (!array_key_exists($tile_id, $possibleFlowerSpots)) {
             throw new \BgaUserException(self::_('That tile is not available'), true, true, FEX_bad_input_argument);
         }
-        if (!array_key_exists($vine_color, $possibleFlowerSpots[$tile_id]))
-        {
+        if (!array_key_exists($vine_color, $possibleFlowerSpots[$tile_id])) {
             throw new \BgaUserException(self::_('That vine is not available'), true, true, FEX_bad_input_argument);
         }
 
@@ -197,8 +175,7 @@ trait StatesTrait {
     // Blooms flowers after player claims a vine
     public function stClaimBloom() {
         $blooms = $this->getBloomForFlower($this->getGameStateValue('last_flower_claimed'));
-        foreach ($blooms as $vine_color => $tile_ids)
-        {
+        foreach ($blooms as $vine_color => $tile_ids) {
             $flowers = array_map(function ($tile_id) use ($vine_color) {
                 return [
                     'player_id' => $this->getActivePlayerId(),
@@ -207,24 +184,18 @@ trait StatesTrait {
                 ];
             }, $tile_ids);
 
-            foreach ($flowers as $flower)
-            {
+            foreach ($flowers as $flower) {
                 $this->bloomFlower($flower);
             }
         }
 
         $this->reloadPlayersInfos();
 
-        if ($this->checkPlayerWon())
-        {
+        if ($this->checkPlayerWon()) {
             $this->gamestate->nextState('endGame');
-        }
-        elseif ($this->players[$this->getActivePlayerId()]['gift_points'] != 0)
-        {
+        } elseif ($this->players[$this->getActivePlayerId()]['gift_points'] != 0) {
             $this->gamestate->nextState('giftReceived');
-        }
-        else
-        {
+        } else {
             $this->gamestate->nextState('noGiftReceived');
         }
     }
@@ -265,50 +236,37 @@ trait StatesTrait {
             return count($v);
         }, $selection));
 
-        if ($count_possible_spots > $gift_points)
-        {
+        if ($count_possible_spots > $gift_points) {
             // Enough available spots to take all gifts
-            if ($selection_count < $gift_points)
-            {
+            if ($selection_count < $gift_points) {
                 throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
             }
-        }
-        else
-        {
+        } else {
             // Not enough available spots
-            if ($selection_count != $count_possible_spots)
-            {
+            if ($selection_count != $count_possible_spots) {
                 throw new \BgaUserException(self::_('You received more gifts, please choose additional spots'));
             }
         }
-        if ($selection_count > $gift_points)
-        {
+        if ($selection_count > $gift_points) {
             throw new \BgaUserException(self::_('You received less gifts, please choose less spots'));
         }
 
         // Check the player took all the "last tile played" gifts
-        if (array_key_exists($last_tile_id, $possible_spots))
-        {
-            if (count($possible_spots[$last_tile_id]) <= $gift_points)
-            {
-                if (!array_key_exists($last_tile_id, $selection) || count($possible_spots[$last_tile_id]) != count($selection[$last_tile_id]))
-                {
+        if (array_key_exists($last_tile_id, $possible_spots)) {
+            if (count($possible_spots[$last_tile_id]) <= $gift_points) {
+                if (!array_key_exists($last_tile_id, $selection) || count($possible_spots[$last_tile_id]) != count($selection[$last_tile_id])) {
                     throw new \BgaUserException(self::_('You must claim all vines from the last tile placed before claiming others'));
                 }
             }
         }
 
         $vines_claimed = [];
-        foreach ($selection as $tile_id => $vines)
-        {
-            if (!array_key_exists($tile_id, $possible_spots))
-            {
+        foreach ($selection as $tile_id => $vines) {
+            if (!array_key_exists($tile_id, $possible_spots)) {
                 throw new \BgaUserException(str_replace('${tile}', $tile_id, self::_('Tile ${tile} can\'t be selected')));
             }
-            foreach ($vines as $vine_color)
-            {
-                if (!array_key_exists($vine_color, $possible_spots[$tile_id]))
-                {
+            foreach ($vines as $vine_color) {
+                if (!array_key_exists($vine_color, $possible_spots[$tile_id])) {
                     throw new \BgaUserException(str_replace('${vine}', $vine_color, str_replace('${tile}', $tile_id, self::_('Tile ${tile} does not have a ${vine} vine'))));
                 }
                 $vines_claimed[] = ['player_id' => self::getActivePlayerId(), 'tile_id' => $tile_id, 'vine' => $vine_color];
@@ -328,11 +286,9 @@ trait StatesTrait {
             return $f['flower_id'] >= $last_flower_claimed;
         });
 
-        foreach ($new_flowers as $flower)
-        {
+        foreach ($new_flowers as $flower) {
             $blooms = $this->getBloomForFlower($flower['flower_id']);
-            foreach ($blooms as $vine_color => $tile_ids)
-            {
+            foreach ($blooms as $vine_color => $tile_ids) {
                 $flowers = array_map(function ($tile_id) use ($vine_color) {
                     return [
                         'player_id' => $this->getActivePlayerId(),
@@ -341,8 +297,7 @@ trait StatesTrait {
                     ];
                 }, $tile_ids);
 
-                foreach ($flowers as $flower)
-                {
+                foreach ($flowers as $flower) {
                     $this->bloomFlower($flower);
                 }
             }
@@ -377,12 +332,9 @@ trait StatesTrait {
 
     // Transitions to different game states if a player has won or not
     public function transitionIfPlayerWon($if_won, $if_not_won) {
-        if ($this->checkPlayerWon())
-        {
+        if ($this->checkPlayerWon()) {
             $this->gamestate->nextState($if_won);
-        }
-        else
-        {
+        } else {
             $this->gamestate->nextState($if_not_won);
         }
     }
