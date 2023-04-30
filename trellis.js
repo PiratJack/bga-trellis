@@ -12,7 +12,7 @@ define([
         "dojo", "dojo/_base/declare", "dojo/json",
         "ebg/core/gamegui",
         "ebg/counter",
-        g_gamethemeurl + "modules/scrollmapWithZoom.js",
+        "./modules/scrollmapWithZoom",
         g_gamethemeurl + "modules/tiles.js",
         g_gamethemeurl + "modules/flowers.js",
     ],
@@ -46,9 +46,8 @@ define([
                 this.scrollmap.setupOnScreenZoomButtons(0.1);
                 this.scrollmap.setupEnlargeReduceButtons(300, true, 300);
                 this.scrollmap.setupOnScreenResetButtons();
-                this.scrollmap.bEnablePinchZooming = true;
-                this.scrollmap.bEnableWheelZooming = true;
-                dojo.connect($('back_to_center'), 'onclick', () => this.scrollmap.scrollToCenter());
+                this.scrollmap.bEnableZooming = true;
+                this.scrollmap.scrollToCenter();
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
