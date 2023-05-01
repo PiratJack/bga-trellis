@@ -55,7 +55,21 @@ trait PlayersTrait {
 
     // Returns all players data for getAllDatas
     private function players_getAllDatas() {
-        return self::loadPlayersInfos();
+        $players = self::loadPlayersInfos();
+        // Adding private information
+        $current_player_id = self::getCurrentPlayerId();
+        $pre_planted_tile = self::getUniqueValueFromDB('SELECT pre_planted_tile FROM player WHERE player_id="'.$current_player_id.'"');
+        if ($pre_planted_tile) {
+            $pre_planted_tile = explode(";", $pre_planted_tile);
+            $players[$current_player_id]['pre_planted_tile'] = [
+                'tile_id' => $pre_planted_tile[0],
+                'x' => $pre_planted_tile[1],
+                'y' => $pre_planted_tile[2],
+                'angle' => $pre_planted_tile[3],
+            ];
+        }
+
+        return $players;
     }
 
     // Loads player data, with caching
@@ -82,6 +96,7 @@ trait PlayersTrait {
             $this->loadFlowers();
 
             foreach (array_keys($data) as $player_id) {
+                // Count flowers left
                 $flowers_left = 15 - count(array_filter($this->flowers, function ($v) use ($player_id) {
                     return $v['player_id'] == $player_id;
                 }));
@@ -90,6 +105,22 @@ trait PlayersTrait {
         }
 
         return $this->players;
+    }
+
+    // Set preplanted tile
+    private function setPrePlantedTile($player_id, $pre_planted_tile) {
+        $sql = 'UPDATE player SET pre_planted_tile = "'.$pre_planted_tile.'" WHERE player_id = "'.$player_id.'"';
+        self::DbQuery($sql);
+
+        $this->loadPlayersInfos();
+    }
+
+    // Reset preplanted tile
+    private function resetPrePlantedTile($player_id) {
+        $sql = 'UPDATE player SET pre_planted_tile = NULL WHERE player_id = "'.$player_id.'"';
+        self::DbQuery($sql);
+
+        $this->loadPlayersInfos();
     }
 
     // Updates score

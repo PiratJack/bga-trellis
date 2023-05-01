@@ -81,6 +81,12 @@ define([
                             dojo.addClass('board_tile_' + player_data.last_tile_placed, 'border_' + player_data.player_color);
                         }
                     }
+
+                    if (player_data.pre_planted_tile) {
+                        var position = player_data.pre_planted_tile;
+                        position.location = 'board';
+                        this.renderPrePlantedTile(position);
+                    }
                 }
 
                 /***** Notifications *****/
@@ -169,6 +175,11 @@ define([
                             this.addActionButton('confirm_claim_gift', _('Confirm'), 'onConfirmClaimGift');
                             break;
                     }
+                } else {
+                    this.addActionButton('confirm_tile_placement', _('Confirm placement'), 'onConfirmPlacement');
+                    dojo.addClass('confirm_tile_placement', 'disabled');
+                    this.addActionButton('cancel_tile_placement', _('Cancel placement'), 'onCancelPrePlant');
+                    dojo.addClass('cancel_tile_placement', 'disabled');
                 }
             },
 
@@ -252,6 +263,8 @@ define([
 
                 dojo.subscribe('playTileToBoard', this, "notif_playTileToBoard");
                 this.notifqueue.setSynchronous('playTileToBoard', 500);
+
+                dojo.subscribe('prePlantTile', this, "notif_prePlantTile");
 
                 dojo.subscribe('flowerBlooms', this, "notif_flowerBlooms");
                 this.notifqueue.setSynchronous('flowerBlooms', 500);

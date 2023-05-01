@@ -236,6 +236,12 @@
     height: calc(var(--tile_width) * 0.866 - 4px);
 }
 
+/* Pre-planted tile */
+.trl_tile_actual_tile.pre_planted {
+    opacity: 0.5;
+}
+
+
 /*** Vacant spots ***/
 .trl_tile_possible_spot {
     opacity: 0.5;

@@ -206,5 +206,10 @@ class Trellis extends Table {
             $sql = 'ALTER TABLE DBPREFIX_player ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL';
             self::applyDbUpgradeToAllDB($sql);
         }
+        // Added pre-planting of tiles
+        if ($from_version <= 2304301628) {
+            $sql = 'ALTER TABLE DBPREFIX_player ADD `pre_planted_tile`  VARCHAR(50) DEFAULT NULL';
+            self::applyDbUpgradeToAllDB($sql);
+        }
     }
 }

@@ -28,4 +28,5 @@ CREATE TABLE IF NOT EXISTS `flowers` (
 
 
 ALTER TABLE `player` ADD `gift_points`  INT UNSIGNED NOT NULL DEFAULT '0',
-                     ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL;
+                     ADD `last_tile_placed`  INT UNSIGNED DEFAULT NULL,
+                     ADD `pre_planted_tile`  VARCHAR(50) DEFAULT NULL;

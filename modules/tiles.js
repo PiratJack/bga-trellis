@@ -17,7 +17,12 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         // Allows for tile selection
         onEnteringState_plant: function(args) {
             if (this.isCurrentPlayerActive()) {
-                this.possibleTileSpots = args._private.possibleTileSpots;
+                this.possibleTileSpots = args.possibleTileSpots;
+
+                // Make hand tiles clickable (reset previous actions first)
+                if (this.handTilesHandlers) {
+                    this.handTilesHandlers.forEach(dojo.disconnect);
+                }
                 this.handTilesHandlers = [];
                 dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
                     this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
@@ -25,7 +30,12 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                     dojo.connect(node, 'dragstart', this, 'onTileDragStart');
                 });
                 dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
-            }
+
+                // The user chose a pre-plant spot ==> allow to confirm
+                if (dojo.query('.clicked_spot').length > 0)
+                    dojo.removeClass('confirm_tile_placement', 'disabled');
+            } else
+                this.onUpdatePrePlant(args);
         },
 
         // Disables interaction & hides possible spots for tiles
@@ -122,20 +132,85 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Confirm button for planting tiles
         onConfirmPlacement: function(evt) {
-            if (!this.checkAction('plant'))
-                return
+            if (this.isCurrentPlayerActive()) {
+                if (!this.checkAction('plant'))
+                    return
 
-            var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
-            var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
+                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
+                var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
 
-            this.ajaxcall('/trellis/trellis/plant.html', {
-                tile_id: selectedTile.dataset.id,
-                x: selectedPosition.dataset.x,
-                y: selectedPosition.dataset.y,
-                angle: selectedPosition.dataset.angle,
-                lock: true
-            }, this, function(result) {});
+                this.ajaxcall('/trellis/trellis/plant.html', {
+                    tile_id: selectedTile.dataset.id,
+                    x: selectedPosition.dataset.x,
+                    y: selectedPosition.dataset.y,
+                    angle: selectedPosition.dataset.angle,
+                    lock: true
+                }, this, function(result) {});
+            } else {
+                if (!this.checkPossibleActions('prePlant'))
+                    return
+
+                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
+                var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
+
+
+                this.ajaxcall('/trellis/trellis/prePlant.html', {
+                    tile_id: selectedTile.dataset.id,
+                    x: selectedPosition.dataset.x,
+                    y: selectedPosition.dataset.y,
+                    angle: selectedPosition.dataset.angle,
+                    lock: true
+                }, this, function(result) {});
+                dojo.addClass('confirm_tile_placement', 'disabled');
+            }
+        },
+
+        // Cancel pre-plant
+        onCancelPrePlant: function(evt) {
+            if (!this.isCurrentPlayerActive()) {
+                if (!this.checkPossibleActions('prePlant'))
+                    return
+
+                this.ajaxcall('/trellis/trellis/prePlant.html', {
+                    tile_id: 0,
+                    x: 0,
+                    y: 0,
+                    angle: 0,
+                    lock: true
+                }, this, function(result) {});
+                dojo.addClass('cancel_tile_placement', 'disabled');
+                this.destroyTentativeTiles(true);
+            }
+        },
+
+        onUpdatePrePlant(args) {
+            this.possibleTileSpots = args.possibleTileSpots;
+
+            // Make hand tiles clickable
+            if (this.handTilesHandlers) {
+                this.handTilesHandlers.forEach(dojo.disconnect);
+            }
+            this.handTilesHandlers = [];
+            dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
+                this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
+                node.draggable = true;
+                dojo.connect(node, 'dragstart', this, 'onTileDragStart');
+            });
+            dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
+
+            // The user chose a tile to pre-plant ==> refresh available spots
+            if (dojo.query('#trl_hand_tiles .selected').length > 0) {
+                this.destroyPossibleTileSpots();
+                this.displayPossibleTileSpots(this.possibleTileSpots);
+            }
+            // The user chose a pre-plant spot ==> allow to confirm
+            if (dojo.query('.clicked_spot').length > 0)
+                dojo.removeClass('confirm_tile_placement', 'disabled');
+            // The user confirmed a pre-plant spot ==> allow to cancel
+            // Note: this is also displayed in other cases, but it's OK
+            if (dojo.query('.pre_planted').length > 0)
+                dojo.removeClass('cancel_tile_placement', 'disabled');
         },
 
 
@@ -218,6 +293,15 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             this.renderRotatingArrows(position);
         },
 
+        // Renders a tile in a pre-planted position
+        renderPrePlantedTile: function(position) {
+            var newTileData = Object.assign(this.tiles[position.tile_id], position);
+            var newTile = this.renderTile(newTileData);
+            newTile.id = 'board_pre_planted_tile_' + position.tile_id;
+            dojo.addClass(newTile, 'tentative');
+            dojo.addClass(newTile, 'pre_planted');
+        },
+
         // Renders the arrows to rotate tiles
         renderRotatingArrows: function(spot) {
             var position_top = (this.tile_height + this.margin) * spot.y / 2 - this.tile_height / 2;
@@ -274,8 +358,11 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         },
 
         // Destroys possible spots
-        destroyTentativeTiles: function() {
-            dojo.query('.tentative').forEach(dojo.destroy);
+        destroyTentativeTiles: function(destroy_pre_planted = false) {
+            if (destroy_pre_planted)
+                dojo.query('.tentative').forEach(dojo.destroy);
+            else
+                dojo.query('.tentative:not(.pre_planted)').forEach(dojo.destroy);
         },
 
         onTileDragStart: function(evt) {
@@ -320,6 +407,18 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             }
         },
 
+        // Pre-plant action recorded (also used when re-rending whole board)
+        notif_prePlantTile: function(args) {
+            this.destroyPossibleTileSpots();
+            this.destroyTentativeTiles(true);
+            dojo.query('.selected').removeClass('selected');
+            if (args.args.action == 'confirmed') {
+                var position = args.args.pre_planted_tile;
+                this.renderPrePlantedTile(position);
+                dojo.removeClass('cancel_tile_placement', 'disabled');
+            } else if (args.args.action == 'cancelled')
+                dojo.addClass('cancel_tile_placement', 'disabled');
+        },
 
         // Pick a new tile
         notif_pickTile: function(args) {

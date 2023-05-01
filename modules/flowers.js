@@ -19,6 +19,8 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             if (this.isCurrentPlayerActive()) {
                 this.possibleBlooms = args._private.possibleBlooms;
                 this.displayBloomSpots(this.possibleBlooms);
+            } else {
+                this.onUpdatePrePlant(args);
             }
         },
 
@@ -27,6 +29,8 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
             if (this.isCurrentPlayerActive()) {
                 this.possibleFlowerSpots = args._private.possibleFlowerSpots;
                 this.displayFlowerSpots(this.possibleFlowerSpots, 'onClickFlowerSpot');
+            } else {
+                this.onUpdatePrePlant(args);
             }
         },
 
@@ -57,6 +61,8 @@ define(["dojo", "dojo/_base/declare"], (dojo, declare) => {
                         });
                     });
                 }
+            } else {
+                this.onUpdatePrePlant(args);
             }
         },
 

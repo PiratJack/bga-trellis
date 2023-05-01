@@ -175,7 +175,7 @@ trait TilesTrait {
         );
 
         // Update the "last_tile_placed" on the player table
-        $sql = 'UPDATE player SET last_tile_placed = "'.$tile['tile_id'].'" WHERE player_id = "'.$player_id.'"';
+        $sql = 'UPDATE player SET last_tile_placed = "'.$tile['tile_id'].'", pre_planted_tile = NULL WHERE player_id = "'.$player_id.'"';
         self::DbQuery($sql);
 
         $this->setGameStateValue('last_tile_planted', $tile['tile_id']);

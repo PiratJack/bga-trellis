@@ -15,18 +15,80 @@ trait StatesTrait {
     // Returns possible moves for the active player
     public function argPlant() {
         return [
-            '_private' => [
-                'active' => [
-                    'possibleTileSpots' => $this->getPossibleTileSpots()
-                ]
-            ]
+            'possibleTileSpots' => $this->getPossibleTileSpots()
         ];
     }
 
     // The player plants a tile
     public function actPlant($tile_id, $x, $y, $angle) {
         // User allowed to do this?
-        $this->checkAction('plant');
+        $this->gamestate->checkPossibleAction('plant');
+
+        // Check tile exists
+        $tile = $this->getTileById($tile_id);
+        if ($tile === null) {
+            throw new \BgaVisibleSystemException(self::_('This tile does not exist'));
+        }
+
+
+        // Check tile is the player's one
+        if ($tile['location'] != $this->getActivePlayerId()) {
+            throw new \BgaUserException(self::_('This tile is not in your hand'));
+        }
+        $possible_spots = $this->getPossibleTileSpots();
+
+        // Check this spot is available
+        if (!in_array(['x' => $x, 'y' => $y], $possible_spots)) {
+            throw new \BgaUserException(self::_('This tile can\'t be placed here'));
+        }
+
+        $this->plantTile($tile, $x, $y, $angle);
+
+        $this->gamestate->nextState('');
+    }
+
+    // The player plays its pre-selected card
+    public function stPlant() {
+        $active_player_id = $this->getActivePlayerId();
+        $pre_planted_tile = self::getUniqueValueFromDB('SELECT pre_planted_tile FROM player WHERE player_id="'.$active_player_id.'"');
+        if (!$pre_planted_tile) {
+            return;
+        }
+
+        $pre_planted_tile = explode(';', $pre_planted_tile);
+        $tile = $pre_planted_tile[0];
+        $x = $pre_planted_tile[1];
+        $y = $pre_planted_tile[2];
+        $angle = $pre_planted_tile[3];
+
+        try {
+            $this->actPlant($tile, $x, $y, $angle);
+        } catch (\BgaUserException $e) {
+            // Simply ignore it: we'll go to argPlant and allow the player to play
+            // Exceptions mean that the selected spot is no longer valid
+        }
+    }
+
+    // An inactive player plants a tile
+    public function actPrePlant($tile_id, $x, $y, $angle) {
+        // User allowed to do this?
+        $this->gamestate->checkPossibleAction('prePlant');
+        $current_player_id = $this->getCurrentPlayerId();
+
+        // Deleted previous choice?
+        if ($tile_id == 0) {
+            $this->resetPrePlantedTile($current_player_id);
+
+            self::notifyPlayer(
+                $current_player_id,
+                'prePlantTile',
+                _('Your pre-planting has been cancelled'),
+                [
+                    'action' => 'cancelled',
+                ]
+            );
+            return;
+        }
 
         // Check tile exists
         $tile = $this->getTileById($tile_id);
@@ -46,9 +108,26 @@ trait StatesTrait {
             throw new \BgaUserException(self::_('This tile can\'t be placed here'));
         }
 
-        $this->plantTile($tile, $x, $y, $angle);
+        // Update the "last_tile_placed" on the player table
+        $pre_planted_tile = strval($tile_id).';'.strval($x).';'.strval($y).';'.strval($angle);
+        $this->setPrePlantedTile($current_player_id, $pre_planted_tile);
 
-        $this->gamestate->nextState('');
+        self::notifyPlayer(
+            $current_player_id,
+            'prePlantTile',
+            _('Your pre-planting has been recorded'),
+            [
+                'action' => 'confirmed',
+                'pre_planted_tile' => [
+                    'tile_id' => $tile_id,
+                    'x' => $x,
+                    'y' => $y,
+                    'angle' => $angle,
+                    'location' => 'board',
+
+                ]
+            ]
+        );
     }
 
     // Blooms flowers after player puts a vine
@@ -100,7 +179,8 @@ trait StatesTrait {
                 'active' => [
                     'possibleBlooms' => [$tile_id => $this->getBloomForTile($tile_id)]
                 ]
-            ]
+            ],
+            'possibleTileSpots' => $this->getPossibleTileSpots()
         ];
     }
 
@@ -167,7 +247,8 @@ trait StatesTrait {
                 'active' => [
                     'possibleFlowerSpots' => $this->getPossibleFlowerSpots($tile_id)
                 ]
-            ]
+            ],
+            'possibleTileSpots' => $this->getPossibleTileSpots(),
         ];
     }
 
@@ -233,6 +314,7 @@ trait StatesTrait {
                 ]
             ],
             'gift_points' => $gift_points,
+            'possibleTileSpots' => $this->getPossibleTileSpots(),
         ];
     }
 

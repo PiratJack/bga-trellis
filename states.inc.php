@@ -26,11 +26,12 @@ $machinestates = [
     // Plant a new vine
     TRL_STATE_PLANT => [
         'name' => 'plant',
-        'description' => clienttranslate('${actplayer} must plant a tile'),
+        'description' => clienttranslate('${actplayer} must plant a tile. You can place your next tile'),
         'descriptionmyturn' => clienttranslate('${you} must plant a tile'),
         'type' => 'activeplayer',
+        'action' => 'stPlant',
         'args' => 'argPlant',
-        'possibleactions' => [ 'plant' ],
+        'possibleactions' => [ 'plant', 'prePlant'],
         'transitions' => [ '' => TRL_STATE_PLANT_BLOOM ],
         'updateGameProgression' => true
     ],
@@ -45,11 +46,11 @@ $machinestates = [
 
     TRL_STATE_PLANT_CHOOSE => [
         'name' => 'plantChooseBloom',
-        'description' => clienttranslate('${actplayer} must choose which flower blooms'),
+        'description' => clienttranslate('${actplayer} must choose which flower blooms. You can place your next tile'),
         'descriptionmyturn' => clienttranslate('${you} must choose which flower blooms'),
         'type' => 'activeplayer',
         'args' => 'argPlantChooseBloom',
-        'possibleactions' => [ 'plantChooseBloom' ],
+        'possibleactions' => [ 'plantChooseBloom', 'prePlant' ],
         'transitions' => [ 'continueGame' => TRL_STATE_CHECK_CLAIM_VINE, 'endGame' => 99 ]
     ],
 
@@ -66,11 +67,11 @@ $machinestates = [
     // Claim a vine on the new tile
     TRL_STATE_CLAIM_VINE => [
         'name' => 'claim',
-        'description' => clienttranslate('${actplayer} must claim a vine'),
+        'description' => clienttranslate('${actplayer} must claim a vine. You can place your next tile'),
         'descriptionmyturn' => clienttranslate('${you} must claim a vine'),
         'type' => 'activeplayer',
         'args' => 'argClaim',
-        'possibleactions' => [ 'claim' ],
+        'possibleactions' => [ 'claim', 'prePlant' ],
         'transitions' => [ 'continueGame' => TRL_STATE_CLAIM_VINE_BLOOM, 'endGame' => 99 ]
     ],
 
@@ -89,11 +90,11 @@ $machinestates = [
     // Claim a gift if possible
     TRL_STATE_CLAIM_GIFT => [
         'name' => 'claimGift',
-        'description' => clienttranslate('${actplayer} claims ${gift_points} gift(s)'),
+        'description' => clienttranslate('${actplayer} claims ${gift_points} gift(s). You can place your next tile'),
         'descriptionmyturn' => clienttranslate('${you} claim ${gift_points} gift(s)'),
         'type' => 'activeplayer',
         'args' => 'argClaimGift',
-        'possibleactions' => [ 'claimGift', 'endGame' ],
+        'possibleactions' => [ 'claimGift', 'endGame', 'prePlant' ],
         'transitions' => [ 'continueGame' => TRL_STATE_CLAIM_GIFT_BLOOM, 'endGame' => 99 ]
     ],
 
