@@ -9,34 +9,31 @@
 -- See http://en.boardgamearena.com/#!doc/Studio for more information.
 -------
 -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="svg_hexagon" style="display: none;">
+    <path id="hexopath" d="M26 2, 75 2, 98 43, 75 84.6, 25 84.6, 2 43 z">
+    </path>
+    <clipPath id="hexoclip">
+        <use href="#hexopath" fill="none" stroke="currentColor" clip-path="url(#hexoclip)" </use>
+    </clipPath>
+    <use id="hexo" class="hexo" href="#hexopath" fill="none" stroke="currentColor" clip-path="url(#hexoclip)">
+    </use>
+    <use class="hexo_filled" href="#hexopath" stroke-width="1" fill="currentColor">
+    </use>
+</svg>
 <div id="trl_board">
     <div id="map_container">
         <div id="map_scrollable"></div>
         <div id="map_surface"></div>
         <div id="map_scrollable_oversurface"></div>
-
-        <div id="movetop" class="clickable"></div>
-        <div id="moveleft" class="clickable"></div>
-        <div id="movedown" class="clickable"></div>
-        <div id="moveright" class="clickable"></div>
-        <div id="back_to_center" class="clickable">{LABEL_BACK_TO_CENTER}</div>
-        <div id="zoomplus"></div>
-        <div id="zoomminus"></div>
-    </div>
-
-    <div id="trl_hand" class="whiteblock">
-        <h3>{MY_TILES}</h3>
-        <div id="trl_hand_tiles"></div>
-    </div>
-
-    <div id="map_footer" class="whiteblock">
-        <a href="#" id="enlargedisplay">↓ {LABEL_ENLARGE_DISPLAY} ↓</a>
-        <a href="#" id="reducedisplay">↑ {LABEL_REDUCE_DISPLAY} ↑</a>
+        <div id="trl_hand" class="whiteblock scrollmap_zoomed">
+            <h3 style="text-align: left; margin-left: 10px; margin-top: 0px; font-size: calc(16px/var(--scrollmap_zoom));">{MY_TILES}</h3><!-- class="scrollmap_unzoomed" -->
+            <div id="trl_hand_tiles"></div>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript">
-    const jstpl_tile = '<div id="${div_id}" class="trl_tile trl_tile_actual_tile" data-id="${id}" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px; background-position: ${bg_x}% ${bg_y}%; transform: rotate(${angle}deg);" data-angle="${angle}"><div class="hexagon"></div></div>';
+    const jstpl_tile = '<div id="${div_id}" class="trl_tile trl_tile_actual_tile" data-id="${id}" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px; background-position: ${bg_x}% ${bg_y}%; transform: rotate(${angle}deg);" data-angle="${angle}"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="hexagon" viewBox="2 2 96 82.6"><use href="#hexo"></use></svg></div>';
 
     const jstpl_possible_spot = '<div id="possible_spot_${x}_${y}" class="trl_tile trl_tile_possible_spot" data-x="${x}" data-y="${y}" style="top: ${top}px; left: ${left}px;"><div class="hexagon clickable"></div></div>';
 

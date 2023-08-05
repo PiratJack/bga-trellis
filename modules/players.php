@@ -23,7 +23,7 @@ trait PlayersTrait {
             $color = array_shift($default_colors);
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes($player['player_name'])."','".addslashes($player['player_avatar'])."')";
         }
-        $sql .= implode($values, ',');
+        $sql .= implode(',', $values);
         self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
 
@@ -40,7 +40,7 @@ trait PlayersTrait {
     // Gives regular points to a player
     private function addPoints($player_id, $nb_points) {
         self::DbQuery('UPDATE player SET player_score = player_score + '.$nb_points.' WHERE player_id = '.$player_id);
-        self::reloadPlayersInfos();
+        $this->reloadPlayersInfos();
 
         $this->notifScores();
     }

@@ -40,14 +40,14 @@ define([
                 /***** Scrollmap *****/
                 this.scrollmap = new ebg.scrollmapWithZoom();
                 this.scrollmap.zoom = 1;
-                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
+                this.scrollmap.bAdaptHeightAuto = true;
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
+                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
                 this.scrollmap.setupOnScreenArrows(150);
                 this.scrollmap.setupOnScreenZoomButtons(0.1);
                 this.scrollmap.setupEnlargeReduceButtons(300, true, 300);
                 this.scrollmap.setupOnScreenResetButtons();
                 this.scrollmap.bEnableZooming = true;
-                this.scrollmap.scrollToCenter();
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;
@@ -98,12 +98,7 @@ define([
 
             // Resizes the board and cards based on the screen size
             resizeBoard: function() {
-                if (window.matchMedia("(min-width: 1350px)").matches)
-                    this.tile_width = 316;
-                else if (window.matchMedia("(min-width: 1000px) and (max-width: 1350px)").matches)
-                    this.tile_width = 158;
-                else if (window.matchMedia("(max-width: 1000px)").matches)
-                    this.tile_width = 100;
+                this.tile_width = 158;
 
                 this.sin_60 = 0.8660; // sin(60°) = 0.8660
                 this.tile_height = this.tile_width * this.sin_60;
@@ -245,10 +240,9 @@ define([
                         // Display my tiles above/below
                     case 101:
                         if (prefValue == 1)
-                            dojo.place('trl_hand', 'map_container', 'before');
+                            $('trl_hand').classList.remove("trl_hand_at_bottom");
                         else
-                            dojo.place('trl_hand', 'map_container', 'after');
-                        break;
+                            $('trl_hand').classList.add("trl_hand_at_bottom");
                 }
             },
 

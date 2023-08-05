@@ -58,7 +58,6 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         // Stores clicked tile + displays relevant spots
         onClickHandTile: function(evt) {
             var clickedTile = evt.currentTarget.parentNode;
-            var tileId = clickedTile.dataset.id;
             var wasSelected = dojo.hasClass(clickedTile, 'selected');
 
             // Clear up everything from previous steps
@@ -94,15 +93,12 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 y: clickedSpot.dataset.y,
                 location: 'board',
                 angle: 0,
-            }
+            };
 
-            if (!{
-                    x: position.x,
-                    y: position.y
-                }
-                in this.possibleTileSpots) {
+            if (!Object.values(this.possibleTileSpots).find(el => el.x == toint(position.x) && el.y == toint(position.y))) {
+                debugger;
                 this.showMessage(_('This spot is not possible'), 'error');
-                return
+                return;
             }
 
             this.renderTentativeTile(position);
@@ -114,7 +110,6 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         // Rotate a tile after placing it
         onClickRotateTile: function(evt) {
             var clickedArrow = evt.currentTarget;
-            var selectedSpot = evt.currentTarget.parentNode.parentNode;
             var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
             var selectedTentativeTile = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
@@ -128,16 +123,18 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                     selectedTentativeTile.style.transform = 'rotate(' + v + 'deg)';
                 }
             }).play();
+            evt.stopImmediatePropagation();
         },
 
         // Confirm button for planting tiles
         onConfirmPlacement: function(evt) {
+            var selectedTile, selectedPosition;
             if (this.isCurrentPlayerActive()) {
                 if (!this.checkAction('plant'))
-                    return
+                    return;
 
-                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
-                var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
+                selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
+                selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
 
                 this.ajaxcall('/trellis/trellis/plant.html', {
@@ -149,10 +146,10 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 }, this, function(result) {});
             } else {
                 if (!this.checkPossibleActions('prePlant'))
-                    return
+                    return;
 
-                var selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
-                var selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
+                selectedTile = dojo.query('.trl_tile_actual_tile.selected')[0];
+                selectedPosition = dojo.query('#board_tile_' + selectedTile.dataset.id)[0];
 
 
                 this.ajaxcall('/trellis/trellis/prePlant.html', {
@@ -170,7 +167,7 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         onCancelPrePlant: function(evt) {
             if (!this.isCurrentPlayerActive()) {
                 if (!this.checkPossibleActions('prePlant'))
-                    return
+                    return;
 
                 this.ajaxcall('/trellis/trellis/prePlant.html', {
                     tile_id: 0,
@@ -229,15 +226,17 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Renders a tile in a given position (either board or hand)
         renderTile: function(tile) {
+            var bg_x;
             if (this.sprite_size_x == 1)
-                var bg_x = 0;
+                bg_x = 0;
             else
-                var bg_x = 100 * parseInt(tile.sprite_position.x) / (this.sprite_size_x - 1);
+                bg_x = 100 * parseInt(tile.sprite_position.x) / (this.sprite_size_x - 1);
 
+            var bg_y;
             if (this.sprite_size_y == 1)
-                var bg_y = 0;
+                bg_y = 0;
             else
-                var bg_y = 100 * parseInt(tile.sprite_position.y) / (this.sprite_size_y - 1);
+                bg_y = 100 * parseInt(tile.sprite_position.y) / (this.sprite_size_y - 1);
 
             if (tile.location == 'board') {
                 var position_top = this.getTileTopPosition(tile.y);
@@ -304,27 +303,24 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Renders the arrows to rotate tiles
         renderRotatingArrows: function(spot) {
-            var position_top = (this.tile_height + this.margin) * spot.y / 2 - this.tile_height / 2;
-            var position_left = spot.x * (this.tile_width * 3 / 4 + this.margin) - this.tile_width / 2;
-
-            var element = dojo.place(this.format_block('jstpl_rotation_arrows', {
+            dojo.place(this.format_block('jstpl_rotation_arrows', {
                 x: spot.x,
                 y: spot.y,
                 top: 0,
                 left: 0,
-            }), document.getElementById('possible_spot_' + spot.x + '_' + spot.y));
-
+            }), document.getElementById('possible_spot_' + spot.x + '_' + spot.y).firstElementChild);
             dojo.connect($('trl_tile_rotate_counterclockwise'), 'onclick', this, 'onClickRotateTile');
             dojo.connect($('trl_tile_rotate_clockwise'), 'onclick', this, 'onClickRotateTile');
         },
 
         // Displays the possible spots (as white areas)
         displayPossibleTileSpots: function(possibleTiles) {
+            var i;
             for (i in possibleTiles) {
                 var x = possibleTiles[i].x;
                 var y = possibleTiles[i].y;
                 if (document.getElementById('possible_spot_' + x + '_' + y) === null) {
-                    var possibleTileSpot = this.renderPossibleTileSpot(x, y);
+                    this.renderPossibleTileSpot(x, y);
                     dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('onclick', this, 'onClickPossibleTileSpot');
                     dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('ondrop', this, 'onTileDrop');
                     dojo.query('#possible_spot_' + x + '_' + y + ' .hexagon').connect('ondragover', this, 'onTileDragOver');

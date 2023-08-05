@@ -10,60 +10,14 @@
 
 
 /****************** Dimensions ******************/
-@media only screen and (min-width: 1350px) {
-    #map_container {
-        width: 100%;
-        height: 800px;
-    }
-
-    #map_container {
-        --tile_width: 316px;
-        --tile_margin: 0;
-        /*4px;*/
-    }
-
-    #trl_hand {
-        --tile_width: 150px;
-        --tile_margin: 6px;
-    }
+#map_container {
+    height: 400px;
 }
 
-@media only screen and (min-width: 1000px) and (max-width: 1350px) {
-    #map_container {
-        height: 400px;
-    }
-
-    /*** Sizes & positions ***/
-    #map_container {
-        --tile_width: 159px;
-        --tile_margin: 0;
-        /*2px;*/
-    }
-
-    #trl_hand {
-        --tile_width: 75px;
-        --tile_margin: 3px;
-    }
-
-}
-
-@media only screen and (max-width: 1000px) {
-    #map_container {
-        height: 400px;
-    }
-
-    /*** Sizes & positions ***/
-    #map_container {
-        --tile_width: 100px;
-        --tile_margin: 0;
-        /*2px;*/
-    }
-
-    #trl_hand {
-        --tile_width: 50px;
-        --tile_margin: 3px;
-    }
-
+/*** Sizes & positions ***/
+#map_container {
+    --tile_width: 159px;
+    --tile_margin: 0px;
 }
 
 #logs {
@@ -177,7 +131,8 @@
 
 /****************** Tiles ******************/
 
-#map_container .trl_tile {
+#map_container #map_scrollable .trl_tile,
+#map_container #map_scrollable_oversurface .trl_tile {
     position: absolute;
 }
 
@@ -188,33 +143,29 @@
 
 .trl_tile .hexagon {
     display: inline-block;
-    width: calc(var(--tile_width) * 0.5);
+    width: calc(var(--tile_width));
     height: calc(var(--tile_width) * 0.866);
-
-    margin-left: calc(var(--tile_width) * 0.25);
+    stroke-width: 0;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)
 }
 
-.trl_tile .hexagon:before,
-.trl_tile .hexagon:after {
-    content: "";
-    margin: 0;
+.trl_tile .hexagon #trl_tile_rotate {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)
+}
+
+.hexagon {
+    display: none;
+}
+
+.trl_tile.selected .hexagon {
+    stroke-width: calc(4px/var(--scrollmap_zoom));
+}
+
+.trl_tile.selected .hexagon {
     display: block;
-    position: relative;
-    width: inherit;
-    height: inherit;
-
-    border: inherit;
+    color: red;
 }
 
-.trl_tile .hexagon:before {
-    transform: rotate(60deg);
-    margin-top: -1px;
-}
-
-.trl_tile .hexagon:after {
-    transform: rotate(-60deg);
-    margin-top: calc(var(--tile_width) * -0.866 - 2px);
-}
 
 .clicked_spot {
     z-index: 100;
@@ -227,13 +178,10 @@
     background-size: 800% 800%;
 }
 
-.trl_tile_actual_tile.selected .hexagon,
-.trl_tile_actual_tile.selected .hexagon:before,
-.trl_tile_actual_tile.selected .hexagon:after {
-    border-top: red solid 2px;
-    border-bottom: red solid 2px;
 
-    height: calc(var(--tile_width) * 0.866 - 4px);
+.trl_tile_actual_tile.selected .hexagon {
+    box-sizing: border-box;
+    background-origin: border-box;
 }
 
 /* Pre-planted tile */
@@ -241,54 +189,39 @@
     opacity: 0.5;
 }
 
-
 /*** Vacant spots ***/
 .trl_tile_possible_spot {
     opacity: 0.5;
 }
 
-.trl_tile_possible_spot .hexagon,
-.trl_tile_possible_spot .hexagon:before,
-.trl_tile_possible_spot .hexagon:after {
+.trl_tile_possible_spot .hexagon {
     background-image: none;
     background-color: white;
 }
 
 /*** Last tile placed by other player ***/
-.trl_tile_actual_tile.border_ffffff .hexagon,
-.trl_tile_actual_tile.border_ffffff .hexagon:before,
-.trl_tile_actual_tile.border_ffffff .hexagon:after {
-    border-top: white solid 4px;
-    border-bottom: white solid 4px;
-
-    height: calc(var(--tile_width) * 0.866 - 8px);
+.trl_tile_actual_tile.border_ffffff .hexagon {
+    stroke-width: calc(4px/var(--scrollmap_zoom));
+    display: block;
+    color: #ffffff;
 }
 
-.trl_tile_actual_tile.border_168d63 .hexagon,
-.trl_tile_actual_tile.border_168d63 .hexagon:before,
-.trl_tile_actual_tile.border_168d63 .hexagon:after {
-    border-top: #168d63 solid 4px;
-    border-bottom: #168d63 solid 4px;
-
-    height: calc(var(--tile_width) * 0.866 - 8px);
+.trl_tile_actual_tile.border_168d63 .hexagon {
+    stroke-width: calc(4px/var(--scrollmap_zoom));
+    display: block;
+    color: #168d63;
 }
 
-.trl_tile_actual_tile.border_ff775f .hexagon,
-.trl_tile_actual_tile.border_ff775f .hexagon:before,
-.trl_tile_actual_tile.border_ff775f .hexagon:after {
-    border-top: #ff775f solid 4px;
-    border-bottom: #ff775f solid 4px;
-
-    height: calc(var(--tile_width) * 0.866 - 8px);
+.trl_tile_actual_tile.border_ff775f .hexagon {
+    stroke-width: calc(4px/var(--scrollmap_zoom));
+    display: block;
+    color: #ff775f;
 }
 
-.trl_tile_actual_tile.border_ffd26b .hexagon,
-.trl_tile_actual_tile.border_ffd26b .hexagon:before,
-.trl_tile_actual_tile.border_ffd26b .hexagon:after {
-    border-top: #ffd26b solid 4px;
-    border-bottom: #ffd26b solid 4px;
-
-    height: calc(var(--tile_width) * 0.866 - 8px);
+.trl_tile_actual_tile.border_ffd26b .hexagon {
+    stroke-width: calc(4px/var(--scrollmap_zoom));
+    display: block;
+    color: #ffd26b;
 }
 
 
@@ -420,23 +353,22 @@
 /****************** My hand ******************/
 
 #trl_hand {
-    margin-left: auto;
-    margin-right: auto;
+    transform-origin: 0px 0px;
+    width: calc((var(--tile_width) + var(--tile_margin)) * 3);
+    margin-left: 10px;
+}
 
-    /* The "*5" gives additional space for borders when tiles are selected */
-    width: calc((var(--tile_width) + var(--tile_margin)) * 5);
-    text-align: center;
+#trl_hand.trl_hand_at_bottom {
+    position: absolute;
+    transform-origin: left bottom;
+    bottom: 0px;
+    left: 10px;
 }
 
 #trl_hand .trl_tile {
     display: inline-block;
 
     margin-left: var(--tile_margin);
-}
-
-#trl_hand .trl_tile div {
-    /* Not needed because "left" is not defined */
-    margin-left: 0;
 }
 
 .spectatorMode #trl_hand,
