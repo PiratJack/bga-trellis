@@ -18,7 +18,7 @@ $game_options = [
 
 $game_preferences = [
     TRL_PREF_ZOOM_LEVEL => [
-        'name' => totranslate('Zoom level'),
+        'name' => totranslate('Zoom level for new game'),
         'needReload' => false,
         'values' => [
             1 => [ 'name' => totranslate('10%') ],
@@ -42,7 +42,7 @@ $game_preferences = [
             19 => [ 'name' => totranslate('190%') ],
             20 => [ 'name' => totranslate('200%') ],
         ],
-        'default' => 10
+        'default' => 8
     ],
     TRL_PREF_MY_TILES => [
         'name' => totranslate('Display of my tiles'),

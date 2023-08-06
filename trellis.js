@@ -39,10 +39,9 @@ define([
 
                 /***** Scrollmap *****/
                 this.scrollmap = new ebg.scrollmapWithZoom();
-                this.scrollmap.zoom = 1;
+                this.scrollmap.zoom = this.prefs[100].value / 10;
                 this.scrollmap.bAdaptHeightAuto = true;
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
-                this.scrollmap.zoomChangeHandler = this.onZoomChange.bind(this);
                 this.scrollmap.setupOnScreenArrows(150);
                 this.scrollmap.setupOnScreenZoomButtons(0.1);
                 this.scrollmap.setupEnlargeReduceButtons(300, true, 300);
@@ -109,17 +108,6 @@ define([
                         tile.style.left = this.getTileLeftPosition(tile.dataset.x) + 'px';
                     }
                 );
-            },
-
-            // Applies the new zoom
-            onZoomChange: function(newZoom) {
-                // Set zoom in preference
-                this.onPreferenceChange(100, (newZoom * 10).toFixed());
-
-                // Trigger the change for the server
-                const newEvt = document.createEvent('HTMLEvents');
-                newEvt.initEvent('change', false, true);
-                $('preference_control_100').dispatchEvent(newEvt);
             },
 
             ///////////////////////////////////////////////////
@@ -227,17 +215,7 @@ define([
             onPreferenceChange: function(prefId, prefValue) {
                 // Preferences that change display
                 switch (prefId) {
-                    // Zoom level
-                    case 100:
-                        var newZoom = prefValue / 10;
-                        var prevZoom = Math.round(this.scrollmap.zoom * 10) / 10;
-                        if (newZoom != prevZoom)
-                            this.scrollmap.setMapZoom(newZoom);
-                        dojo.query('#preference_control_' + prefId)[0].value = prefValue;
-                        dojo.query('#preference_fontrol_' + prefId)[0].value = prefValue;
-                        break;
-
-                        // Display my tiles above/below
+                    // Display my tiles above/below
                     case 101:
                         if (prefValue == 1)
                             $('trl_hand').classList.remove("trl_hand_at_bottom");
