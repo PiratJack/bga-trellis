@@ -628,7 +628,8 @@ class ScrollmapWithZoom {
             this._resizeHeadersObserver.observe($('page-title'));
             this._resizeHeadersObserver.observe($('after-page-title'));
         }
-        this._localStorageKey = 'scrollmap_' + gameui.table_id + '_' + this.container_div.id;
+        this._localStorageKey = 'scrollmap_' + gameui.table_id + '_' + gameui.player_id + '_' + this.container_div.id;
+        this._localStorageOldKey = 'scrollmap_' + gameui.table_id + '_' + this.container_div.id;
         window.addEventListener('pagehide', (e) => {
             this._onbeforeunload_handler(e);
         });
@@ -742,8 +743,16 @@ class ScrollmapWithZoom {
     }
     _loadSettings() {
         let scrolled = false;
-        let settings = JSON.parse(localStorage.getItem(this._localStorageKey));
-        if (settings != null) {
+        let settingsStr = localStorage.getItem(this._localStorageKey);
+        if (settingsStr == null) {
+            settingsStr = localStorage.getItem(this._localStorageOldKey);
+            if (settingsStr != null) {
+                localStorage.setItem(this._localStorageKey, settingsStr);
+                localStorage.removeItem(this._localStorageOldKey);
+            }
+        }
+        if (settingsStr != null) {
+            let settings = JSON.parse(settingsStr);
             debug("_loadSettings", settings.board_x, settings.board_y);
             var height = this.getDisplayHeight();
             if (settings.height != null) {

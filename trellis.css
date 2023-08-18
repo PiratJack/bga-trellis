@@ -11,7 +11,9 @@
 
 /****************** Dimensions ******************/
 #map_container {
+    position: relative;
     height: 400px;
+    width: 100%;
 }
 
 /*** Sizes & positions ***/
@@ -24,110 +26,6 @@
     --tile_width: 50px;
     --tile_margin: 0px;
 }
-
-/****************** Scrollmap ******************/
-
-/** Scrollable area **/
-
-#map_container {
-    position: relative;
-    overflow: hidden;
-    touch-action: none;
-}
-
-#map_scrollable,
-#map_scrollable_oversurface {
-    position: absolute;
-}
-
-#map_surface {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    cursor: move;
-}
-
-/** This is some extra stuff to extend the container **/
-
-#map_footer {
-    text-align: center;
-}
-
-/** Move & zoom arrows **/
-
-#movetop,
-#moveleft,
-#moveright,
-#movedown,
-#zoomplus,
-#zoomminus {
-    display: block;
-    position: absolute;
-    width: 32px;
-    height: 32px;
-}
-
-#movetop,
-#moveleft,
-#moveright,
-#movedown {
-    background-image: url('../../../img/common/arrows.png');
-}
-
-#movetop {
-    top: 0px;
-    left: calc(50% - 16px);
-    background-position: 0px 32px;
-}
-
-#moveleft {
-    top: calc(50% - 16px);
-    left: 0px;
-    background-position: 32px 0px;
-}
-
-#moveright {
-    top: calc(50% - 16px);
-    right: 0px;
-    background-position: 0px 0px;
-}
-
-#movedown {
-    bottom: 0px;
-    left: calc(50% - 16px);
-    background-position: 32px 32px;
-}
-
-#back_to_center {
-    display: block;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding: 8px;
-    font-style: italic;
-    background: rgba(255, 255, 255, 0.5);
-}
-
-#zoomplus,
-#zoomminus {
-    background-image: url('img/sprite.png');
-    background-size: 300% 100%;
-}
-
-#zoomplus {
-    bottom: 0px;
-    left: calc(50% + 20px);
-    background-position: 50% 0;
-}
-
-#zoomminus {
-    bottom: 0px;
-    left: calc(50% - 20px - 32px);
-    background-position: 100% 0;
-}
-
 
 /****************** Tiles ******************/
 
