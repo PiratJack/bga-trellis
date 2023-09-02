@@ -373,36 +373,17 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             console.log("onTileDragStart");
             this.onClickHandTile(evt);
             evt.stopPropagation();
-            // debugger;
-            /*const img = new Image();
-            img.src = "img/tiles.png";
-            img.classList.add("scrollmap_zoomed");
-            img.style.width = "316px";
-            img.style.height = "272px";
-            const posX = 316*parseFloat(window.getComputedStyle(event.currentTarget).backgroundPositionX)/100;
-            const posY = 272*parseFloat(window.getComputedStyle(event.currentTarget).backgroundPositionY)/100;
-            img.style.objectPosition = `${posX}px ${posY}px`;
-            evt.dataTransfer.setDragImage(img, 50, 50);*/
             
             this.draggedElt = document.createElement("div");
             var cloneNode = evt.target.cloneNode(true);
             this.draggedElt.appendChild(cloneNode);
-            // this.draggedElt = this.draggedElt.id+"_dragged";
-            // cloneNode.classList.add("scrollmap_zoomed");
             this.draggedElt.style.position = "absolute";
             this.draggedElt.style.top = "-150px";
             this.draggedElt.style.right = "-150px";
-            //this.draggedElt.style.setProperty('--tile_width', '159px')
             const targetStyle = window.getComputedStyle(evt.currentTarget);
-            //this.draggedElt.style.height = parseFloat(targetStyle.height)/**targetStyle.getPropertyValue('--scrollmap_zoom')*/+"px";
-            //this.draggedElt.style.width = parseFloat(targetStyle.width)/**targetStyle.getPropertyValue('--scrollmap_zoom')*/+"px";
-            //this.draggedElt.firstChild.style.height = this.draggedElt.style.height;
-            //this.draggedElt.firstChild.style.width = this.draggedElt.style.width;
-            //cloneNode.style.transform = "rotate(20deg)";
             cloneNode.style.transform = "var(--scrollmap_zoomed_transform)";
             cloneNode.style.transformOrigin = "left top";
             document.body.appendChild(this.draggedElt);
-            // debugger;
             evt.dataTransfer.setDragImage(this.draggedElt, parseFloat(targetStyle.width)*0.5*targetStyle.getPropertyValue('--scrollmap_zoom'), parseFloat(targetStyle.height)*0.5*targetStyle.getPropertyValue('--scrollmap_zoom'));///*evt.currentTarget.offsetLeft + */evt.offsetX, /*evt.currentTarget.offsetTop + */evt.offsetY);
         },
 
