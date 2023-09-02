@@ -17,7 +17,7 @@
 }
 
 /*** Sizes & positions ***/
-#map_container {
+body  {
     --tile_width: 159px;
     --tile_margin: 0px;
 }

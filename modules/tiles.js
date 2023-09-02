@@ -26,8 +26,11 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
                 this.handTilesHandlers = [];
                 dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
                     this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
-                    node.draggable = true;
-                    dojo.connect(node, 'dragstart', this, 'onTileDragStart');
+                    // node.draggable = true;
+                    node.classList.add('clickable');
+                    node.parentNode.setAttribute('draggable',true);
+                    dojo.connect(node.parentNode, 'dragstart', this, 'onTileDragStart');
+                    dojo.connect(node.parentNode, 'dragend', this, 'onTileDragEnd');
                 });
                 dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
 
@@ -57,7 +60,9 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Stores clicked tile + displays relevant spots
         onClickHandTile: function(evt) {
-            var clickedTile = evt.currentTarget.parentNode;
+            var clickedTile = evt.currentTarget;
+            if (clickedTile.classList.contains("hexagon"))
+                clickedTile=clickedTile.parentNode;
             var wasSelected = dojo.hasClass(clickedTile, 'selected');
 
             // Clear up everything from previous steps
@@ -74,7 +79,9 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
 
         // Display tile on spot + allow to rotate
         onClickPossibleTileSpot: function(evt) {
-            var clickedSpot = evt.currentTarget.parentNode;
+            var clickedSpot = evt.currentTarget;
+            if (clickedSpot.classList.contains("hexagon"))
+                clickedSpot=clickedSpot.parentNode;
 
             // Get the selected tile (will need its ID later)
             var selectedTile = dojo.query('.trl_tile_actual_tile.selected');
@@ -190,8 +197,10 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             this.handTilesHandlers = [];
             dojo.query('#trl_hand_tiles .hexagon').forEach((node) => {
                 this.handTilesHandlers.push(dojo.connect(node, 'onclick', this, 'onClickHandTile'));
-                node.draggable = true;
-                dojo.connect(node, 'dragstart', this, 'onTileDragStart');
+                // node.draggable = true;
+                node.parentNode.setAttribute('draggable',true);
+                dojo.connect(node.parentNode, 'dragstart', this, 'onTileDragStart');
+                dojo.connect(node.parentNode, 'dragend', this, 'onTileDragEnd');
             });
             dojo.query('#trl_hand_tiles .hexagon').addClass('clickable');
 
@@ -361,12 +370,44 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
         },
 
         onTileDragStart: function(evt) {
+            console.log("onTileDragStart");
             this.onClickHandTile(evt);
-
-            evt.dataTransfer.setDragImage(evt.target.parentNode, 50, 50);
+            evt.stopPropagation();
+            // debugger;
+            /*const img = new Image();
+            img.src = "img/tiles.png";
+            img.classList.add("scrollmap_zoomed");
+            img.style.width = "316px";
+            img.style.height = "272px";
+            const posX = 316*parseFloat(window.getComputedStyle(event.currentTarget).backgroundPositionX)/100;
+            const posY = 272*parseFloat(window.getComputedStyle(event.currentTarget).backgroundPositionY)/100;
+            img.style.objectPosition = `${posX}px ${posY}px`;
+            evt.dataTransfer.setDragImage(img, 50, 50);*/
+            
+            this.draggedElt = document.createElement("div");
+            var cloneNode = evt.target.cloneNode(true);
+            this.draggedElt.appendChild(cloneNode);
+            // this.draggedElt = this.draggedElt.id+"_dragged";
+            // cloneNode.classList.add("scrollmap_zoomed");
+            this.draggedElt.style.position = "absolute";
+            this.draggedElt.style.top = "-150px";
+            this.draggedElt.style.right = "-150px";
+            //this.draggedElt.style.setProperty('--tile_width', '159px')
+            const targetStyle = window.getComputedStyle(evt.currentTarget);
+            //this.draggedElt.style.height = parseFloat(targetStyle.height)/**targetStyle.getPropertyValue('--scrollmap_zoom')*/+"px";
+            //this.draggedElt.style.width = parseFloat(targetStyle.width)/**targetStyle.getPropertyValue('--scrollmap_zoom')*/+"px";
+            //this.draggedElt.firstChild.style.height = this.draggedElt.style.height;
+            //this.draggedElt.firstChild.style.width = this.draggedElt.style.width;
+            //cloneNode.style.transform = "rotate(20deg)";
+            cloneNode.style.transform = "var(--scrollmap_zoomed_transform)";
+            cloneNode.style.transformOrigin = "left top";
+            document.body.appendChild(this.draggedElt);
+            // debugger;
+            evt.dataTransfer.setDragImage(this.draggedElt, parseFloat(targetStyle.width)*0.5*targetStyle.getPropertyValue('--scrollmap_zoom'), parseFloat(targetStyle.height)*0.5*targetStyle.getPropertyValue('--scrollmap_zoom'));///*evt.currentTarget.offsetLeft + */evt.offsetX, /*evt.currentTarget.offsetTop + */evt.offsetY);
         },
 
-        onTileDrop: function(evt) {
+        onTileDrop: function (evt) {
+            console.log("onTileDrop");
             evt.preventDefault();
             this.onClickPossibleTileSpot(evt);
         },
@@ -375,7 +416,10 @@ define(["dojo", "dojo/_base/declare", "dojo/_base/fx"], (dojo, declare) => {
             evt.preventDefault();
         },
 
-
+        onTileDragEnd: function(evt) {
+            console.log("onTileDragEnd");
+            document.body.removeChild(this.draggedElt);
+        },
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
 
