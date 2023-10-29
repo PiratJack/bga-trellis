@@ -37,6 +37,24 @@ trait PlayersTrait {
         $this->reloadPlayersInfos(true);
     }
 
+    // Returns an array of user preference colors to game colors.
+    public function getSpecificColorPairings(): array {
+        return [
+            "ff0000" /* Red */         => null,
+            "008000" /* Green */       => '168d63',
+            "0000ff" /* Blue */        => null,
+            "ffa500" /* Yellow */      => 'ffd26b',
+            "000000" /* Black */       => null,
+            "ffffff" /* White */       => 'ffffff',
+            "e94190" /* Pink */        => 'ff775f',
+            "982fff" /* Purple */      => null,
+            "72c3b1" /* Cyan */        => null,
+            "f07f16" /* Orange */      => null,
+            "bdd002" /* Khaki green */ => null,
+            "7b7b7b" /* Gray */        => null,
+        ];
+    }
+
     // Gives regular points to a player
     private function addPoints($player_id, $nb_points) {
         self::DbQuery('UPDATE player SET player_score = player_score + '.$nb_points.' WHERE player_id = '.$player_id);
