@@ -5,7 +5,7 @@
  * @author John Doherty <www.johndoherty.info>
  * @license MIT
  */
-(function(window, document) {
+(function (window, document) {
 
     'use strict';
 
@@ -33,7 +33,7 @@
     // patch CustomEvent to allow constructor creation (IE/Chrome)
     if (typeof window.CustomEvent !== 'function') {
 
-        window.CustomEvent = function(event, params) {
+        window.CustomEvent = function (event, params) {
 
             params = params || {
                 bubbles: false,
@@ -50,12 +50,12 @@
     }
 
     // requestAnimationFrame() shim by Paul Irish
-    window.requestAnimFrame = (function() {
+    window.requestAnimFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
             window.mozRequestAnimationFrame ||
             window.oRequestAnimationFrame ||
-            window.msRequestAnimationFrame || function(callback) {
+            window.msRequestAnimationFrame || function (callback) {
                 window.setTimeout(callback, 1000 / 60);
             };
     })();
@@ -75,7 +75,7 @@
         var start = new Date().getTime();
         var handle = {};
 
-        var loop = function() {
+        var loop = function () {
             var current = new Date().getTime();
             var delta = current - start;
 

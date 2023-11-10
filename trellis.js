@@ -41,12 +41,9 @@ define([
                 this.scrollmap = new ebg.scrollmapWithZoom();
                 this.scrollmap.zoom = this.prefs[100].value / 10;
                 this.scrollmap.bAdaptHeightAuto = true;
+                this.scrollmap.scrollDelta = 150;
+                this.scrollmap.btnsDivOnMap = false;
                 this.scrollmap.create($('map_container'), $('map_scrollable'), $('map_surface'), $('map_scrollable_oversurface'));
-                this.scrollmap.setupOnScreenArrows(150);
-                this.scrollmap.setupOnScreenZoomButtons(0.1);
-                this.scrollmap.setupEnlargeReduceButtons(300, true, 300);
-                this.scrollmap.setupOnScreenResetButtons();
-                this.scrollmap.bEnableZooming = true;
 
                 /***** Tiles *****/
                 this.tiles = gamedatas.tiles;

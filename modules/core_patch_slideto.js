@@ -1,17 +1,19 @@
-// e board game core stuff
+var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
+var debug = isDebug ? console.info.bind(window.console) : function() {};
+var error = console.error.bind(window.console);
 define([
         "dojo", "dojo/_base/declare",
         "dojo/fx",
         "dojo/fx/easing"
     ],
-    function(dojo, declare) {
+    function (dojo, declare) {
 
         return declare("ebg.core.core_patch_slideto", null, {
-            constructor: function() {
-                console.log('ebg.core.core_patch constructor');
+            constructor: function () {
+                debug('ebg.core.core_patch constructor');
             },
 
-            calcScale: function(element) {
+            calcScale: function (element) {
                 var transform = window.getComputedStyle(element).transform;
                 var scale = 1;
                 if (transform !== "none") {
@@ -32,7 +34,7 @@ define([
             //     return matrix ? Math.hypot(matrix.m11, matrix.m12) : 1;
             // },
 
-            calcTransform: function(element, clearTranslation = true) {
+            calcTransform: function (element, clearTranslation = true) {
                 var transform = window.getComputedStyle(element).transform;
                 var matrix = null;
                 if (transform !== "none") {
@@ -55,11 +57,11 @@ define([
             },
 
 
-            calcNewLocation: function(mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter) {
+            calcNewLocation: function (mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter) {
                 if (typeof mobile_obj == 'string')
                     mobile_obj = $(mobile_obj);
-                // if( typeof target_obj == 'string' )
-                //     target_obj = $( target_obj ); 
+                if( typeof target_obj == 'string' )
+                    target_obj = $( target_obj ); 
                 var src = dojo.position(mobile_obj);
 
                 // Current mobile object relative coordinates
@@ -78,7 +80,7 @@ define([
                     vector_abs.x += (tgt.w - src.w) / 2;
                     vector_abs.y += (tgt.h - src.h) / 2;
                 } else if (bRelPos) {
-                    console.log("relative positioning");
+                    debug("relative positioning");
                     var target_matrix = this.calcTransform(target_obj);
                     var target_v = new DOMPoint(toint(target_x), toint(target_y));
                     if (target_matrix !== null) {
@@ -90,6 +92,14 @@ define([
 
                     vector_abs.x += target_v.x - delta_x;
                     vector_abs.y += target_v.y;
+                    if (bFromCenter) {
+                        vector_abs.x -= src.w / 2;
+                        vector_abs.y -= src.h / 2;
+                    }
+                    if (bToCenter) {
+                        vector_abs.x += tgt.w / 2;
+                        vector_abs.y += tgt.h / 2;
+                    }
                 } else {
                     vector_abs.x += toint(target_x);
                     vector_abs.y += toint(target_y);
@@ -110,14 +120,14 @@ define([
 
             },
 
-            _placeOnObject: function(mobile_obj, target_obj, target_x, target_y, bRelPos) {
-                //console.log( 'placeOnObject' );
+            _placeOnObject: function (mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter) {
+                //debug( 'placeOnObject' );
 
                 if (mobile_obj === null) {
-                    console.error('placeOnObject: mobile obj is null');
+                    error('placeOnObject: mobile obj is null');
                 }
                 if (target_obj === null && target_x === null) {
-                    console.error('placeOnObject: target obj is null');
+                    error('placeOnObject: target obj is null');
                 }
                 if (typeof mobile_obj == 'string')
                     mobile_obj = $(mobile_obj);
@@ -125,7 +135,7 @@ define([
                 var disabled3d = this.disable3dIfNeeded();
 
                 // Move to new location and fade in
-                var [left, top] = this.calcNewLocation(mobile_obj, target_obj, target_x, target_y, bRelPos);
+                var [left, top] = this.calcNewLocation(mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter);
                 dojo.style(mobile_obj, 'top', top + 'px');
                 dojo.style(mobile_obj, 'left', left + 'px');
 
@@ -136,7 +146,7 @@ define([
             // Note: if it does not work check that:
             //  1°) mobile_obj has a position:absolute or position:relative
             //  2°) a fixed mobile_obj parent has a position absolute or relative
-            placeOnObject: function(mobile_obj, target_obj) {
+            placeOnObject: function (mobile_obj, target_obj) {
                 this._placeOnObject(mobile_obj, target_obj);
             },
 
@@ -144,17 +154,19 @@ define([
             // Note: if it does not work check that:
             //  1°) mobile_obj has a position:absolute or position:relative
             //  2°) a fixed mobile_obj parent has a position absolute or relative
-            placeOnObjectPos: function(mobile_obj, target_obj, target_x, target_y, bRelPos) {
-                this._placeOnObject(mobile_obj, target_obj, target_x, target_y, bRelPos);
+            placeOnObjectPos: function (mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter) {
+                if (typeof bRelPos == 'undefined')
+                    bRelPos = this.bUseRelPosForObjPos;
+                this._placeOnObject(mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter);
             },
 
             // Return an animation that is moving (slide) a DOM object over another one
-            _slideToObject: function(mobile_obj, target_obj, target_x, target_y, bRelPos, duration, delay) {
+            _slideToObject: function (mobile_obj, target_obj, target_x, target_y, bRelPos, duration, delay, bFromCenter, bToCenter) {
                 if (mobile_obj === null) {
-                    console.error('slideToObject: mobile obj is null');
+                    error('slideToObject: mobile obj is null');
                 }
                 if (target_obj === null) {
-                    console.error('slideToObject: target obj is null');
+                    error('slideToObject: target obj is null');
                 }
                 if (typeof mobile_obj == 'string')
                     mobile_obj = $(mobile_obj);
@@ -173,7 +185,7 @@ define([
                     duration = Math.min(1, duration);
                 }
 
-                var [left, top, vector_x, vector_y] = this.calcNewLocation(mobile_obj, target_obj, target_x, target_y, bRelPos);
+                var [left, top, vector_x, vector_y] = this.calcNewLocation(mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter);
 
                 this.enable3dIfNeeded(disabled3d);
 
@@ -194,24 +206,30 @@ define([
             },
 
             // Return an animation that is moving (slide) a DOM object over another one
-            slideToObject: function(mobile_obj, target_obj, duration, delay) {
+            slideToObject: function (mobile_obj, target_obj, duration, delay) {
                 return this._slideToObject(mobile_obj, target_obj, null, null, false, duration, delay);
             },
 
             // Return an animation that is moving (slide) a DOM object over another one at the given coordinates
-            slideToObjectPos: function(mobile_obj, target_obj, target_x, target_y, duration, delay) {
-                return this._slideToObject(mobile_obj, target_obj, target_x, target_y, false, duration, delay);
+            slideToObjectPos: function (mobile_obj, target_obj, target_x, target_y, duration, delay) {
+                return this._slideToObject(mobile_obj, target_obj, target_x, target_y, this.bUseRelPosForObjPos, duration, delay);
 
             },
 
+            // Return an animation that is moving (slide) a DOM object over another one at the given coordinates
+            slideToObjectAbsPos: function (mobile_obj, target_obj, target_x, target_y, duration, delay) {
+                return this._slideToObject(mobile_obj, target_obj, target_x, target_y, false, duration, delay);
+
+            },            
+
             // Return an animation that is moving (slide) a DOM object over another one at the given relative coordinates from target_obj
-            slideToObjectRelPos: function(mobile_obj, target_obj, target_x, target_y, duration, delay) {
-                return this._slideToObject(mobile_obj, target_obj, target_x, target_y, true, duration, delay);
+            slideToObjectRelPos: function (mobile_obj, target_obj, target_x, target_y, duration, delay, bFromCenter, bToCenter) {
+                return this._slideToObject(mobile_obj, target_obj, target_x, target_y, true, duration, delay, bFromCenter, bToCenter);
 
             },
 
             // Return an animation that is moving (slide) a DOM object to a given coordinates (no position calculation done)
-            slideToPos: function(mobile_obj, target, duration, delay) {
+            slideToPos: function (mobile_obj, target, duration, delay) {
                 if (typeof duration == 'undefined') {
                     duration = 500;
                 }
@@ -245,8 +263,8 @@ define([
 
             // Attach mobile_obj to a new parent, keeping its absolute position in the screen constant.
             // !! mobile_obj is no longer valid after that (a new corresponding mobile_obj is returned)
-            attachToNewParent: function(mobile_obj, new_parent, position, bDontPreserveRotation) {
-                //console.log( "attachToNewParent" );
+            attachToNewParent: function (mobile_obj, new_parent, position, bDontPreserveRotation) {
+                //debug( "attachToNewParent" );
 
                 if (typeof mobile_obj == 'string') {
                     mobile_obj = $(mobile_obj);
@@ -259,10 +277,10 @@ define([
                 }
 
                 if (mobile_obj === null) {
-                    console.error('attachToNewParent: mobile obj is null');
+                    error('attachToNewParent: mobile obj is null');
                 }
                 if (new_parent === null) {
-                    console.error('attachToNewParent: new_parent is null');
+                    error('attachToNewParent: new_parent is null');
                 }
 
                 var disabled3d = this.disable3dIfNeeded();
@@ -287,8 +305,8 @@ define([
             },
 
             // Create a temporary object and slide it from a point to another one, then destroy it
-            slideTemporaryObject: function(mobile_obj_html, mobile_obj_parent, from, to, duration, delay, scale) {
-                console.log('slideTemporaryObject');
+            slideTemporaryObject: function (mobile_obj_html, mobile_obj_parent, from, to, duration, delay, scale) {
+                debug('slideTemporaryObject');
                 var obj = dojo.place(mobile_obj_html, mobile_obj_parent);
                 dojo.style(obj, 'position', 'absolute');
                 dojo.style(obj, 'left', '0px');
@@ -311,9 +329,9 @@ define([
                 */
 
                 var anim = this.slideToObject(obj, to, duration, delay);
-                var destroyOnEnd = function(node) {
-                    console.log("destroying");
-                    console.log(node);
+                var destroyOnEnd = function (node) {
+                    debug("destroying");
+                    debug(node);
                     dojo.destroy(node);
                 };
                 dojo.connect(anim, 'onEnd', destroyOnEnd);
