@@ -1,5 +1,5 @@
 /*
-ScrollmapWithZoom 1.27.2: Improved version of scrollmap used in multiple bga game
+ScrollmapWithZoom 1.27.8: Improved version of scrollmap used in multiple bga game
 https://github.com/yansnow78/bga_scrollmap.git
 
 # improvements
@@ -41,12 +41,12 @@ class ScrollmapWithZoom {
             this.hideOnScreenZoomButtons();
             debug("bEnableZooming is false, hide zoom buttons");
         }
-        var warning_touch = __("lang_mainsite", "Use two fingers to begin moving the board. ");
+        var warning_touch = _("Use two fingers to begin moving the board. ");
         if (this._bEnableZooming)
-            warning_touch += __("lang_mainsite", "Pinch fingers to zoom");
+            warning_touch += _("Pinch fingers to zoom");
         this.container_div.setAttribute("warning_touch", warning_touch);
         var keysStr = this.getWheelZoomingOptionTranslated();
-        this.container_div.setAttribute("warning_scroll", dojo.string.substitute(__("lang_mainsite", "Use ${keys} + Mouse Wheel to zoom the board"), { keys: keysStr }));
+        this.container_div.setAttribute("warning_scroll", dojo.string.substitute(_("Use ${keys} + Mouse Wheel to zoom the board"), { keys: keysStr }));
     }
     get bAdaptHeightAuto() {
         return this._bAdaptHeightAuto;
@@ -149,6 +149,7 @@ class ScrollmapWithZoom {
         this.board_y = 0;
         this.startPosition = null;
         this.container_div = null;
+        this.container_subdiv = null;
         this.scrollable_div = null;
         this.surface_div = null;
         this.onsurface_div = null;
@@ -324,8 +325,8 @@ class ScrollmapWithZoom {
         this._buttons_div = null;
         this._buttons_div2 = null;
         this._buttons_divs_wrapper = null;
-        // get LABEL_REDUCE_DISPLAY: string = __("lang_mainsite", "Reduce"): string {
-        //     return __("lang_mainsite", "Reduce")`;
+        // get LABEL_REDUCE_DISPLAY: string = _("Reduce"): string {
+        //     return _("Reduce")`;
         // }
         this._defaultHeight = 0;
         this._xPrev = null;
@@ -393,7 +394,6 @@ class ScrollmapWithZoom {
         if (typeof gameui.calcScale == "undefined") {
             dojo.safeMixin(gameui, new ebg.core.core_patch_slideto());
         }
-        container_div.classList.add("scrollmap_container");
         if (surface_div)
             surface_div.classList.add("scrollmap_surface");
         if (onsurface_div) {
@@ -414,27 +414,35 @@ class ScrollmapWithZoom {
             container_div.insertBefore(clipped_div, animation_div);
         }
         clipped_div.classList.add("scrollmap_overflow_clipped");
+        container_div.classList.add("scrollmap_container");
+        var container_subdiv = document.createElement('div');
+        container_subdiv.classList.add("scrollmap_container_subdiv");
         Array.from(container_div.children).forEach((child) => {
+            container_subdiv.appendChild(child);
+        });
+        container_div.insertBefore(container_subdiv, null);
+        Array.from(container_subdiv.children).forEach((child) => {
             //let child = children[i]; //second console o
             if (!child.classList.contains("scrollmap_anim") && !child.classList.contains("scrollmap_overflow_clipped"))
                 clipped_div.appendChild(child);
         });
         // clipped_div.appendChild(surface_div);
         this.container_div = container_div;
+        this.container_subdiv = container_subdiv;
         this.scrollable_div = scrollable_div;
         this.surface_div = surface_div;
         this.onsurface_div = onsurface_div;
         this.clipped_div = clipped_div;
         this.animation_div = animation_div;
         this._createForm();
-        (_a = this.btnIncreaseHeightHtml) !== null && _a !== void 0 ? _a : (this.btnIncreaseHeightHtml = `<a class="enlargedisplay enlarge_or_reduce_as_text">↓  ${__("lang_mainsite", "Enlarge")}  ↓</a>`);
-        (_b = this.btnDecreaseHeightHtml) !== null && _b !== void 0 ? _b : (this.btnDecreaseHeightHtml = `<a class="reducedisplay enlarge_or_reduce_as_text">↑  ${__("lang_mainsite", "Reduce")}  ↑</a>`);
+        (_a = this.btnIncreaseHeightHtml) !== null && _a !== void 0 ? _a : (this.btnIncreaseHeightHtml = `<a class="enlargedisplay enlarge_or_reduce_as_text">↓  ${_("Enlarge")}  ↓</a>`);
+        (_b = this.btnDecreaseHeightHtml) !== null && _b !== void 0 ? _b : (this.btnDecreaseHeightHtml = `<a class="reducedisplay enlarge_or_reduce_as_text">↑  ${_("Reduce")}  ↑</a>`);
         (_c = this.btnIncreaseHeightShortHtml) !== null && _c !== void 0 ? _c : (this.btnIncreaseHeightShortHtml = `<i class="enlargedisplay scrollmap_icon ${this.btnIncreaseHeightClasses}"></i>`);
         (_d = this.btnDecreaseHeightShortHtml) !== null && _d !== void 0 ? _d : (this.btnDecreaseHeightShortHtml = `<i class="reducedisplay scrollmap_icon ${this.btnDecreaseHeightClasses}"></i>`);
         (_e = this.btnResetHeightHtml) !== null && _e !== void 0 ? _e : (this.btnResetHeightHtml = `<i class="reset_height scrollmap_icon ${this.btnResetHeightClasses}"></i>`);
         (_f = this.btnMaximizeHeightHtml) !== null && _f !== void 0 ? _f : (this.btnMaximizeHeightHtml = this.btnMaximizeHeightClasses ? `<i class="maximize_height scrollmap_icon ${this.btnMaximizeHeightClasses}"></i>` :
             `<svg class="maximize_height scrollmap_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11 18.75" x="0px" y="0px">
-            <title>${__("lang_mainsite", "Maximize Height")}</title>
+            <title>${_("Maximize Height")}</title>
             <g><path d="M5.146,11.853a.518.518,0,0,0,.163.109.5.5,0,0,0,.382,0,.518.518,0,0,0,.163-.109l4-4a.5.5,0,0,0-.708-.708L6,10.293V.5a.5.5,0,0,0-1,0v9.793L1.854,7.146a.5.5,0,0,0-.708.708Z"/><path d="M10.5,14H.5a.5.5,0,0,0,0,1h10a.5.5,0,0,0,0-1Z"/></g>
             <text x="0" y="30" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by syarip yunus</text>
             <text x="0" y="35" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text>
@@ -451,8 +459,8 @@ class ScrollmapWithZoom {
         (_r = this.btnSettingsHtml) !== null && _r !== void 0 ? _r : (this.btnSettingsHtml = `<i class="show_settings scrollmap_icon ${this.btnSettingsClasses}"></i>`);
         (_s = this.btnInfoHtml) !== null && _s !== void 0 ? _s : (this.btnInfoHtml = `<i class="info scrollmap_icon ${this.btnInfoClasses}"></i>`);
         this._buttons_divs_wrapper = document.createElement('div');
-        this._buttons_divs_wrapper.classList.add("scrollmap_btns_flex");
-        this.container_div.insertBefore(this._buttons_divs_wrapper, this.clipped_div);
+        this._buttons_divs_wrapper.classList.add("scrollmap_btns_flex", "scrollmap_btns_divs_wrapper");
+        this.container_div.insertBefore(this._buttons_divs_wrapper, this.container_subdiv);
         this._buttons_div = document.createElement('div');
         this._buttons_div.classList.add(this.btnsPositionClasses);
         this._buttons_div.classList.add(this.btnsDivClasses);
@@ -515,19 +523,19 @@ class ScrollmapWithZoom {
                     flex-direction: column;
                 }
 
-                .scrollmap_container.scrollmap_btns_left, .scrollmap_container .scrollmap_btns_left{
+                .scrollmap_container.scrollmap_btns_left{
                     flex-direction: row;
                 }
             
-                .scrollmap_container.scrollmap_btns_top, .scrollmap_container .scrollmap_btns_top{
+                .scrollmap_container.scrollmap_btns_top{
                     flex-direction: column;
                 }
 
-                .scrollmap_container.scrollmap_btns_right, .scrollmap_container .scrollmap_btns_right{
+                .scrollmap_container.scrollmap_btns_right{
                     flex-direction: row-reverse;
                 }
 
-                .scrollmap_container.scrollmap_btns_bottom, .scrollmap_container .scrollmap_btns_bottom{
+                .scrollmap_container.scrollmap_btns_bottom{
                     flex-direction: column-reverse;
                 }
 
@@ -544,7 +552,7 @@ class ScrollmapWithZoom {
                     overflow: hidden;
                 }
 
-                .scrollmap_container .scrollmap_overflow_clipped {
+                .scrollmap_container .scrollmap_overflow_clipped, .scrollmap_container_subdiv {
                     position: relative;
                     width: 100%;
                     height: 100%;
@@ -760,28 +768,32 @@ class ScrollmapWithZoom {
                     margin-top: calc(var(--btns_offset_y));
                 }
 
-                .scrollmap_container.scrollmap_btns_left > .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_left > .scrollmap_btns_divs_wrapper {
                     margin-right: 5px;
                 }
-                .scrollmap_container.scrollmap_btns_right > .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_right > .scrollmap_btns_divs_wrapper {
                     margin-left: 5px;
                 }
-                .scrollmap_container.scrollmap_btns_top > .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_top > .scrollmap_btns_divs_wrapper {
                     margin-bottom: 5px;
                 }
-                .scrollmap_container.scrollmap_btns_bottom > .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_bottom > .scrollmap_btns_divs_wrapper {
                     margin-top: 5px;
                 }
-                .scrollmap_container.scrollmap_btns_left .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_left > .scrollmap_btns_divs_wrapper,
+                .scrollmap_container.scrollmap_btns_left > .scrollmap_btns_divs_wrapper .scrollmap_btns_flex {
                     flex-direction: column;
                 }
-                .scrollmap_container.scrollmap_btns_right .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_right > .scrollmap_btns_divs_wrapper,
+                .scrollmap_container.scrollmap_btns_right > .scrollmap_btns_divs_wrapper > .scrollmap_btns_flex {
                     flex-direction: column;
                 }
-                .scrollmap_container.scrollmap_btns_top .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_top > .scrollmap_btns_divs_wrapper,
+                .scrollmap_container.scrollmap_btns_top > .scrollmap_btns_divs_wrapper > .scrollmap_btns_flex {
                     flex-direction: row;
                 }
-                .scrollmap_container.scrollmap_btns_bottom .scrollmap_btns_flex {
+                .scrollmap_container.scrollmap_btns_bottom > .scrollmap_btns_divs_wrapper,
+                .scrollmap_container.scrollmap_btns_bottom > .scrollmap_btns_divs_wrapper > .scrollmap_btns_flex {
                     flex-direction: row;
                 }
 
@@ -942,11 +954,11 @@ class ScrollmapWithZoom {
         this.setupInfoButton();
         if (!this._bInfoBtnVisible)
             this.hideInfoButton();
-        this._btnToggleButtonsVisiblity = this._initButton('toogle_buttons_visibility', this.btnToggleButtonsVisibilityHtml, __("lang_mainsite", 'Hide buttons'), ScrollmapWithZoom._toggleButtonsVisiblity);
+        this._btnToggleButtonsVisiblity = this._initButton('toogle_buttons_visibility', this.btnToggleButtonsVisibilityHtml, _('Hide buttons'), ScrollmapWithZoom._toggleButtonsVisiblity);
         if (this.btnsDivOnMap) {
             this._btnToggleButtonsVisiblity.classList.add("scrollmap_icon_always_visible");
         }
-        var btn = this._initButton('show_settings', this.btnSettingsHtml, __("lang_mainsite", 'Settings'), this._showForm);
+        var btn = this._initButton('show_settings', this.btnSettingsHtml, _('Settings'), this._showForm);
         btn.classList.add("scrollmap_icon_always_visible");
         this.setupOnScreenArrows(this.scrollDelta, this.bScrollDeltaAlignWithZoom);
         this.setupOnScreenZoomButtons(this.zoomDelta);
@@ -989,7 +1001,7 @@ class ScrollmapWithZoom {
                 this.setDisplayHeight(new_height, false);
         }, true);
         if (ScrollmapWithZoom.bEnableKeys && this.bEnableKeysArrows) {
-            let warning_arrowkeys = __("lang_mainsite", 'press the arrow keys with alt key to scroll the board');
+            let warning_arrowkeys = _('press the arrow keys with alt key to scroll the board');
             this.container_div.setAttribute("warning_arrowkeys", warning_arrowkeys);
         }
     }
@@ -1038,6 +1050,11 @@ class ScrollmapWithZoom {
             this.btnsDivOnMap = options.btnsDivOnMap;
         if (options.btnsDivPositionOutsideMap != undefined)
             this.btnsDivPositionOutsideMap = options.btnsDivPositionOutsideMap;
+        var classList = btnsDivPositionOutsideMapPrev.split(' ');
+        for (const posClass of classList) {
+            if (posClass)
+                this.container_div.classList.remove(posClass);
+        }
         if (this.btnsDivOnMap) {
             this.clipped_div.appendChild(this._buttons_div);
             this.clipped_div.appendChild(this._buttons_div2);
@@ -1046,12 +1063,7 @@ class ScrollmapWithZoom {
             this._btnToggleButtonsVisiblity.classList.add("scrollmap_icon_always_visible");
             this._btnToggleButtonsVisiblity.classList.remove("scrollmap_btn_nodisplay");
         } else {
-            var classList = btnsDivPositionOutsideMapPrev.split(' ');
-            for (const posClass of classList) {
-                if (posClass)
-                    this.container_div.classList.remove(posClass);
-            }
-            var classList = this.btnsDivPositionOutsideMap.split(' ');
+            classList = this.btnsDivPositionOutsideMap.split(' ');
             for (const posClass of classList) {
                 if (posClass)
                     this.container_div.classList.add(posClass);
@@ -1078,21 +1090,21 @@ class ScrollmapWithZoom {
                         <button name="close" aria-label="close">X</button>
                         <div>
                             <input type="checkbox" id="wheelZooming" value="true">
-                            <label for="wheelZooming">${dojo.string.substitute(__("lang_mainsite", "Zoom with mouse wheel + ${key}"), { key: "<select name='wheelZoomingKey'></select>" })}</label>
+                            <label for="wheelZooming">${dojo.string.substitute(_("Zoom with mouse wheel + ${key}"), { key: "<select name='wheelZoomingKey'></select>" })}</label>
                         </div>
                         <div>
                             <input type="checkbox" id="pinchZooming" value="true">
-                            <label for="pinchZooming">${__("lang_mainsite", "Pinch fingers to zoom")}</label>
+                            <label for="pinchZooming">${_("Pinch fingers to zoom")}</label>
                         </div>
                         ${this.btnsDivPositionnable ? String.raw `
                         <div>
                             <input type="checkbox" id="btnsDivOutsideMap" value="true">
-                            <label for="btnsDivOutsideMap">${dojo.string.substitute(__("lang_mainsite", "Place buttons outside scrollmap on ${position}"), { position: "<select name='btnsDivPositionOutsideMap'></select>" })}</label>
+                            <label for="btnsDivOutsideMap">${dojo.string.substitute(_("Place buttons outside scrollmap on ${position}"), { position: "<select name='btnsDivPositionOutsideMap'></select>" })}</label>
                         </div>
                         ` : ''}
                         <div>
-                            <button name="close2">${__("lang_mainsite", "Cancel")}</button>
-                            <button type="submit" name="confirm">${__("lang_mainsite", "Confirm")}</button>
+                            <button name="close2">${_("Cancel")}</button>
+                            <button type="submit" name="confirm">${_("Confirm")}</button>
                         </div>
                     </form>
                 </dialog>
@@ -1104,11 +1116,11 @@ class ScrollmapWithZoom {
             inputs = ScrollmapWithZoom._form.elements;
             ScrollmapWithZoom._form.onsubmit = () => { return false; };
             var keys = new Map([
-                [ScrollmapWithZoom.wheelZoomingKeys.Alt, __("lang_mainsite", "alt")],
-                [ScrollmapWithZoom.wheelZoomingKeys.Ctrl, __("lang_mainsite", "ctrl")],
-                [ScrollmapWithZoom.wheelZoomingKeys.Shift, __("lang_mainsite", "shift")],
-                [ScrollmapWithZoom.wheelZoomingKeys.Meta, __("lang_mainsite", "meta")],
-                [ScrollmapWithZoom.wheelZoomingKeys.None, __("lang_mainsite", "no keys")]
+                [ScrollmapWithZoom.wheelZoomingKeys.Alt, _("alt")],
+                [ScrollmapWithZoom.wheelZoomingKeys.Ctrl, _("ctrl")],
+                [ScrollmapWithZoom.wheelZoomingKeys.Shift, _("shift")],
+                [ScrollmapWithZoom.wheelZoomingKeys.Meta, _("meta")],
+                [ScrollmapWithZoom.wheelZoomingKeys.None, _("no keys")]
             ]);
             var wheelZoomingKeySel = inputs.namedItem("wheelZoomingKey");
             for (const [key, value] of keys.entries()) {
@@ -1119,9 +1131,9 @@ class ScrollmapWithZoom {
             }
             if (this.btnsDivPositionnable) {
                 var keys2 = new Map([
-                    [ScrollmapWithZoom.btnsDivPositionE.Right, __("lang_mainsite", "right")],
-                    [ScrollmapWithZoom.btnsDivPositionE.Left, __("lang_mainsite", "left")],
-                    [ScrollmapWithZoom.btnsDivPositionE.Top, __("lang_mainsite", "top")],
+                    [ScrollmapWithZoom.btnsDivPositionE.Right, _("right")],
+                    [ScrollmapWithZoom.btnsDivPositionE.Left, _("left")],
+                    [ScrollmapWithZoom.btnsDivPositionE.Top, _("top")],
                 ]);
                 var btnsDivPositionsSel = inputs.namedItem("btnsDivPositionOutsideMap");
                 for (const [key, value] of keys2.entries()) {
@@ -1223,14 +1235,6 @@ class ScrollmapWithZoom {
                 document.body.clientHeight || window.innerHeight;
             var container_pos = dojo.coords('map_container', true);
             screen_height /= pageZoom;
-            if (pageZoom == 1) {
-                var interfaceFactor = this._getInterfaceFactor();
-                if (interfaceFactor < 1) {
-                    debug("_adaptHeight use interfaceFactor ", interfaceFactor);
-                    pageZoom = interfaceFactor;
-                }
-            }
-            document.body.style.setProperty("--page_zoom", pageZoom.toString());
             var other_elements_height = this.adaptHeightCorr + container_pos.y;
             for (let i = 0; i < this.adaptHeightCorrDivs.length; i++) {
                 other_elements_height += this.adaptHeightCorrDivs[i].getBoundingClientRect().height;
@@ -1260,12 +1264,21 @@ class ScrollmapWithZoom {
                 this._clearOldSettings();
                 this._loadedSettings = this._loadSettings();
                 if (!this._loadedSettings) {
-                    if (this._resetMode == ScrollmapWithZoom.ResetMode.ScrollAndZoomFit || this._zoomFitCalledDuringSetup)
+                    if (this._resetMode != ScrollmapWithZoom.ResetMode.ScrollAndZoomFit && this._zoomFitCalledDuringSetup)
                         this.zoomToFit();
-                    this.scrollToCenter(null, 0, 0);
+                    this.onReset();
                 }
             } else
                 this._scrollto(this.board_x, this.board_y, 0, 0);
+            var pageZoom = this._getPageZoom();
+            if (pageZoom == 1) {
+                var interfaceFactor = this._getInterfaceFactor();
+                if (interfaceFactor < 1) {
+                    debug("_adaptHeight use interfaceFactor ", interfaceFactor);
+                    pageZoom = interfaceFactor;
+                }
+            }
+            document.body.style.setProperty("--page_zoom", pageZoom.toString());
             this._setupDone = true;
         });
     }
@@ -2497,7 +2510,7 @@ class ScrollmapWithZoom {
         debug("setupOnScreenArrows");
         this.scrollDelta = scrollDelta;
         this.bScrollDeltaAlignWithZoom = bScrollDeltaAlignWithZoom;
-        var _btnsMoveHelp = dojo.string.substitute(__("lang_mainsite", "Scroll display (you can also use ${keys} + arrow keys)"), { keys: __("lang_mainsite", "alt") });
+        var _btnsMoveHelp = dojo.string.substitute(_("Scroll display (you can also use ${keys} + arrow keys)"), { keys: _("alt") });
         if (this.bScrollDeltaAlignWithZoom)
             this._scrollDeltaAlignWithZoom = scrollDelta * this.zoom;
         else
@@ -2584,12 +2597,12 @@ class ScrollmapWithZoom {
         debug("setupOnScreenZoomButtons");
         this.zoomDelta = zoomDelta;
         if (!this._btnZoomPlus) {
-            this._btnZoomPlus = this._initButton(this._btnZoomPlusNames, this.btnZoomPlusHtml, __("lang_mainsite", "Zoom in"), this._onZoomIn, () => {
+            this._btnZoomPlus = this._initButton(this._btnZoomPlusNames, this.btnZoomPlusHtml, _("Zoom in"), this._onZoomIn, () => {
                 this.changeMapZoom(this.longPressZoom);
             });
         }
         if (!this._btnZoomMinus) {
-            this._btnZoomMinus = this._initButton(this._btnZoomMinusNames, this.btnZoomMinusHtml, __("lang_mainsite", "Zoom out"), this._onZoomOut, () => {
+            this._btnZoomMinus = this._initButton(this._btnZoomMinusNames, this.btnZoomMinusHtml, _("Zoom out"), this._onZoomOut, () => {
                 this.changeMapZoom(-this.longPressZoom);
             });
         }
@@ -2619,10 +2632,10 @@ class ScrollmapWithZoom {
         this._resetMode = resetMode;
         debug("setupOnScreenResetButtons");
         if (!this._btnReset) {
-            this._btnReset = this._initButton(this._btnResetNames, this.btnResetHtml, __("lang_mainsite", "Center"), this.onReset);
+            this._btnReset = this._initButton(this._btnResetNames, this.btnResetHtml, _("Center"), this.onReset);
         }
         if (!this._btnZoomToFit)
-            this._btnZoomToFit = this._initButton(this._btnZoomToFitNames, this.btnZoomToFitHtml, __("lang_mainsite", 'Fit map to display area'), () => this.zoomToFitAndScrollToCenter());
+            this._btnZoomToFit = this._initButton(this._btnZoomToFitNames, this.btnZoomToFitHtml, _('Fit map to display area'), () => this.zoomToFitAndScrollToCenter());
         // this.showOnScreenResetButtons();
     }
     showOnScreenResetButtons() {
@@ -2633,7 +2646,7 @@ class ScrollmapWithZoom {
         this._hideButton(this._btnReset);
         this._hideButton(this._btnZoomToFit);
     }
-    onReset(evt) {
+    onReset() {
         if (this._resetMode == ScrollmapWithZoom.ResetMode.ScrollAndZoom)
             this.setMapZoom(this.defaultZoom);
         if (this._resetMode == ScrollmapWithZoom.ResetMode.ScrollAndZoomFit)
@@ -2661,11 +2674,11 @@ class ScrollmapWithZoom {
         // this._bIncrHeightBtnGroupedWithOthers = bGroupedWithOthers;
         var btnsProps = this._getEnlargeReduceButtonsProps(bInsideMap);
         if (!this._btnIncreaseHeight)
-            this._btnIncreaseHeight = this._initButton(this._btnIncreaseHeightNames, bInsideMap ? (bShort ? this.btnIncreaseHeightShortHtml : this.btnIncreaseHeightHtml) : null, __("lang_mainsite", 'Increase height'), this._onIncreaseDisplayHeight, () => {
+            this._btnIncreaseHeight = this._initButton(this._btnIncreaseHeightNames, bInsideMap ? (bShort ? this.btnIncreaseHeightShortHtml : this.btnIncreaseHeightHtml) : null, _('Increase height'), this._onIncreaseDisplayHeight, () => {
                 this.changeDisplayHeight(5);
             }, bShort ? destDiv : null, btnsProps.idSuffix, btnsProps.display);
         if (!this._btnDecreaseHeight)
-            this._btnDecreaseHeight = this._initButton(this._btnDecreaseHeightNames, bInsideMap ? (bShort ? this.btnDecreaseHeightShortHtml : this.btnDecreaseHeightHtml) : null, __("lang_mainsite", 'Decrease height'), this._onDecreaseDisplayHeight, () => {
+            this._btnDecreaseHeight = this._initButton(this._btnDecreaseHeightNames, bInsideMap ? (bShort ? this.btnDecreaseHeightShortHtml : this.btnDecreaseHeightHtml) : null, _('Decrease height'), this._onDecreaseDisplayHeight, () => {
                 this.changeDisplayHeight(-5);
             }, bShort ? destDiv : null, btnsProps.idSuffix, btnsProps.display);
         if (this._btnDecreaseHeight || this._btnIncreaseHeight) {
@@ -2687,8 +2700,8 @@ class ScrollmapWithZoom {
         //     this._setupEnlargeReduceButtons(true, bShort, buttonsDiv);
         // }
         this._setupEnlargeReduceButtons(true, bShort, buttonsDiv);
-        this._btnResetHeight = this._initButton("reset_height", this.btnResetHeightHtml, __("lang_mainsite", "Reset Height"), this._onResetHeight, null, buttonsDiv);
-        this._btnMaximizeHeight = this._initButton("maximize_height", this.btnMaximizeHeightHtml, __("lang_mainsite", "Maximize Height"), this._onMaximizeHeight, null, buttonsDiv);
+        this._btnResetHeight = this._initButton("reset_height", this.btnResetHeightHtml, _("Reset Height"), this._onResetHeight, null, buttonsDiv);
+        this._btnMaximizeHeight = this._initButton("maximize_height", this.btnMaximizeHeightHtml, _("Maximize Height"), this._onMaximizeHeight, null, buttonsDiv);
         if (this._bMaxHeight) {
             this._enableButton(this._btnResetHeight);
             this._disableButton(this._btnMaximizeHeight);
@@ -2818,42 +2831,42 @@ class ScrollmapWithZoom {
         this._hideButton(this._btnInfo);
     }
     getInfoButtonTooltip() {
-        var canbemodfied = __("lang_mainsite", " ( modifiable in scrollmap settings )");
+        var canbemodfied = _(" ( modifiable in scrollmap settings )");
         var info = '<div class="scrollmap_tooltip">';
-        info += __("lang_mainsite", 'To show/hide controls click on the wheel');
+        info += _('To show/hide controls click on the wheel');
         info += '<BR>';
-        info += __("lang_mainsite", 'To scroll/pan, do one of the folowing things:');
+        info += _('To scroll/pan, do one of the folowing things:');
         info += '<ul>';
-        info += '<li>' + __("lang_mainsite", 'maintain the mouse button or 2 fingers pressed and move.') + '</li>';
-        info += '<li>' + __("lang_mainsite", 'press the scroll/pan buttons (long press : continious scroll/pan).') + '</li>';
+        info += '<li>' + _('maintain the mouse button or 2 fingers pressed and move.') + '</li>';
+        info += '<li>' + _('press the scroll/pan buttons (long press : continious scroll/pan).') + '</li>';
         if (ScrollmapWithZoom.bEnableKeys && this.bEnableKeysArrows)
-            info += '<li>' + __("lang_mainsite", 'press the arrow keys with alt key (long press : continious scroll/pan).') + '</li>';
+            info += '<li>' + _('press the arrow keys with alt key (long press : continious scroll/pan).') + '</li>';
         info += '</ul>';
         if (this._bEnableZooming) {
             info += '<BR>';
-            info += __("lang_mainsite", 'To zoom, do one of the folowing things:');
+            info += _('To zoom, do one of the folowing things:');
             info += '<ul>';
             var keysStr = this.getWheelZoomingOptionTranslated();
             info += '<li>';
-            info += `<span style="${this.zoomingOptions.bWheelZooming ? "" : "text-decoration: line-through;"}">` + dojo.string.substitute(__("lang_mainsite", "use the mouse wheel with ${keys}"), { keys: keysStr }) + '</span>';
+            info += `<span style="${this.zoomingOptions.bWheelZooming ? "" : "text-decoration: line-through;"}">` + dojo.string.substitute(_("use the mouse wheel with ${keys}"), { keys: keysStr }) + '</span>';
             info += canbemodfied;
             info += '</li>';
-            info += '<li>' + `<span style="${this.zoomingOptions.pinchZooming ? "" : "text-decoration: line-through;"}">` + __("lang_mainsite", "pinch fingers.") + '</span>' + canbemodfied + '</li>';
-            info += '<li>' + __("lang_mainsite", 'press the zoom buttons (long press : continious zoom).') + '</li>';
+            info += '<li>' + `<span style="${this.zoomingOptions.pinchZooming ? "" : "text-decoration: line-through;"}">` + _("pinch fingers.") + '</span>' + canbemodfied + '</li>';
+            info += '<li>' + _('press the zoom buttons (long press : continious zoom).') + '</li>';
             if (ScrollmapWithZoom.bEnableKeys && this.bEnableKeysPlusMinus)
-                info += '<li>' + __("lang_mainsite", 'press the +/- keys (long press : continious zoom).') + '</li>';
+                info += '<li>' + _('press the +/- keys (long press : continious zoom).') + '</li>';
             info += '</ul>';
         }
-        info += '<BR>' + __("lang_mainsite", 'To recenter, do one of the folowing things:');
+        info += '<BR>' + _('To recenter, do one of the folowing things:');
         info += '<ul>';
-        info += '<li>' + __("lang_mainsite", 'use the recenter button');
+        info += '<li>' + _('use the recenter button');
         if (ScrollmapWithZoom.bEnableKeys && this.bEnableKeyHome)
-            info += '<li>' + __("lang_mainsite", 'press the home key with ctrl key') + '</li>';
+            info += '<li>' + _('press the home key with ctrl key') + '</li>';
         info += '</ul>';
         if (ScrollmapWithZoom.bEnableKeys && this.bEnableKeyEnd)
-            info += '<BR>' + __("lang_mainsite", 'To fit to content : press the end key with ctrl key');
+            info += '<BR>' + _('To fit to content : press the end key with ctrl key');
         if (this._bConfigurableInUserPreference)
-            info += __("lang_mainsite", 'This is configurable in user preference.');
+            info += _('This is configurable in user preference.');
         info += '</div>';
         return info;
     }
@@ -2868,12 +2881,12 @@ class ScrollmapWithZoom {
     }
     getWheelZoomingOptionTranslated() {
         var keystr = "";
-        var altstr = __("lang_mainsite", "alt");
-        var ctrlstr = __("lang_mainsite", "ctrl");
-        var shiftstr = __("lang_mainsite", "shift");
-        var metastr = __("lang_mainsite", "meta");
-        var orstr = __("lang_mainsite", "or");
-        var nonestr = __("lang_mainsite", "no keys");
+        var altstr = _("alt");
+        var ctrlstr = _("ctrl");
+        var shiftstr = _("shift");
+        var metastr = _("meta");
+        var orstr = _("or");
+        var nonestr = _("no keys");
         var anystr = [ctrlstr, altstr, shiftstr, metastr].join(" " + orstr + " ");
         switch (this.zoomingOptions.wheelZooming) {
             // Zoom with scroll wheel
@@ -2897,7 +2910,7 @@ class ScrollmapWithZoom {
                 break;
             case ScrollmapWithZoom.wheelZoomingKeys.Meta:
                 keystr = metastr;
-                return;
+                break;
         }
         return keystr;
     }
