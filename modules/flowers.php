@@ -163,6 +163,8 @@ trait FlowersTrait {
 
                 // Add spot to list
                 $blooming_flowers[$vine_color][] = $neighbor['tile_id'];
+                // Remove duplicates (that can happen due to circular vines)
+                $blooming_flowers[$vine_color] = array_unique($blooming_flowers[$vine_color]);
 
                 // Continue the file
                 $angle = array_filter($neighbor_type['vines'][$vine_color], function ($a) use ($angle) {
