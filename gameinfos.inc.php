@@ -12,11 +12,6 @@
 $gameinfos = [
     'game_name' => "Trellis",
 
-    'designer' => 'Teale Fristoe',
-    'artist' => 'Vikki Chu',
-
-    'year' => 2018,
-
     'publisher' => 'Breaking Games',
     'publisher_website' => 'http://breakinggames.com/',
     'publisher_bgg_id' => 29082,
@@ -71,17 +66,6 @@ $gameinfos = [
         'min' => 500,
         'max' => null
     ],
-
-    'presentation' => [
-        totranslate("Grow a beautiful garden of tiles on which flower meeples bloom down connecting vines of the same color. Players race to be the first to play all their flowers first in this cascade of color and fun for 2-4 players. The twist? When growing the garden, helping others bloom can be really good for the active player - even secure the immediate win! Well chosen tile placement is the key to success in this evolving puzzle of a game that will grow on you."),
-        totranslate("In Trellis, each player has a supply of flower meeples in their unique color that they are working to place in the garden. Each player also has a hand of hex tiles depicting a tangled weave of differently colored vines."),
-        totranslate("On their turn, the active player must plant a tile on the table, growing the size of the garden. Once a tile is placed, automatic blooms happen first. All newly connected vines will bloom flower meeples, if the newly connected vine matches color with the neighbor tile and only if the vine on the neighbor tile has already been claimed with a flower."),
-        totranslate("The active player then places a flower claiming a vine on the tile they placed that has not yet bloomed. Immediately, each unclaimed vine of the same color on neighboring tiles connected to the vine just claimed will automatically bloom for that player."),
-        totranslate("Finally, if any opponents had flowers bloom due to the tile placement, then the active player gets to place a bonus flower - one for each flower bloom they helped their opponent place! If there are no unclaimed vines available on the tile the active player placed, they get to place a bloom on any unclaimed vine anywhere in the garden!"),
-        totranslate("The first player to play all fifteen of their flowers immediately wins. Which vines to claim and when to help opponents grow flowers in order to gain bonus blooms for yourself is very furtile soil to ponder during a quick play of Trellis."),
-    ],
-
-    'tags' => [ 2, 11, 105, 206 ],
 
     'is_sandbox' => false,
     'turnControl' => 'simple'
