@@ -64,7 +64,7 @@ $stats_type = [
             32 => totranslate('Second player in 3-player game'),
             42 => totranslate('Second player in 4-player game'),
             33 => totranslate('Third player in 3-player game'),
-            34 => totranslate('Fourth player in 3-player game'),
+            34 => totranslate('Third player in 4-player game'),
             44 => totranslate('Fourth player in 4-player game'),
         ]
     ]
