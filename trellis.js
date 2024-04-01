@@ -106,7 +106,20 @@ define([
                     }
                 );
             },
-
+            
+            setViewPort: function () {
+                if (typeof document.body.style.zoom === "undefined") { // css zoom not supported
+                  if (screen.width < this.interface_min_width) {
+                    var viewport = document.getElementsByName("viewport")[0];
+                    this.default_viewport = "width=" + this.interface_min_width + "px";
+                    viewport.setAttribute("content", this.default_viewport);
+                  }
+                }
+              },
+          
+              onScreenWidthChange: function () {
+                this.setViewPort();
+              },
             ///////////////////////////////////////////////////
             //// Game & client states
 

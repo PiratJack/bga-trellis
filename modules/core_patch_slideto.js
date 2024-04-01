@@ -11,6 +11,23 @@ define([
         return declare("ebg.core.core_patch_slideto", null, {
             constructor: function () {
                 debug('ebg.core.core_patch constructor');
+                this._checkIfZoomImplemented();
+            },
+
+            _checkIfZoomImplemented: function(){
+                const scrollX = window.pageXOffset;
+                const scrollY = window.pageYOffset;
+                const el = document.createElement("div");
+                el.style = 'top : 10px; left: 10px; zoom: 2.0; width: 4000px; height: 4000px; position: absolute';
+                document.body.appendChild(el);
+                const el2 = document.createElement("div");
+                el2.style = 'top : 20px; left: 5px; zoom: 4.0; width: 10px; height: 10px; position: absolute';
+                el.appendChild(el2);
+                window.scroll(0,0);
+                const tBox = el2.getBoundingClientRect();
+                this._zoomImplemented = (tBox.x==7.5);
+                document.body.removeChild(el);
+                window.scroll(scrollX,scrollY);
             },
 
             calcScale: function (element) {
@@ -158,6 +175,28 @@ define([
                 if (typeof bRelPos == 'undefined')
                     bRelPos = this.bUseRelPosForObjPos;
                 this._placeOnObject(mobile_obj, target_obj, target_x, target_y, bRelPos, bFromCenter, bToCenter);
+            },
+
+            _slideToPos: function (mobile_obj, top, left, duration, disabled3d) {
+                var anim = dojo.fx.slideTo({
+                    node: mobile_obj,
+                    top: top,
+                    left: left,
+                    delay: delay,
+                    duration: duration,
+                    unit: "px"
+                });
+
+                if (disabled3d !== null) {
+                    anim = this.transformSlideAnimTo3d(anim, mobile_obj, duration, delay, vector_x, vector_y);
+                }
+
+                if (mobile_obj.closest(".scrollmap_onsurface, .scrollmap_scrollable")){
+                    var orig_parent = mobile_obj;
+                    dojo.connect(anim, 'onEnd', dojo.hitch(this, function () {
+                        dojo.place(mobile_obj, orig_parent);
+                    }));
+                }
             },
 
             // Return an animation that is moving (slide) a DOM object over another one
