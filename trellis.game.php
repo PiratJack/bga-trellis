@@ -125,7 +125,7 @@ class Trellis extends Table {
                     $selected_tile = $this->getRandomValue($possible_tiles);
 
                     // Select a spot
-                    $possible_spots = $this->argPlant()['_private']['active']['possibleTileSpots'];
+                    $possible_spots = $this->argPlant()['possibleTileSpots'];
                     $selected_spot = $this->getRandomValue($possible_spots);
 
                     // Select an angle
