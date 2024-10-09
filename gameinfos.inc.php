@@ -49,11 +49,6 @@ $gameinfos = [
 
     'language_dependency' => false,
 
-    'complexity' => 1,
-    'luck' => 2,
-    'strategy' => 4,
-    'diplomacy' => 0,
-
     // Colors attributed to players
     'player_colors' => [ 'ff775f', '168d63', 'ffffff', 'ffd26b'],
     // Corresponds to "orange", "green", "white", "yellow" ,
