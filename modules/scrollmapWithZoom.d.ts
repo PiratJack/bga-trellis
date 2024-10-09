@@ -23,16 +23,19 @@ type _optionsChangedT = {
     bOneFingerScrolling?: boolean;
     bShowMoveCursor?: boolean;
     bAutoCompensatePanelsHeight?: boolean;
+    bAutoCompensateChatIcon?: boolean;
 };
 interface Position {
     x: number;
     y: number;
 }
 declare class ScrollmapWithZoom {
+    version: String;
     private static count;
     private static instances;
     private static _form;
     private static _formDialog;
+    private static _core_patched;
     /**
      * board properties
      */

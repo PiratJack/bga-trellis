@@ -1,5 +1,5 @@
 /*
-ScrollmapWithZoom 1.33.12: Improved version of scrollmap used in multiple bga game
+ScrollmapWithZoom 1.34.8 : Improved version of scrollmap used in multiple bga game
 https://github.com/yansnow78/bga_scrollmap.git
 
 # improvements
@@ -174,6 +174,7 @@ class ScrollmapWithZoom {
         //     RIGHT_TOP : 10,
         //     RIGHT_BOTTOM: 11,
         //   };
+        this.version = '1.34.8';
         /**
          * board properties
          */
@@ -351,7 +352,7 @@ class ScrollmapWithZoom {
         this._btnToggleButtonsVisiblity = null;
         this._btnZoomPlusNames = 'zoomplus,zoom_plus,zoomin,zoom_in';
         this._btnZoomMinusNames = 'zoomminus,zoom_minus,zoomout,zoom_out';
-        this._btnResetNames = 'reset,back_to_center,reset_map,map_reset,center';
+        this._btnResetNames = 'reset,back_to_center,reset_map,map_reset,center,movehome';
         this._btnZoomToFitNames = 'zoomtofit,fullscreen';
         this._btnIncreaseHeightNames = "enlargedisplay";
         this._btnDecreaseHeightNames = "reducedisplay,shrinkdisplay";
@@ -427,8 +428,9 @@ class ScrollmapWithZoom {
         ScrollmapWithZoom.count++;
         ScrollmapWithZoom.instances.set(container_div.id, this);
         ScrollmapWithZoom.bEnableKeys = ScrollmapWithZoom._bEnableKeys;
-        if (typeof gameui.calcScale == "undefined") {
+        if (!ScrollmapWithZoom._core_patched) {
             dojo.safeMixin(gameui, new ebg.core.core_patch_slideto());
+            ScrollmapWithZoom._core_patched = true;
         }
         if (surface_div)
             surface_div.classList.add("scrollmap_surface");
@@ -1020,7 +1022,10 @@ class ScrollmapWithZoom {
         if (this.defaultZoom === null)
             this.defaultZoom = this.zoom;
         this.setMapZoom(this.zoom);
-        this.scrollto(0, 0, 0, 0);
+        if (this.startPosition)
+            this.scrollto(-this.startPosition.x, -this.startPosition.y, 0, 0);
+        else
+            this.scrollToCenter(null, 0, 0);
         if (this._resizeObserver)
             this._resizeObserver.observe(this.container_div);
         if (this._resizeHeadersObserver) {
@@ -1108,6 +1113,7 @@ class ScrollmapWithZoom {
             this.container_div.style.setProperty('--btns_offset_y', this.btnsOffsetY);
             this._btnToggleButtonsVisiblity.classList.add("scrollmap_icon_always_visible");
             this._btnToggleButtonsVisiblity.classList.remove("scrollmap_btn_nodisplay");
+            this._minHeight = this._orig_minHeight;
         } else {
             classList = this.btnsDivPositionOutsideMap.split(' ');
             for (const posClass of classList) {
@@ -1125,7 +1131,9 @@ class ScrollmapWithZoom {
             this.container_div.style.setProperty('--btns_offset_y', this.btnsOutsideMapOffsetY);
             this._setButtonsVisiblity(true, false);
             this._btnToggleButtonsVisiblity.classList.add("scrollmap_btn_nodisplay");
-            this._minHeight = Math.max(this._orig_minHeight, this._buttons_divs_wrapper.getBoundingClientRect().height / this._getPageZoom());
+            this._minHeight = Math.max(this._orig_minHeight, gameui.getBoundingClientRectIgnoreZoom(this._buttons_divs_wrapper).height + 2);
+            if (this._minHeight > this.getDisplayHeight())
+                this.setDisplayHeight(this._minHeight);
         }
     }
     _createForm() {
@@ -1162,6 +1170,10 @@ class ScrollmapWithZoom {
                         <div>
                             <input type="checkbox" id="bTakeIntoAccountPanelsHeight" value="true">
                             <label for="bTakeIntoAccountPanelsHeight">${_("Take into account players panels height")}</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="bAutoCompensateChatIcon" value="true">
+                            <label for="bAutoCompensateChatIcon">${_("Take into account chat icon")}</label>
                         </div>
                         <div>
                             <button name="close2">${_("Cancel")}</button>
@@ -1251,10 +1263,14 @@ class ScrollmapWithZoom {
         }
         inputs.namedItem("bRevertArrowsScroll").checked = this.bRevertArrowsScroll;
         inputs.namedItem("bTakeIntoAccountPanelsHeight").checked = this.bAdaptHeightAutoCompensatePanelsHeight;
-        if (dojo.hasClass('ebd-body', 'mobile_version') && this._bAdaptHeightAuto)
+        inputs.namedItem("bAutoCompensateChatIcon").checked = this.bAdaptHeightAutoCompensateChatIcon;
+        if (dojo.hasClass('ebd-body', 'mobile_version') && this._bAdaptHeightAuto) {
             inputs.namedItem("bTakeIntoAccountPanelsHeight").parentElement.style.display = "";
-        else
+            inputs.namedItem("bAutoCompensateChatIcon").parentElement.style.display = "";
+        } else {
             inputs.namedItem("bTakeIntoAccountPanelsHeight").parentElement.style.display = "none";
+            inputs.namedItem("bAutoCompensateChatIcon").parentElement.style.display = "none";
+        }
     }
     _submitForm() {
         var inputs = ScrollmapWithZoom._form.elements;
@@ -1300,12 +1316,21 @@ class ScrollmapWithZoom {
             this.bRevertArrowsScroll = bRevertArrowsScroll;
             ScrollmapWithZoom._optionsChanged.bRevertArrowsScroll = bRevertArrowsScroll;
         }
+        var addHeightNeeded = false;
         var bAutoCompensatePanelsHeight = inputs.namedItem("bTakeIntoAccountPanelsHeight").checked;
         if (this.bAdaptHeightAutoCompensatePanelsHeight != bAutoCompensatePanelsHeight) {
             this.bAdaptHeightAutoCompensatePanelsHeight = bAutoCompensatePanelsHeight;
             ScrollmapWithZoom._optionsChanged.bAutoCompensatePanelsHeight = bAutoCompensatePanelsHeight;
-            this._adaptHeight();
+            addHeightNeeded = true;
         }
+        var bAutoCompensateChatIcon = inputs.namedItem("bAutoCompensateChatIcon").checked;
+        if (this.bAdaptHeightAutoCompensateChatIcon != bAutoCompensateChatIcon) {
+            this.bAdaptHeightAutoCompensateChatIcon = bAutoCompensateChatIcon;
+            ScrollmapWithZoom._optionsChanged.bAutoCompensateChatIcon = bAutoCompensateChatIcon;
+            addHeightNeeded = true;
+        }
+        if (addHeightNeeded)
+            this._adaptHeight();
         if (this == ScrollmapWithZoom.instances.values().next().value)
             ScrollmapWithZoom._saveGameSettings();
         // ScrollmapWithZoom._formDialog.close();
@@ -1322,8 +1347,7 @@ class ScrollmapWithZoom {
             this._onResize();
             // your code
             debug("_adaptHeight");
-            var pageZoom = this._getPageZoom();
-            this._titleHeight = $('page-title').getBoundingClientRect().height / pageZoom;
+            this._titleHeight = gameui.getBoundingClientRectIgnoreZoom($('page-title')).height;
             if (!this.bAdaptHeightAuto)
                 return;
             if (this._setupDone)
@@ -1335,28 +1359,20 @@ class ScrollmapWithZoom {
                 return;
             var screen_height = document.documentElement.clientHeight ||
                 document.body.clientHeight || window.innerHeight;
-            var container_pos = dojo.coords(this.container_div, false);
-            screen_height /= pageZoom;
-            var scrollY_z = window.scrollY / pageZoom;
-            var other_elements_height = this.adaptHeightCorr + container_pos.y + scrollY_z;
+            var container_pos = gameui.getBoundingClientRectIncludeZoom(this.container_div);
+            var other_elements_height = this.adaptHeightCorr + container_pos.y + window.scrollY;
             if (!this.bAdaptHeightAutoCompensatePanelsHeight && dojo.hasClass('ebd-body', 'mobile_version')) {
-                //debugger;
-                // var playersPanelsCoord = dojo.coords($("player_boards"), false);
-                var pageTitleCoord = dojo.coords($("page-title"), false);
-                var pageContentCoord = dojo.coords($("page-content"), false);
-                /*if (playersPanelsCoord.y + playersPanelsCoord.h >= 0)
-                    other_elements_height -= playersPanelsCoord.h + playersPanelsCoord.y;*/
-                other_elements_height -= pageContentCoord.y + scrollY_z;
-                //if( dojo.hasClass( 'page-title', 'fixed-page-title' ) )
-                other_elements_height += pageTitleCoord.h;
+                var page_title = $("page-title");
+                var pageTitleCoord = gameui.getBoundingClientRectIncludeZoom(page_title);
+                var pageContentCoord = gameui.getBoundingClientRectIncludeZoom($("page-content"));
+                other_elements_height -= pageContentCoord.y + window.scrollY;
+                other_elements_height += pageTitleCoord.height;
             }
             for (let i = 0; i < this.adaptHeightCorrDivs.length; i++) {
                 let float = window.getComputedStyle(this.adaptHeightCorrDivs[i]).float;
                 if (float != "left" && float != "right") {
-                    var corrCoord = dojo.coords(this.adaptHeightCorrDivs[i], true);
-                    //if (corrCoord.y + 5 >= container_pos.y + container_pos.h)
-                    var brect = this.adaptHeightCorrDivs[i].getBoundingClientRect();
-                    if (brect.top + 5 >= container_pos.y + container_pos.h)
+                    let brect = gameui.getBoundingClientRectIncludeZoom(this.adaptHeightCorrDivs[i]);
+                    if (brect.top + 5 >= container_pos.y + container_pos.height)
                         other_elements_height += brect.height;
                 }
             }
@@ -1366,13 +1382,19 @@ class ScrollmapWithZoom {
             // var $connect_status = $('connect_status');
             // if ($connect_status)
             //     other_elements_height -= $connect_status.getBoundingClientRect().height / pageZoom;
-            if (this.bAdaptHeightAutoCompensateChatIcon) {
+            if (this.bAdaptHeightAutoCompensateChatIcon && dojo.hasClass('ebd-body', 'mobile_version')) {
                 var $chatwindowavatar = document.querySelector(".chatwindowavatar");
                 // debugger;
-                if ($chatwindowavatar)
-                    other_elements_height += (1.5 * $chatwindowavatar.getBoundingClientRect().height) / pageZoom;
+                if ($chatwindowavatar) {
+                    let brect = gameui.getBoundingClientRectIncludeZoom($chatwindowavatar);
+                    if (brect.height > 0) {
+                        let bheight = window.innerHeight - brect.top;
+                        if (bheight < 120)
+                            other_elements_height += bheight;
+                    }
+                }
             }
-            var map_height = screen_height - other_elements_height;
+            var map_height = (screen_height - other_elements_height) / gameui.calcCurrentCSSZoom(this.container_div);
             if (this.getDisplayHeight() != map_height) {
                 this.setDisplayHeight(map_height);
             }
@@ -1496,10 +1518,17 @@ class ScrollmapWithZoom {
                 if (optionsChanged.bRevertArrowsScroll != undefined) {
                     this.bRevertArrowsScroll = optionsChanged.bRevertArrowsScroll;
                 }
+                var adaptHeightNeeded = false;
                 if (optionsChanged.bAutoCompensatePanelsHeight != null) {
                     this.bAdaptHeightAutoCompensatePanelsHeight = optionsChanged.bAutoCompensatePanelsHeight;
-                    this._adaptHeight();
+                    adaptHeightNeeded = true;
                 }
+                if (optionsChanged.bAutoCompensateChatIcon != null) {
+                    this.bAdaptHeightAutoCompensateChatIcon = optionsChanged.bAutoCompensateChatIcon;
+                    adaptHeightNeeded = true;
+                }
+                if (adaptHeightNeeded)
+                    this._adaptHeight();
             }
         }
         return scrolled;
@@ -1564,9 +1593,10 @@ class ScrollmapWithZoom {
     }
     _getPageZoom() {
         var pageZoom = 1;
-        if (gameui._zoomImplemented) {
+        // @ts-ignore
+        if (typeof document.body.style.zoom !== "undefined") {
             try {
-                var pageZoomStr = $("page-content").style.getPropertyValue("zoom");
+                var pageZoomStr = window.getComputedStyle($("page-content")).getPropertyValue("zoom");
                 if (pageZoomStr !== "")
                     pageZoom = parseFloat(pageZoomStr);
             } catch (error) {
@@ -1585,15 +1615,8 @@ class ScrollmapWithZoom {
             clientX = (clientX + ev2.clientX) / 2;
             clientY = (clientY + ev2.clientY) / 2;
         }
-        const pageZoom = this._getPageZoom();
         var x, y;
-        if ((gameui !== null) && (typeof gameui.calcNewLocation === "function")) {
-            [, , x, y] = gameui.calcNewLocation(this.surface_div, null, clientX / pageZoom, clientY / pageZoom, false, true);
-        } else {
-            const containerRect = this.clipped_div.getBoundingClientRect();
-            x = (clientX / pageZoom - containerRect.x - containerRect.width / 2);
-            y = (clientY / pageZoom - containerRect.y - containerRect.height / 2);
-        }
+        [, , x, y] = gameui.calcNewLocation(this.surface_div, null, clientX, clientY, false, true);
         return [x, y];
     }
     _enableInteractions() {
@@ -1626,7 +1649,7 @@ class ScrollmapWithZoom {
                 debugMsg += "click";
             setTimeout(() => {
                 this._enabledClicks = true;
-                this.onsurface_div.removeEventListener('click', this._suppressCLickEvent_handler, this._passiveEventListener);
+                this.surface_div.removeEventListener('click', this._suppressCLickEvent_handler, this._passiveEventListener);
             }, 200);
         }
         if (isDebug && debugMsg != "")
@@ -1950,8 +1973,8 @@ class ScrollmapWithZoom {
             obj = $(obj);
         if (!obj)
             return;
-        var objPos = obj.getBoundingClientRect();
-        var mapPos = this.scrollable_div.getBoundingClientRect();
+        var objPos = gameui.getBoundingClientRectIgnoreZoom(obj);
+        var mapPos = gameui.getBoundingClientRectIgnoreZoom(this.scrollable_div);
         // Coordinates (pixels left and top relative to map_scrollable_oversurface) of the player's frog
         var objLocation = {
             x: objPos.left + (objPos.width / 2) - mapPos.left,
@@ -2192,8 +2215,8 @@ class ScrollmapWithZoom {
         }
     }
     makeObjVisible(obj, centerOnIt = false, excl_width = 0, excl_height = 0, pos = "topleft") {
-        let board_rect = this.clipped_div.getBoundingClientRect();
-        let obj_rect = obj.getBoundingClientRect();
+        let board_rect = gameui.getBoundingClientRectIgnoreZoom(this.clipped_div);
+        let obj_rect = gameui.getBoundingClientRectIgnoreZoom(obj);
         this._makeRectVisible(obj_rect, board_rect, centerOnIt, excl_width, excl_height, pos);
     }
     makeVisible(x, y, w = 0, h = 0, centerOnIt = false, excl_width = 0, excl_height = 0, pos = "topleft") {
@@ -2932,8 +2955,7 @@ class ScrollmapWithZoom {
     setDisplayHeight(new_height, dispatch = true) {
         var screen_height = document.documentElement.clientHeight ||
             document.body.clientHeight || window.innerHeight;
-        var pageZoom = this._getPageZoom();
-        screen_height /= pageZoom;
+        screen_height /= gameui.calcCurrentCSSZoom(this.container_div);
         var current_height = this.getDisplayHeight();
         var maxHeight = screen_height - this._titleHeight;
         new_height = Math.min(Math.max(new_height, this._minHeight), maxHeight);
@@ -2954,10 +2976,12 @@ class ScrollmapWithZoom {
         this._enableButton(this._btnResetHeight);
         if (new_height == maxHeight) {
             this._disableButton(this._btnIncreaseHeight);
-        } else if (new_height == this._minHeight) {
-            this._disableButton(this._btnDecreaseHeight);
         } else {
             this._enableButton(this._btnIncreaseHeight);
+        }
+        if (new_height == this._minHeight) {
+            this._disableButton(this._btnDecreaseHeight);
+        } else {
             this._enableButton(this._btnDecreaseHeight);
         }
         return (new_height == maxHeight);
@@ -3032,6 +3056,7 @@ class ScrollmapWithZoom {
             info += '<BR>' + _('To fit to content : press the end key with ctrl key');
         if (this._bConfigurableInUserPreference)
             info += _('This is configurable in user preference.');
+        info += '<BR>' + '(v ' + this.version + ')';
         info += '</div>';
         return info;
     }
@@ -3085,6 +3110,7 @@ class ScrollmapWithZoom {
 }
 ScrollmapWithZoom.count = 0;
 ScrollmapWithZoom.instances = new Map();
+ScrollmapWithZoom._core_patched = false;
 ScrollmapWithZoom._optionsChanged = {};
 ScrollmapWithZoom._bEnableKeys = true;
 (function(ScrollmapWithZoom) {
